@@ -14,6 +14,8 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      # The lock file is written by npm 12; older npm reads it as out of sync.
+      - run: npm install -g npm@12.0.0
       - run: npm ci
       - run: npm run typecheck
       - run: npm test --if-present
