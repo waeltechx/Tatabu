@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cover letter templates</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f5ef;--surface:#fffdf9;--ink:#202329;--muted:#686b70;--soft:#d9d7d0;--yellow:#ffe45b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,sans-serif;padding:34px 40px 60px}
+.mono{font:500 10.5px 'IBM Plex Mono',monospace;color:var(--muted);letter-spacing:.03em}
+h1{font:700 34px 'Space Grotesk',sans-serif;margin:10px 0 8px}
+.sub{color:var(--muted);font-size:14.5px;max-width:820px;line-height:1.5}
+h2{font:700 20px 'Space Grotesk',sans-serif;margin:34px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .tag{font:500 11px 'IBM Plex Mono',monospace;border:1.5px solid var(--ink);border-radius:6px;padding:2px 7px;background:var(--surface)}
+.gdesc{color:var(--muted);font-size:13px;margin-bottom:16px}
+.row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.row.rtl-row{grid-template-columns:repeat(4,minmax(0,1fr))}
+.opt{background:var(--surface);border:1.5px solid var(--ink);border-radius:7px;padding:12px;cursor:pointer;transition:transform .1s}
+.opt:hover{transform:translateY(-2px)}
+.opt.selected{background:var(--yellow);box-shadow:3px 3px 0 var(--ink)}
+.opt h3{font-size:14px;font-weight:600;margin:12px 0 3px}
+.opt p{font-size:11.5px;color:#555;line-height:1.4}
+.opt .def{display:inline-block;margin-top:8px;font:500 9.5px 'IBM Plex Mono',monospace;border:1.2px solid var(--ink);border-radius:5px;padding:1px 6px}
+/* paper */
+.pg{aspect-ratio:1/1.414;background:#fff;border:1px solid #cfccc3;box-shadow:0 2px 0 #e2dfd6;padding:16px 15px;font-family:Inter,sans-serif;color:#222;font-size:5.6px;line-height:1.55;position:relative;overflow:hidden}
+.pg b{font-weight:600}
+.pg .p{margin-bottom:4px;color:#444}
+.pg .sig{font-family:'Brush Script MT',cursive;font-size:11px;color:#1a2a55;margin:3px 0 1px}
+.pg .subj{font-weight:700;font-size:6.4px;margin:8px 0 6px;color:#111}
+.r{text-align:right}.l{text-align:left}
+.blk{margin-bottom:8px}
+.small{font-size:4.6px;color:#777}
+.flexb{display:flex;justify-content:space-between;align-items:flex-start}
+.line{height:.6px;background:#222;margin:5px 0}
+.ar .pg{font-family:'Noto Naskh Arabic',serif;direction:rtl;text-align:right;font-size:6px;line-height:1.7}
+.ar .pg .subj{font-size:6.8px}
+.ar .pg .sig{font-family:'Noto Naskh Arabic',serif;font-style:italic}
+</style>
+</head>
+<body>
+<div class="mono">COVER LETTER / LAYOUT TEMPLATES</div>
+<h1>Pick a letter layout</h1>
+<div class="sub">Two families: <b>left-to-right</b> layouts work for English, German, French, Spanish and every other Latin-script language; <b>right-to-left</b> layouts work for Arabic, Persian, Urdu, Hebrew. Each language gets a sensible default; the user can switch with one click and the choice is remembered per language. Click the ones you want in v1.</div>
+
+<h2>Left-to-right <span class="tag">EN · DE · FR · ES · …</span></h2>
+<div class="gdesc">Date, "Subject", "Enclosures" and the greeting are written in the letter's language automatically.</div>
+<div class="row" data-multiselect>
+  <!-- 1 Classic -->
+  <div class="opt selected" data-choice="classic" onclick="toggleSelect(this)">
+    <div class="pg">
+      <div class="r blk"><b>Omar Haddad</b><br>Leopoldstraße 12<br>80802 Munich<br>omar.haddad@mail.com · +49 151 0000000</div>
+      <div class="l blk"><b>Personio SE</b><br>Ms Anna Weber<br>Seidlstraße 3<br>80335 Munich</div>
+      <div class="r">Munich, 12 November 2026</div>
+      <div class="subj">Application for Frontend Engineer</div>
+      <div class="p">Dear Ms Weber,</div>
+      <div class="p">I am applying for the Frontend Engineer position at Personio. Building thoughtful, accessible interfaces is central to my work…</div>
+      <div class="p">In my current role at Studio North, I develop React and TypeScript interfaces in close collaboration with designers…</div>
+      <div class="p">Thank you for considering my application. I look forward to hearing from you.</div>
+      <div class="p">Kind regards,</div><div class="sig">Omar Haddad</div><div>Omar Haddad</div>
+      <div class="small" style="margin-top:6px">Enclosures: CV, Bachelor diploma</div>
+    </div>
+    <h3>Classic</h3><p>Your address top right, company below on the left, then date, subject, letter. The layout you described.</p>
+    <span class="def">DEFAULT · EN + LATIN</span>
+  </div>
+  <!-- 2 DIN 5008 -->
+  <div class="opt" data-choice="din5008" onclick="toggleSelect(this)">
+    <div class="pg">
+      <div class="r blk" style="margin-bottom:4px"><b style="font-size:7px">Omar Haddad</b><br>Leopoldstraße 12 · 80802 München<br>omar.haddad@mail.com · +49 151 0000000</div>
+      <div class="small" style="text-decoration:underline">Omar Haddad · Leopoldstraße 12 · 80802 München</div>
+      <div class="l blk" style="margin-top:2px"><b>Personio SE</b><br>Frau Anna Weber<br>Seidlstraße 3<br>80335 München</div>
+      <div class="r">München, 12.11.2026</div>
+      <div class="subj">Bewerbung als Frontend Engineer</div>
+      <div class="p">Sehr geehrte Frau Weber,</div>
+      <div class="p">mit großem Interesse habe ich Ihre Ausschreibung gelesen. Barrierefreie, durchdachte Oberflächen stehen im Mittelpunkt meiner Arbeit…</div>
+      <div class="p">In meiner aktuellen Position bei Studio North entwickle ich React- und TypeScript-Oberflächen…</div>
+      <div class="p">Über eine Einladung zu einem persönlichen Gespräch freue ich mich sehr.</div>
+      <div class="p">Mit freundlichen Grüßen</div><div class="sig">Omar Haddad</div><div>Omar Haddad</div>
+      <div class="small" style="margin-top:6px"><b>Anlagen</b><br>Lebenslauf, Bachelorzeugnis</div>
+    </div>
+    <h3>DIN 5008</h3><p>German standard: return-address line, recipient in the envelope window, numeric date. Accepted across Europe.</p>
+    <span class="def">DEFAULT · DE</span>
+  </div>
+  <!-- 3 Modern header -->
+  <div class="opt" data-choice="modern" onclick="toggleSelect(this)">
+    <div class="pg" style="padding:0">
+      <div style="background:#202329;color:#fff;padding:12px 15px 10px"><div style="font:700 10px 'Space Grotesk',sans-serif">Omar Haddad</div><div style="font-size:4.8px;opacity:.8;margin-top:2px">Frontend Engineer · Munich · omar.haddad@mail.com · +49 151 0000000</div></div>
+      <div style="padding:10px 15px">
+        <div class="flexb blk"><div><b>Personio SE</b><br>Ms Anna Weber<br>Seidlstraße 3, 80335 Munich</div><div>12 November 2026</div></div>
+        <div class="subj">Application for Frontend Engineer</div>
+        <div class="p">Dear Ms Weber,</div>
+        <div class="p">I am applying for the Frontend Engineer position at Personio. Building thoughtful, accessible interfaces is central to my work…</div>
+        <div class="p">In my current role at Studio North, I develop React and TypeScript interfaces in close collaboration with designers…</div>
+        <div class="p">Thank you for considering my application.</div>
+        <div class="p">Kind regards,</div><div class="sig">Omar Haddad</div><div>Omar Haddad</div>
+      </div>
+    </div>
+    <h3>Modern header</h3><p>Name band across the top with one contact line. Pairs well with a modern CV. Can borrow colours from "My design".</p>
+  </div>
+  <!-- 4 Block -->
+  <div class="opt" data-choice="block" onclick="toggleSelect(this)">
+    <div class="pg">
+      <div class="blk"><b>Omar Haddad</b><br>Leopoldstraße 12, 80802 Munich<br>omar.haddad@mail.com · +49 151 0000000</div>
+      <div class="blk">November 12, 2026</div>
+      <div class="blk"><b>Ms Anna Weber</b><br>Personio SE<br>Seidlstraße 3, 80335 Munich</div>
+      <div class="subj">Re: Application for Frontend Engineer</div>
+      <div class="p">Dear Ms Weber,</div>
+      <div class="p">I am applying for the Frontend Engineer position at Personio. Building thoughtful, accessible interfaces is central to my work…</div>
+      <div class="p">In my current role at Studio North, I develop React and TypeScript interfaces in close collaboration with designers…</div>
+      <div class="p">Thank you for considering my application.</div>
+      <div class="p">Sincerely,</div><div class="sig">Omar Haddad</div><div>Omar Haddad</div>
+    </div>
+    <h3>Block (US)</h3><p>Everything aligned left. Common for US, Canada and international companies.</p>
+  </div>
+</div>
+
+<h2>Right-to-left <span class="tag">AR · FA · UR · HE</span></h2>
+<div class="gdesc">Mirrored layouts with Arabic letter conventions (الموضوع، تحية طيبة وبعد، وتفضلوا بقبول…).</div>
+<div class="row rtl-row ar" data-multiselect>
+  <div class="opt selected" data-choice="ar-formal" onclick="toggleSelect(this)">
+    <div class="pg">
+      <div class="flexb blk"><div><b>عمر حداد</b><br>ميونخ، ألمانيا<br>omar.haddad@mail.com</div><div class="l">التاريخ: ١٢ نوفمبر ٢٠٢٦</div></div>
+      <div class="blk"><b>السادة شركة بيرسونيو المحترمين</b><br>قسم الموارد البشرية · ميونخ</div>
+      <div class="subj" style="text-align:center">الموضوع: طلب توظيف لوظيفة مهندس واجهات أمامية</div>
+      <div class="p">تحية طيبة وبعد،</div>
+      <div class="p">يسعدني أن أتقدم بطلبي لشغل وظيفة مهندس واجهات أمامية لديكم، إذ يمثّل بناء واجهات سهلة الاستخدام محور عملي…</div>
+      <div class="p">أعمل حالياً في ستوديو نورث على تطوير واجهات بتقنيتي React وTypeScript بالتعاون مع فريق التصميم…</div>
+      <div class="p">وتفضلوا بقبول فائق الاحترام والتقدير،</div>
+      <div class="l" style="margin-top:6px"><div class="sig">عمر حداد</div><b>عمر حداد</b></div>
+      <div class="small" style="margin-top:6px">المرفقات: السيرة الذاتية، شهادة البكالوريوس</div>
+    </div>
+    <h3>رسمي عربي</h3><p>التاريخ يسار، المرسل يمين، الموضوع بالوسط، والتوقيع يسار تحت. الشكل المعتمد بالمراسلات الرسمية.</p>
+    <span class="def">DEFAULT · AR</span>
+  </div>
+  <div class="opt" data-choice="ar-classic" onclick="toggleSelect(this)">
+    <div class="pg">
+      <div class="blk"><b>عمر حداد</b><br>شارع ليوبولد ١٢، ميونخ<br>omar.haddad@mail.com · ‎+49 151 0000000</div>
+      <div class="l blk"><b>شركة بيرسونيو</b><br>السيدة آنا فيبر<br>شارع زايدل ٣، ميونخ</div>
+      <div>ميونخ، ١٢ نوفمبر ٢٠٢٦</div>
+      <div class="subj">الموضوع: طلب توظيف لوظيفة مهندس واجهات أمامية</div>
+      <div class="p">السيدة آنا فيبر المحترمة،</div>
+      <div class="p">يسعدني أن أتقدم بطلبي لشغل وظيفة مهندس واجهات أمامية لديكم، إذ يمثّل بناء واجهات سهلة الاستخدام محور عملي…</div>
+      <div class="p">أعمل حالياً في ستوديو نورث على تطوير واجهات بتقنيتي React وTypeScript…</div>
+      <div class="p">مع خالص التحية،</div><div class="sig">عمر حداد</div><div>عمر حداد</div>
+    </div>
+    <h3>كلاسيكي معكوس</h3><p>نفس "Classic" بس من اليمين لليسار: عنوانك فوق يمين، والشركة تحت يسار.</p>
+  </div>
+  <div class="opt" data-choice="ar-modern" onclick="toggleSelect(this)">
+    <div class="pg" style="padding:0">
+      <div style="background:#202329;color:#fff;padding:12px 15px 10px"><div style="font:700 10px 'IBM Plex Sans Arabic',sans-serif">عمر حداد</div><div style="font-size:4.8px;opacity:.8;margin-top:2px">مهندس واجهات أمامية · ميونخ · omar.haddad@mail.com</div></div>
+      <div style="padding:10px 15px">
+        <div class="flexb blk"><div><b>شركة بيرسونيو</b><br>السيدة آنا فيبر · ميونخ</div><div>١٢ نوفمبر ٢٠٢٦</div></div>
+        <div class="subj">الموضوع: طلب توظيف لوظيفة مهندس واجهات أمامية</div>
+        <div class="p">السيدة آنا فيبر المحترمة،</div>
+        <div class="p">يسعدني أن أتقدم بطلبي لشغل وظيفة مهندس واجهات أمامية لديكم…</div>
+        <div class="p">أعمل حالياً في ستوديو نورث على تطوير واجهات بتقنيتي React وTypeScript…</div>
+        <div class="p">مع خالص التحية،</div><div class="sig">عمر حداد</div><div>عمر حداد</div>
+      </div>
+    </div>
+    <h3>حديث بترويسة</h3><p>شريط الاسم فوق متل "Modern header"، معكوس للعربي.</p>
+  </div>
+</div>
+</body>
+</html>

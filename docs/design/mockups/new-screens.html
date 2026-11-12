@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New screens mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+Arabic:wght@700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f5ef; --surface:#fffdf9; --ink:#202329; --muted:#686b70; --soft:#d9d7d0;
+  --strong:#202329; --shadow:#202329; --field:#f7f5ef;
+  --yellow:#ffe45b; --green:#cde8c6; --purple:#c9bbfa; --blue:#bfdff0; --pink:#f6c9c0;
+  --on-accent:#202329; --sx:3px;
+  --f-head:'Space Grotesk',sans-serif; --f-body:'Inter',sans-serif; --f-mono:'IBM Plex Mono',monospace; --f-logo:'Noto Sans Arabic',sans-serif;
+}
+[data-theme="dark"]{ --bg:#15161a; --surface:#1e2026; --ink:#f1eee6; --muted:#9a9ca4; --soft:#363941; --strong:#d9d5ca; --shadow:#000; --field:#191a1f; }
+[dir="rtl"]{ --sx:-3px; --f-head:'Noto Sans Arabic',sans-serif; --f-body:'IBM Plex Sans Arabic',sans-serif; --f-mono:'IBM Plex Sans Arabic',sans-serif; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;min-height:100vh;transition:background .2s,color .2s}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.mono{font-family:var(--f-mono);font-weight:500;font-size:10px;color:var(--muted);letter-spacing:.02em}
+[dir="rtl"] .mono{font-size:11.5px;letter-spacing:0}
+.app{display:flex;min-height:100vh}
+aside{width:240px;flex-shrink:0;background:var(--surface);border-inline-end:1px solid var(--strong);padding:25px 20px 22px;display:flex;flex-direction:column;min-height:100vh}
+.logo{font-family:var(--f-logo);font-weight:700;font-size:27px;line-height:1.2;padding-inline-start:4px}
+.logo-sub{margin:10px 5px 0;font-size:12px}
+.ws{margin:48px 4px 14px}
+nav a{display:flex;align-items:center;gap:12px;height:46px;padding:0 14px;border-radius:7px;margin-bottom:12px;color:var(--ink);text-decoration:none;font-weight:500;border:1.5px solid transparent}
+nav a.active{background:var(--yellow);border-color:var(--strong);box-shadow:var(--sx) 3px 0 var(--shadow);font-weight:600;color:var(--on-accent)}
+.new{font-family:var(--f-mono);font-size:9px;border:1.2px solid currentColor;border-radius:5px;padding:1px 5px;margin-inline-start:auto;color:var(--muted)}
+nav a.active .new{color:var(--on-accent)}
+.privacy{margin-top:auto;background:var(--bg);border:1.5px solid var(--soft);border-radius:7px;padding:14px 12px}
+.privacy b{display:block;margin:12px 0 8px;font-size:13px;font-weight:600}
+.privacy p{color:var(--muted);font-size:12px;line-height:1.35}
+.foot{margin-top:24px}
+main{flex:1;padding:30px 40px 90px;min-width:0}
+.head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
+h1{font-family:var(--f-head);font-weight:700;font-size:38px;margin:12px 0 10px}
+.sub{color:var(--muted);font-size:15px}
+.head-tools{display:flex;gap:10px;align-items:center}
+.iconbtn{height:44px;min-width:44px;padding:0 12px;border:1.5px solid var(--strong);border-radius:7px;background:var(--surface);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font:600 13px var(--f-body)}
+.card{background:var(--surface);border:1.5px solid var(--strong);border-radius:7px;padding:20px 19px}
+.card.violet{background:var(--purple);color:#202329}
+.card.green{background:var(--green);color:#202329}
+.card-title{font-family:var(--f-head);font-weight:700;font-size:19px;margin:10px 0 4px}
+.card-desc{color:var(--muted);font-size:12.5px;line-height:1.45;margin-bottom:14px}
+label.l{display:block;font-weight:600;font-size:12px;margin:16px 0 8px}
+.row{display:flex;gap:10px;align-items:center}
+.field{flex:1;height:42px;background:var(--field);border:1.5px solid var(--soft);border-radius:7px;display:flex;align-items:center;gap:8px;padding:0 11px;font-size:12.5px;color:var(--ink);min-width:0}
+.field.sel{justify-content:space-between}
+.field svg{width:16px;height:16px;color:var(--muted)}
+.btn{height:42px;padding:0 14px;border:1.5px solid var(--strong);border-radius:7px;background:var(--surface);color:var(--ink);font:600 12.5px var(--f-body);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer}
+.btn svg{width:16px;height:16px}
+.btn.primary{background:var(--yellow);color:var(--on-accent);box-shadow:var(--sx) 3px 0 var(--shadow)}
+.btn.full{width:100%;justify-content:space-between}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border:1.5px solid #202329;border-radius:6px;font-size:11.5px;font-weight:500;color:#202329;white-space:nowrap}
+.chip svg{width:13px;height:13px}
+.chip.g{background:var(--green)} .chip.p{background:var(--purple)} .chip.y{background:var(--yellow)} .chip.b{background:var(--blue)} .chip.k{background:var(--pink)}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;height:36px;background:var(--field);border:1.5px solid var(--soft);border-radius:7px;font:500 12.5px var(--f-body);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button.on{background:var(--yellow);border-color:var(--strong);color:var(--on-accent);font-weight:600}
+.seg button.plus{flex:0 0 40px;border-style:dashed;color:var(--muted)}
+.seg svg{width:14px;height:14px}
+.screen{display:none} .screen.show{display:block}
+.app.screen.show{display:flex}
+
+/* ---------- CV studio ---------- */
+.studio{display:grid;grid-template-columns:358px minmax(0,1fr);gap:24px;align-items:start}
+.left{display:flex;flex-direction:column;gap:20px}
+.tpl{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tpl-opt{border:1.5px solid var(--soft);border-radius:7px;padding:10px;background:var(--field);cursor:pointer;color:var(--ink)}
+.tpl-opt.on{background:var(--yellow);border-color:var(--strong);box-shadow:var(--sx) 3px 0 var(--shadow);color:#202329}
+.tpl-opt b{display:block;font-size:12.5px;margin:9px 0 3px}
+.tpl-opt span{font-size:11px;line-height:1.35;opacity:.75;display:block}
+.thumb{height:62px;border:1.2px solid #202329;border-radius:4px;background:#fff;padding:6px;display:flex;gap:4px}
+.thumb i{display:block;height:3px;background:#c9c7bf;border-radius:2px;margin-bottom:4px}
+.thumb .col1{flex:1}
+.thumb .side{width:30%;background:#28406b;border-radius:2px}
+.panel{background:var(--surface);border:1.5px solid var(--strong);border-radius:7px;padding:16px 18px 18px}
+.panel-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.tab{height:36px;padding:0 16px;border-radius:7px;border:1.5px solid var(--soft);background:var(--field);font:500 12.5px var(--f-body);color:var(--ink);display:flex;align-items:center;gap:7px}
+.tab.on{background:var(--yellow);border-color:var(--strong);font-weight:600;color:#202329}
+.tab .count{font-family:'IBM Plex Mono',monospace;font-size:10px;background:#202329;color:#ffe45b;border-radius:4px;padding:1px 5px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+.paperwrap{background:var(--field);border:1.5px solid var(--soft);border-radius:7px;padding:18px;display:flex;justify-content:center}
+.paper{width:100%;max-width:440px;aspect-ratio:1/1.414;background:#fff;color:#1f2228;box-shadow:0 2px 0 #d0cec6,0 8px 24px rgba(0,0,0,.08);padding:28px 30px;font-family:'Inter',sans-serif;direction:ltr;text-align:left;overflow:hidden}
+.paper h4{font:700 19px 'Space Grotesk',sans-serif;letter-spacing:-.01em}
+.paper .ct{font-size:8.5px;color:#666;margin:4px 0 12px}
+.paper h5{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid #222;padding-bottom:3px;margin:12px 0 6px}
+.paper p,.paper li{font-size:8.6px;line-height:1.5;color:#333}
+.paper ul{padding-left:12px}
+.paper .job{display:flex;justify-content:space-between;font-size:8.8px;font-weight:600;margin-top:5px}
+.paper .job span{font-weight:400;color:#777}
+.hl{background:#fff1a8;box-shadow:0 0 0 2px #fff1a8;border-radius:1px}
+.skills{display:flex;flex-wrap:wrap;gap:4px}
+.skills em{font-style:normal;font-size:8px;border:1px solid #bbb;border-radius:3px;padding:1px 5px}
+.skills em.up{border-color:#202329;background:#fff1a8}
+.changes{display:flex;flex-direction:column;gap:10px}
+.chg{border:1.5px solid var(--soft);border-radius:7px;padding:11px 12px;background:var(--field)}
+.chg-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;margin-bottom:6px}
+.chg-h .tick{margin-inline-start:auto;width:18px;height:18px;border:1.5px solid var(--strong);border-radius:4px;background:var(--yellow);display:flex;align-items:center;justify-content:center;color:#202329}
+.chg-h .tick svg{width:12px;height:12px;stroke-width:2.6}
+.chg-h .tick.off{background:transparent}
+.old{font-size:11.5px;color:var(--muted);text-decoration:line-through;line-height:1.4;direction:ltr;text-align:left}
+.newt{font-size:11.5px;line-height:1.4;margin-top:4px;direction:ltr;text-align:left}
+.src{font-family:var(--f-mono);font-size:9.5px;color:var(--muted);margin-top:6px}
+.panel-foot{display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:14px;border-top:1.5px solid var(--soft)}
+.panel-foot .sp{flex:1}
+
+/* ---------- teach design ---------- */
+.steps{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;height:36px;padding:0 13px;border:1.5px solid var(--soft);border-radius:7px;background:var(--surface);font-size:12.5px;font-weight:500;color:var(--muted)}
+.step .num{font-family:'IBM Plex Mono',monospace;font-size:10.5px}
+.step.done{color:var(--ink);border-color:var(--strong)}
+.step.done .num{display:none}
+.step.now{background:var(--yellow);border-color:var(--strong);color:#202329;font-weight:600;box-shadow:var(--sx) 3px 0 var(--shadow)}
+.step svg{width:14px;height:14px}
+.compare{display:grid;grid-template-columns:1fr 1fr 330px;gap:20px;align-items:start}
+.cmp-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cmp-label b{font-size:13px;font-weight:600}
+.pp{aspect-ratio:1/1.414;background:#fff;border:1.5px solid var(--strong);border-radius:4px;display:flex;overflow:hidden;direction:ltr;text-align:left;color:#1f2228;font-family:'Inter',sans-serif}
+.pp .sd{width:34%;padding:20px 12px;color:#fff}
+.pp .mn{flex:1;padding:20px 16px}
+.pp .ph{width:46px;height:46px;border-radius:50%;background:#d9dde6;border:2px solid #fff;margin-bottom:10px}
+.pp .sd h6{font-size:7px;letter-spacing:.14em;margin:12px 0 5px;opacity:.85}
+.pp .sd p{font-size:6.8px;line-height:1.55;opacity:.9}
+.pp .mn h4{font-size:15px;font-weight:700;line-height:1.1}
+.pp .mn .rl{font-size:7.5px;margin:3px 0 12px}
+.pp .mn h6{font-size:7px;letter-spacing:.14em;border-bottom:1.5px solid;padding-bottom:2px;margin:10px 0 5px}
+.pp .mn p{font-size:6.8px;line-height:1.55;color:#444}
+.pp .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.3);margin:3px 0 6px}
+.pp .bar i{display:block;height:100%;border-radius:2px;background:#fff}
+.diffnote{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.fb{display:flex;flex-direction:column;gap:16px}
+textarea.ta{width:100%;height:96px;resize:none;background:var(--field);border:1.5px solid var(--soft);border-radius:7px;padding:10px 11px;font:13px var(--f-body);color:var(--ink);line-height:1.4}
+.microw{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
+.microw span{font-size:11px;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.list div{display:flex;gap:8px;font-size:12px;line-height:1.35;align-items:flex-start}
+.list svg{width:14px;height:14px;margin-top:1px}
+
+/* ---------- onboarding ---------- */
+.onb{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:34px 24px 100px;position:relative}
+.onb-top{width:100%;max-width:1040px;display:flex;justify-content:space-between;align-items:center;margin-bottom:34px}
+.onb-hero{text-align:center;margin-bottom:28px}
+.onb-hero h1{font-size:40px}
+.onb-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;width:100%;max-width:1040px}
+.onb .card{display:flex;flex-direction:column;min-height:330px}
+.onb .card.now{box-shadow:var(--sx) 4px 0 var(--shadow)}
+.bigno{font:700 34px 'Space Grotesk',sans-serif;line-height:1}
+.drop{flex:1;border:1.5px dashed var(--muted);border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:16px;margin-top:6px;background:var(--field)}
+.drop svg{width:28px;height:28px;color:var(--muted)}
+.drop b{font-size:13px}
+.drop span{font-size:11.5px;color:var(--muted)}
+.onb-foot{width:100%;max-width:1040px;display:flex;justify-content:space-between;align-items:center;margin-top:26px}
+.mt-auto{margin-top:auto}
+.done-badge{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;margin-top:auto;padding-top:14px}
+
+/* ---------- empty dashboard ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:22px}
+.stat{background:var(--surface);border:1.5px solid var(--strong);border-radius:7px;padding:16px 18px;box-shadow:var(--sx) 3px 0 var(--shadow)}
+.stat.y{background:var(--yellow);color:#202329}
+.stat .t{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600}
+.stat .t .mono{font-size:10.5px}
+.stat .v{font:700 40px 'Space Grotesk',sans-serif;margin:8px 0 6px}
+.stat .s{font-size:12px;opacity:.7}
+.empty-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
+.empty-hero{background:var(--surface);border:1.5px solid var(--strong);border-radius:7px;padding:34px;position:relative;overflow:hidden}
+.empty-hero h2{font:700 28px var(--f-head);margin:10px 0 8px}
+.empty-hero p.d{color:var(--muted);font-size:14px;line-height:1.5;max-width:460px}
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0 26px}
+.flow div{border:1.5px solid var(--soft);border-radius:7px;padding:12px;background:var(--field)}
+.flow b{display:block;font-size:12.5px;margin:8px 0 3px}
+.flow span{font-size:11.5px;color:var(--muted);line-height:1.35;display:block}
+.flow .mono{font-size:10px}
+.check{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.ck{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1.5px solid var(--soft);border-radius:7px;background:var(--field);font-size:12.5px}
+.ck .box{width:20px;height:20px;border:1.5px solid var(--strong);border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ck .box.y{background:var(--green);color:#202329}
+.ck .box svg{width:12px;height:12px;stroke-width:2.6}
+.ck a{margin-inline-start:auto;font-weight:600;color:var(--ink);font-size:12px}
+.ck.done span{color:var(--muted);text-decoration:line-through}
+
+/* ---------- switcher ---------- */
+.switcher{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:#202329;padding:6px;border-radius:10px;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.25);direction:ltr}
+.switcher button{height:34px;padding:0 13px;border-radius:6px;border:0;background:transparent;color:#d8d5cc;font:500 12px 'Inter',sans-serif;cursor:pointer;white-space:nowrap}
+.switcher button.on{background:#ffe45b;color:#202329;font-weight:600}
+.switcher .sep{width:1px;background:#444;margin:4px 2px}
+</style>
+</head>
+<body>
+
+<!-- ======================= shared sidebar template ======================= -->
+<template id="sidebar">
+<aside>
+  <div class="logo">منصة تتبع</div>
+  <div class="mono logo-sub" data-i="local">Local · private</div>
+  <div class="mono ws" data-i="workspace">WORKSPACE</div>
+  <nav>
+    <a href="#" data-nav="dash"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span data-i="nav_dash">Dashboard</span></a>
+    <a href="#" data-nav="cv"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><circle cx="12" cy="11" r="2.5"/><path d="M8 18a4 4 0 0 1 8 0"/></svg><span data-i="nav_cv">CV Studio</span><span class="new" data-i="new">NEW</span></a>
+    <a href="#" data-nav="cl"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/></svg><span data-i="nav_cl">Cover Letter</span></a>
+    <a href="#" data-nav="ref"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16a3 3 0 0 1 6 0M14 10h4M14 14h4"/></svg><span data-i="nav_ref">Reference</span></a>
+    <a href="#" data-nav="mail"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg><span data-i="nav_mail">Email Status</span></a>
+    <a href="#" data-nav="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-i="nav_profile">Profile</span></a>
+    <a href="#" data-nav="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span data-i="nav_settings">Settings</span></a>
+  </nav>
+  <div class="privacy">
+    <svg viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+    <b data-i="priv_t">Yours. Not the cloud.</b>
+    <p data-i="priv_1">Runs on your laptop.</p>
+    <p data-i="priv_2">No account required.</p>
+  </div>
+  <div class="mono foot" data-i="foot">AI requests share text only.</div>
+</aside>
+</template>
+
+<template id="tools">
+  <div class="head-tools">
+    <button class="iconbtn langBtn" title="Language"><span class="langLbl">ع</span></button>
+    <button class="iconbtn themeBtn" title="Theme"><svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></button>
+  </div>
+</template>
+
+<!-- ======================= 1. CV STUDIO ======================= -->
+<div class="app screen show" id="s-cv" data-active="cv">
+  <div class="sb"></div>
+  <main>
+    <div class="head">
+      <div>
+        <div class="mono" style="font-size:11px" data-i="cv_crumb">DOCUMENT STUDIO / CV</div>
+        <h1 data-i="cv_title">CV Studio</h1>
+        <div class="sub" data-i="cv_sub">Same facts. A sharper fit for every job.</div>
+      </div>
+      <div class="tools"></div>
+    </div>
+
+    <div class="studio">
+      <div class="left">
+        <section class="card">
+          <div class="mono" data-i="cv_s1">01 / PICK THE JOB</div>
+          <label class="l" data-i="application">Application</label>
+          <div class="field sel"><span>Personio · Frontend Engineer</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+          <label class="l" data-i="language">Language</label>
+          <div class="seg"><button class="on">English</button><button>العربية</button><button>Deutsch</button><button class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+        </section>
+
+        <section class="card">
+          <div class="mono" data-i="cv_s2">02 / CHOOSE THE LOOK</div>
+          <div class="tpl" style="margin-top:14px">
+            <div class="tpl-opt on" data-tpl="ats">
+              <div class="thumb"><div class="col1"><i style="width:60%;height:5px;background:#202329"></i><i></i><i style="width:80%"></i><i></i><i style="width:70%"></i><i></i></div></div>
+              <b data-i="tpl_ats">ATS template</b><span data-i="tpl_ats_d">Clean, one column. Passes company filters.</span>
+            </div>
+            <div class="tpl-opt" data-tpl="mine">
+              <div class="thumb"><div class="side"></div><div class="col1"><i style="width:60%;height:5px;background:#28406b"></i><i></i><i style="width:80%"></i><i></i><i style="width:70%"></i></div></div>
+              <b data-i="tpl_mine">My design</b><span data-i="tpl_mine_d">Recreated from your PDF. <u>Re-check</u></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card green" style="padding:16px 19px">
+          <div style="font-weight:600;font-size:15px" data-i="grounded">✓  Grounded in your CV</div>
+          <div style="font-size:12px;margin-top:8px;line-height:1.45" data-i="grounded_d">Nothing is added. Your facts are only reordered, trimmed and reworded for this job.</div>
+        </section>
+
+        <section class="card violet">
+          <div style="font-weight:600;font-size:12px" data-i="focus">Anything to highlight? <span style="font-weight:400;opacity:.7">(optional)</span></div>
+          <div class="row" style="margin:10px 0 14px">
+            <div class="field" style="background:#fffdf9;border-color:#202329;color:#202329" data-i="focus_ph">Lead with my accessibility work</div>
+            <button class="btn" style="height:42px;width:44px;padding:0;justify-content:center;background:#fffdf9;color:#202329;border-color:#202329"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 19v3"/></svg></button>
+          </div>
+          <button class="btn primary full"><span data-i="tailor">Tailor my CV</span><span>→</span></button>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="panel-top">
+          <span class="tab on" data-i="preview">Preview</span>
+          <span class="tab"><span data-i="changed">What changed</span> <span class="count">5</span></span>
+          <span style="flex:1"></span>
+          <span class="mono" data-i="draft">✓ DRAFT SAVED</span>
+        </div>
+        <div class="split">
+          <div class="paperwrap">
+            <div class="paper">
+              <h4>Omar Haddad</h4>
+              <div class="ct">Munich, Germany · omar.haddad@mail.com · +49 151 0000000 · github.com/ohaddad</div>
+              <h5>Summary</h5>
+              <p><span class="hl">Frontend engineer with 4 years building accessible React and TypeScript interfaces for HR and productivity tools. Raised WCAG compliance from 61% to 96% across a design system used by 12 teams.</span></p>
+              <h5>Skills</h5>
+              <div class="skills"><em class="up">React</em><em class="up">TypeScript</em><em class="up">Accessibility (WCAG 2.2)</em><em class="up">Playwright</em><em>Design systems</em><em>Node.js</em><em>GraphQL</em><em>Figma</em></div>
+              <h5>Experience</h5>
+              <div class="job">Frontend Engineer — Studio North <span>2022 – now</span></div>
+              <ul><li><span class="hl">Rebuilt keyboard navigation across 40+ components; cut accessibility bugs by 70%.</span></li><li>Built a shared component library in React and TypeScript adopted by 12 product teams.</li><li>Added Playwright end-to-end tests covering all checkout flows.</li></ul>
+              <div class="job">Junior Developer — Brightlane <span>2020 – 2022</span></div>
+              <ul><li>Shipped internal dashboards for HR operations used daily by 300 staff.</li><li>Migrated a legacy jQuery app to React with zero downtime.</li></ul>
+              <h5>Education</h5>
+              <div class="job">M.Sc. Informatics — TU Munich <span>2020</span></div>
+            </div>
+          </div>
+          <div class="changes">
+            <div class="chg">
+              <div class="chg-h"><span data-i="c1">Summary rewritten</span><span class="tick"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span></div>
+              <div class="old">Software developer with experience in web technologies and teamwork.</div>
+              <div class="newt">Frontend engineer with 4 years building accessible React and TypeScript interfaces…</div>
+              <div class="src" data-i="c1s">FROM: your CV · experience + skills</div>
+            </div>
+            <div class="chg">
+              <div class="chg-h"><span data-i="c2">Skills reordered</span><span class="tick"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span></div>
+              <div class="newt">React, TypeScript, Accessibility, Playwright <span style="color:var(--muted)" data-i="c2b">moved to the top · matches 4 of 4 job requirements</span></div>
+            </div>
+            <div class="chg">
+              <div class="chg-h"><span data-i="c3">Bullet reworded</span><span class="tick"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span></div>
+              <div class="old">Worked on keyboard navigation improvements.</div>
+              <div class="newt">Rebuilt keyboard navigation across 40+ components; cut accessibility bugs by 70%.</div>
+              <div class="src" data-i="c3s">NUMBERS FROM: your CV, line 14</div>
+            </div>
+            <div class="chg">
+              <div class="chg-h"><span data-i="c4">Left out for this job</span><span class="tick off"></span></div>
+              <div class="newt" style="color:var(--muted)">Photoshop, Event volunteering 2018</div>
+            </div>
+            <div class="chg" style="background:var(--pink);border-color:#202329;color:#202329">
+              <div class="chg-h" data-i="c5">Not in your CV — not added</div>
+              <div class="newt" style="color:#202329" data-i="c5d">The job asks for "Vue.js". You don't list it, so it stays out. Add it to your master CV if it's true.</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn ghost" data-i="reset">Undo all</button>
+          <span class="sp"></span>
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.2 10H20a2 2 0 0 1 1.9 2.5l-1.5 6A2 2 0 0 1 18.5 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.7.9l.8 1.2a2 2 0 0 0 1.7.9H18a2 2 0 0 1 2 2v2"/></svg><span data-i="openf">Open folder</span></button>
+          <button class="btn primary"><span data-i="savepdf">Save as PDF ↓</span></button>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- ======================= 2. TEACH YOUR DESIGN ======================= -->
+<div class="app screen" id="s-teach" data-active="cv">
+  <div class="sb"></div>
+  <main>
+    <div class="head">
+      <div>
+        <div class="mono" style="font-size:11px" data-i="t_crumb">CV STUDIO / MY DESIGN</div>
+        <h1 data-i="t_title">Teach it your design</h1>
+        <div class="sub" data-i="t_sub">Upload your PDF once. We rebuild the layout, you approve it.</div>
+      </div>
+      <div class="tools"></div>
+    </div>
+    <div class="steps">
+      <span class="step done"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-i="st1">Upload PDF</span></span>
+      <span class="step done"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-i="st2">AI reads the layout</span></span>
+      <span class="step now"><span class="num">03</span><span data-i="st3">Compare · round 1 of 3</span></span>
+      <span class="step"><span class="num">04</span><span data-i="st4">Save template</span></span>
+    </div>
+    <div class="compare">
+      <div>
+        <div class="cmp-label"><b data-i="orig">Your original</b><span class="mono">Omar_Haddad_CV.pdf</span></div>
+        <div class="pp">
+          <div class="sd" style="background:#1f3a66">
+            <div class="ph"></div>
+            <h6>CONTACT</h6><p>Munich, Germany<br>omar.haddad@mail.com<br>+49 151 0000000</p>
+            <h6>SKILLS</h6><p>React</p><div class="bar"><i style="width:90%"></i></div><p>TypeScript</p><div class="bar"><i style="width:85%"></i></div><p>Accessibility</p><div class="bar"><i style="width:80%"></i></div>
+            <h6>LANGUAGES</h6><p>Arabic · English · German</p>
+          </div>
+          <div class="mn">
+            <h4 style="color:#1f3a66;font-family:'Space Grotesk',sans-serif;font-weight:700">OMAR<br>HADDAD</h4><div class="rl">Frontend Engineer</div>
+            <h6 style="color:#1f3a66">PROFILE</h6><p>Software developer with experience in web technologies, teamwork and building user interfaces for internal tools.</p>
+            <h6 style="color:#1f3a66">EXPERIENCE</h6><p><b>Studio North</b> · 2022 – now<br>Worked on keyboard navigation improvements. Built shared components. Added end-to-end tests.</p>
+            <p style="margin-top:6px"><b>Brightlane</b> · 2020 – 2022<br>Internal dashboards for HR operations.</p>
+            <h6 style="color:#1f3a66">EDUCATION</h6><p>M.Sc. Informatics, TU Munich</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="cmp-label"><b data-i="recr">Our recreation</b><span class="chip y" data-i="editable">Editable</span></div>
+        <div class="pp">
+          <div class="sd" style="background:#2a4775">
+            <div class="ph"></div>
+            <h6>CONTACT</h6><p>Munich, Germany<br>omar.haddad@mail.com<br>+49 151 0000000</p>
+            <h6>SKILLS</h6><p>React</p><div class="bar"><i style="width:90%"></i></div><p>TypeScript</p><div class="bar"><i style="width:85%"></i></div><p>Accessibility</p><div class="bar"><i style="width:80%"></i></div>
+            <h6>LANGUAGES</h6><p>Arabic · English · German</p>
+          </div>
+          <div class="mn">
+            <h4 style="color:#2a4775;font-family:Inter,sans-serif;font-weight:600">OMAR<br>HADDAD</h4><div class="rl">Frontend Engineer</div>
+            <h6 style="color:#2a4775">PROFILE</h6><p>Software developer with experience in web technologies, teamwork and building user interfaces for internal tools.</p>
+            <h6 style="color:#2a4775">EXPERIENCE</h6><p><b>Studio North</b> · 2022 – now<br>Worked on keyboard navigation improvements. Built shared components. Added end-to-end tests.</p>
+            <p style="margin-top:6px"><b>Brightlane</b> · 2020 – 2022<br>Internal dashboards for HR operations.</p>
+            <h6 style="color:#2a4775">EDUCATION</h6><p>M.Sc. Informatics, TU Munich</p>
+          </div>
+        </div>
+        <div class="diffnote"><span class="chip k" data-i="d1">Name font: closest match</span><span class="chip b" data-i="d2">Photo kept</span></div>
+      </div>
+      <div class="fb">
+        <section class="card">
+          <div class="mono" data-i="t_s1">WHAT'S DIFFERENT?</div>
+          <div class="card-desc" style="margin-top:8px" data-i="t_s1d">Describe it in your words, or by voice. The AI fixes the template and shows a new round.</div>
+          <textarea class="ta" data-i="t_ta">The name should be bolder, and the blue is a bit darker in mine.</textarea>
+          <div class="microw"><span data-i="t_rounds">2 rounds left</span>
+            <div class="row"><button class="btn" style="width:44px;padding:0;justify-content:center"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 19v3"/></svg></button><button class="btn" data-i="fix">Fix it</button></div>
+          </div>
+        </section>
+        <section class="card green" style="padding:16px 19px">
+          <div class="mono" style="color:#3c5a3a" data-i="t_found">WE FOUND</div>
+          <div class="list">
+            <div><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-i="f1">Two columns, sidebar on the left</span></div>
+            <div><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-i="f2">5 sections in your order</span></div>
+            <div><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-i="f3">Photo, skill bars, colours</span></div>
+          </div>
+        </section>
+        <button class="btn primary full"><span data-i="looks">Looks right · save template</span><span>→</span></button>
+        <div class="mono" style="line-height:1.5" data-i="t_note">ONLY THE TEXT CHANGES PER JOB. THE LAYOUT STAYS YOURS.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ======================= 3. FIRST RUN ======================= -->
+<div class="screen" id="s-onb">
+  <div class="onb">
+    <div class="onb-top">
+      <div><div class="logo" style="padding:0">منصة تتبع</div><div class="mono" style="margin-top:6px" data-i="local">Local · private</div></div>
+      <div class="tools"></div>
+    </div>
+    <div class="onb-hero">
+      <div class="mono" style="font-size:11px" data-i="o_crumb">WELCOME · 3 QUICK STEPS</div>
+      <h1 data-i="o_title">Let's set up your job search</h1>
+      <div class="sub" data-i="o_sub">Everything stays on this laptop. Takes about two minutes.</div>
+    </div>
+    <div class="onb-cards">
+      <section class="card">
+        <div class="bigno">01</div>
+        <div class="card-title" data-i="o1">Your language</div>
+        <div class="card-desc" data-i="o1d">For the app. You can write CVs and letters in any language later.</div>
+        <div class="seg"><button class="on">English</button><button>العربية</button></div>
+        <label class="l" data-i="theme">Theme</label>
+        <div class="seg"><button class="on" data-i="light">Light</button><button data-i="dark">Dark</button></div>
+        <div class="done-badge"><span class="chip g"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-i="done">Done</span></span></div>
+      </section>
+      <section class="card now">
+        <div class="bigno">02</div>
+        <div class="card-title" data-i="o2">Connect Groq</div>
+        <div class="card-desc" data-i="o2d">One free key powers voice, job analysis and writing.</div>
+        <label class="l" style="margin-top:0" data-i="groq_l">Groq API key</label>
+        <div class="field" style="flex:none;font-family:'IBM Plex Mono',monospace;font-size:12px;direction:ltr"><span class="ph" style="color:var(--muted)">gsk_…</span></div>
+        <div class="row" style="margin-top:10px"><button class="btn primary" style="flex:1;justify-content:center" data-i="connect">Connect</button></div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5"><span data-i="howkey">How to get one: sign in at</span> <b style="color:var(--ink)">console.groq.com</b> → API Keys → Create.</div>
+        <div class="mono mt-auto" style="padding-top:12px" data-i="o2n">YOU CAN ADD ANOTHER PROVIDER IN SETTINGS</div>
+      </section>
+      <section class="card">
+        <div class="bigno">03</div>
+        <div class="card-title" data-i="o3">Your CV</div>
+        <div class="card-desc" data-i="o3d">The only source of facts for every CV and letter. Nothing is invented.</div>
+        <div class="drop"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><b data-i="dropb">Drop your CV here</b><span data-i="drops">PDF or Word · Arabic or English</span></div>
+        <button class="btn ghost" style="margin-top:8px;align-self:center" data-i="skip">Skip for now</button>
+      </section>
+    </div>
+    <div class="onb-foot">
+      <span class="mono" data-i="o_priv">KEYS AND FILES NEVER LEAVE THIS DEVICE, EXCEPT THE TEXT SENT TO YOUR AI PROVIDER.</span>
+      <button class="btn primary"><span data-i="start">Open my dashboard</span> →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= 4. EMPTY DASHBOARD ======================= -->
+<div class="app screen" id="s-empty" data-active="dash">
+  <div class="sb"></div>
+  <main>
+    <div class="head">
+      <div>
+        <div class="mono" style="font-size:11px" data-i="e_crumb">YOUR JOB SEARCH, IN FOCUS</div>
+        <h1 data-i="e_title">Dashboard</h1>
+        <div class="sub" data-i="e_sub">A little structure. A lot of possibility.</div>
+      </div>
+      <div class="tools"></div>
+    </div>
+    <div class="stats">
+      <div class="stat y"><div class="t"><span class="mono" style="color:#5b5a4e">01</span><span data-i="st_total">Total</span></div><div class="v">0</div><div class="s" data-i="st_total_s">Your story starts here</div></div>
+      <div class="stat"><div class="t"><span class="mono">02</span><span data-i="st_int">Interviewing</span></div><div class="v" style="opacity:.35">0</div><div class="s" data-i="st_dash">—</div></div>
+      <div class="stat"><div class="t"><span class="mono">03</span><span data-i="st_off">Offers</span></div><div class="v" style="opacity:.35">0</div><div class="s" data-i="st_dash">—</div></div>
+      <div class="stat"><div class="t"><span class="mono">04</span><span data-i="st_rej">Rejections</span></div><div class="v" style="opacity:.35">0</div><div class="s" data-i="st_dash">—</div></div>
+    </div>
+    <div class="empty-grid">
+      <section class="empty-hero">
+        <div class="mono" data-i="e_k">NO APPLICATIONS YET</div>
+        <h2 data-i="e_h">Paste your first job posting</h2>
+        <p class="d" data-i="e_d">Copy the whole job page, paste it in, and the AI fills in company, role, deadline and requirements. You check it, then save.</p>
+        <div class="flow">
+          <div><span class="mono">01</span><b data-i="fl1">Paste the posting</b><span data-i="fl1d">Text, or speak it.</span></div>
+          <div><span class="mono">02</span><b data-i="fl2">Review the details</b><span data-i="fl2d">AI fills, you confirm.</span></div>
+          <div><span class="mono">03</span><b data-i="fl3">Tailor CV &amp; letter</b><span data-i="fl3d">Saved in its own folder.</span></div>
+        </div>
+        <div class="row"><button class="btn primary"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i="add">Add application</span></button><button class="btn"><span data-i="import">Import from a spreadsheet</span></button></div>
+      </section>
+      <section class="card">
+        <div class="mono" data-i="e_s">SETUP · 1 OF 4 DONE</div>
+        <div class="card-title" data-i="e_st">Finish setting up</div>
+        <div class="check">
+          <div class="ck done"><span class="box y"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span data-i="ck1">Connect Groq</span></div>
+          <div class="ck"><span class="box"></span><span data-i="ck2">Upload your CV</span><a href="#" data-i="go">Go</a></div>
+          <div class="ck"><span class="box"></span><span data-i="ck3">Add your profile &amp; signature</span><a href="#" data-i="go">Go</a></div>
+          <div class="ck"><span class="box"></span><span data-i="ck4">Save default referees</span><a href="#" data-i="go">Go</a></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="switcher">
+  <button class="on" data-s="s-cv">CV Studio</button>
+  <button data-s="s-teach">Teach your design</button>
+  <button data-s="s-onb">First run</button>
+  <button data-s="s-empty">Empty dashboard</button>
+</div>
+
+<script>
+// mount shared sidebar & tools
+document.querySelectorAll('.app').forEach(a=>{
+  const sb=document.getElementById('sidebar').content.cloneNode(true);
+  sb.querySelectorAll('[data-nav]').forEach(n=>{if(n.dataset.nav===a.dataset.active)n.classList.add('active')});
+  a.querySelector('.sb').replaceWith(sb);
+});
+document.querySelectorAll('.tools').forEach(t=>t.replaceWith(document.getElementById('tools').content.cloneNode(true)));
+
+const AR={local:"محلي · خاص",workspace:"مساحة العمل",nav_dash:"لوحة التحكم",nav_cv:"استوديو السيرة",new:"جديد",nav_cl:"رسالة التقديم",nav_ref:"المراجع",nav_mail:"حالة الإيميل",nav_profile:"الملف الشخصي",nav_settings:"الإعدادات",priv_t:"ملكك. مش بالسحابة.",priv_1:"يشتغل على جهازك.",priv_2:"بدون حساب.",foot:"طلبات الذكاء الاصطناعي ترسل النص فقط.",
+cv_crumb:"استوديو المستندات / السيرة الذاتية",cv_title:"استوديو السيرة",cv_sub:"نفس المعلومات. ملاءمة أدق لكل وظيفة.",cv_s1:"01 / اختر الوظيفة",application:"الطلب",language:"اللغة",cv_s2:"02 / اختر الشكل",tpl_ats:"قالب ATS",tpl_ats_d:"نظيف، عمود واحد. يمر من فلترة الشركات.",tpl_mine:"تصميمي",tpl_mine_d:"منسوخ من ملفك PDF. إعادة فحص",grounded:"✓  مبنية على سيرتك",grounded_d:"ما في إضافة. معلوماتك بس تترتب وتختصر وتنصاغ لهالوظيفة.",focus:"شي بدك تبرزه؟ (اختياري)",focus_ph:"ابدأ بخبرتي بإمكانية الوصول",tailor:"خصّص سيرتي",preview:"معاينة",changed:"شو تغيّر",draft:"✓ المسودة محفوظة",c1:"الملخص انكتب من جديد",c1s:"المصدر: سيرتك · الخبرة + المهارات",c2:"المهارات ترتبت",c2b:"طلعت لفوق · بتطابق 4 من 4 متطلبات",c3:"نقطة انصاغت",c3s:"الأرقام من: سيرتك، السطر 14",c4:"انشالت لهالوظيفة",c5:"مو موجود بسيرتك — ما انضاف",c5d:"الوظيفة بتطلب \"Vue.js\" وإنت ما ذكرتها، فما انضافت. ضيفها لسيرتك الأساسية إذا صحيحة.",reset:"تراجع عن الكل",openf:"افتح المجلد",savepdf:"حفظ PDF ↓",
+t_crumb:"استوديو السيرة / تصميمي",t_title:"علّمه تصميمك",t_sub:"ارفع ملف PDF مرة وحدة. منعيد بناء التصميم وإنت بتوافق.",st1:"رفع PDF",st2:"الذكاء الاصطناعي يقرأ التصميم",st3:"مقارنة · الجولة 1 من 3",st4:"حفظ القالب",orig:"الأصلي تبعك",recr:"نسختنا",editable:"قابل للتعديل",d1:"خط الاسم: أقرب خط",d2:"الصورة محفوظة",t_s1:"شو المختلف؟",t_s1d:"اوصفه بكلامك أو بصوتك، والذكاء الاصطناعي بيصلّح القالب وبيعرض جولة جديدة.",t_ta:"الاسم لازم يكون أعرض، والأزرق عندي أغمق شوي.",t_rounds:"باقي جولتين",fix:"صلّحه",t_found:"لقينا",f1:"عمودين، الشريط الجانبي عاليسار",f2:"5 أقسام بنفس ترتيبك",f3:"الصورة، أشرطة المهارات، الألوان",looks:"مظبوط · احفظ القالب",t_note:"بس النص بيتغيّر لكل وظيفة. التصميم بيضل تبعك.",
+o_crumb:"أهلاً · 3 خطوات سريعة",o_title:"خلينا نجهّز بحثك عن شغل",o_sub:"كل شي بيضل على هاللابتوب. بياخد دقيقتين تقريباً.",o1:"لغتك",o1d:"للبرنامج. فيك تكتب السيرة والرسائل بأي لغة بعدين.",theme:"الوضع",light:"فاتح",dark:"داكن",done:"تم",o2:"وصّل Groq",o2d:"مفتاح مجاني واحد بيشغّل الصوت والتحليل والكتابة.",groq_l:"مفتاح Groq",connect:"وصّل",howkey:"كيف تجيبه: سجّل دخول على",o2n:"فيك تضيف مزوّد تاني من الإعدادات",o3:"سيرتك الذاتية",o3d:"المصدر الوحيد للمعلومات بكل سيرة ورسالة. ما في شي مألّف.",dropb:"حط سيرتك هون",drops:"PDF أو Word · عربي أو إنجليزي",skip:"تخطّى هلق",o_priv:"المفاتيح والملفات ما بتطلع من الجهاز، إلا النص اللي بينبعت لمزوّد الذكاء الاصطناعي.",start:"افتح لوحتي",
+e_crumb:"بحثك عن شغل، بتركيز",e_title:"لوحة التحكم",e_sub:"شوية ترتيب. كتير احتمالات.",st_total:"المجموع",st_total_s:"قصتك بتبلّش هون",st_int:"مقابلات",st_off:"عروض",st_rej:"رفض",e_k:"لسا ما في طلبات",e_h:"الصق أول إعلان شغل",e_d:"انسخ صفحة الوظيفة كلها والصقها، والذكاء الاصطناعي بيعبّي الشركة والمسمى والموعد والمتطلبات. إنت بتراجع وبتحفظ.",fl1:"الصق الإعلان",fl1d:"نص، أو احكيه.",fl2:"راجع التفاصيل",fl2d:"الذكاء الاصطناعي بيعبّي، إنت بتأكد.",fl3:"خصّص السيرة والرسالة",fl3d:"بتنحفظ بمجلدها الخاص.",add:"إضافة طلب",import:"استيراد من جدول",e_s:"التجهيز · 1 من 4",e_st:"كمّل التجهيز",ck1:"وصّل Groq",ck2:"ارفع سيرتك",ck3:"ضيف ملفك وتوقيعك",ck4:"احفظ المراجع الافتراضية",go:"روح"};
+const EN={};document.querySelectorAll('[data-i]').forEach(e=>{if(!(e.dataset.i in EN))EN[e.dataset.i]=e.textContent});
+const html=document.documentElement;
+function setLang(l){html.lang=l;html.dir=l==='ar'?'rtl':'ltr';const d=l==='ar'?AR:EN;document.querySelectorAll('[data-i]').forEach(e=>{if(d[e.dataset.i]!=null)e.textContent=d[e.dataset.i]});document.querySelectorAll('.langLbl').forEach(x=>x.textContent=l==='ar'?'EN':'ع')}
+document.querySelectorAll('.langBtn').forEach(b=>b.onclick=()=>setLang(html.lang==='ar'?'en':'ar'));
+document.querySelectorAll('.themeBtn').forEach(b=>b.onclick=()=>{html.dataset.theme=html.dataset.theme==='dark'?'light':'dark'});
+document.querySelectorAll('.switcher button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.switcher button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('show',s.id===b.dataset.s));window.scrollTo(0,0)});
+document.querySelectorAll('.tpl-opt').forEach(o=>o.onclick=()=>{document.querySelectorAll('.tpl-opt').forEach(x=>x.classList.remove('on'));o.classList.add('on')});
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "brand": { "tagline": "Local · private" },
+  "nav": {
+    "workspace": "Workspace",
+    "dashboard": "Dashboard",
+    "cvStudio": "CV Studio",
+    "coverLetter": "Cover Letter",
+    "reference": "Reference",
+    "email": "Email Status",
+    "profile": "Profile",
+    "settings": "Settings",
+    "new": "New"
+  },
+  "privacy": {
+    "title": "Yours. Not the cloud.",
+    "line1": "Runs on your laptop.",
+    "line2": "No account required.",
+    "footer": "AI requests share text only."
+  },
+  "header": {
+    "toggleTheme": "Switch light / dark",
+    "toggleLanguage": "التبديل إلى العربية",
+    "savedOnDevice": "Saved on this device"
+  },
+  "pages": {
+    "dashboard": { "crumb": "Your job search, in focus", "title": "Dashboard", "sub": "A little structure. A lot of possibility." },
+    "cvStudio": { "crumb": "Document studio / CV", "title": "CV Studio", "sub": "Same facts. A sharper fit for every job." },
+    "coverLetter": { "crumb": "Document studio / Cover letter", "title": "Cover letter", "sub": "Your experience. Your voice. A stronger introduction." },
+    "reference": { "crumb": "Document studio / References", "title": "References", "sub": "Saved once. Ready for every application." },
+    "email": { "crumb": "Inbox / Status", "title": "Email status", "sub": "Paste a reply. We find the application and the new status." },
+    "profile": { "crumb": "You / Profile", "title": "Profile", "sub": "The details on every document you send." },
+    "settings": { "crumb": "Preferences / Settings", "title": "Settings", "sub": "Your keys. Your language. Your folders." }
+  },
+  "common": { "comingSoon": "This screen is being built." }
+}
