@@ -1,17 +1,29 @@
-import { HashRouter, Route, Routes } from 'react-router-dom'
+import { HashRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { PrefsProvider, usePrefs } from '@/lib/prefs'
+import { useSettings } from '@/lib/api'
 import { AppShell } from '@/components/layout/AppShell'
 import { PlaceholderView } from '@/views/PlaceholderView'
+import { SettingsView } from '@/views/settings/SettingsView'
+import { OnboardingView } from '@/views/OnboardingView'
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { refetchOnWindowFocus: false, retry: false } }
+  defaultOptions: { queries: { refetchOnWindowFocus: false, retry: false, staleTime: Infinity } }
 })
 
 function ThemedToaster() {
   const { resolvedTheme, prefs } = usePrefs()
   return <Toaster theme={resolvedTheme} dir={prefs.language === 'ar' ? 'rtl' : 'ltr'} position="bottom-right" />
+}
+
+/** Sends a first-time user to the welcome screen until they finish it. */
+function FirstRunGate() {
+  const { data: settings, isPending } = useSettings()
+  const location = useLocation()
+  if (isPending) return null
+  if (settings && !settings.onboarded && location.pathname !== '/welcome') return <Navigate to="/welcome" replace />
+  return <Outlet />
 }
 
 export default function App() {
@@ -20,14 +32,17 @@ export default function App() {
       <PrefsProvider>
         <HashRouter>
           <Routes>
-            <Route element={<AppShell />}>
-              <Route index element={<PlaceholderView page="dashboard" />} />
-              <Route path="cv" element={<PlaceholderView page="cvStudio" />} />
-              <Route path="cover-letter" element={<PlaceholderView page="coverLetter" />} />
-              <Route path="reference" element={<PlaceholderView page="reference" />} />
-              <Route path="email" element={<PlaceholderView page="email" />} />
-              <Route path="profile" element={<PlaceholderView page="profile" />} />
-              <Route path="settings" element={<PlaceholderView page="settings" />} />
+            <Route element={<FirstRunGate />}>
+              <Route path="welcome" element={<OnboardingView />} />
+              <Route element={<AppShell />}>
+                <Route index element={<PlaceholderView page="dashboard" />} />
+                <Route path="cv" element={<PlaceholderView page="cvStudio" />} />
+                <Route path="cover-letter" element={<PlaceholderView page="coverLetter" />} />
+                <Route path="reference" element={<PlaceholderView page="reference" />} />
+                <Route path="email" element={<PlaceholderView page="email" />} />
+                <Route path="profile" element={<PlaceholderView page="profile" />} />
+                <Route path="settings" element={<SettingsView />} />
+              </Route>
             </Route>
           </Routes>
         </HashRouter>

@@ -19,6 +19,8 @@ function applyToDocument(prefs: UiPrefs, theme: 'light' | 'dark'): void {
   root.dir = prefs.language === 'ar' ? 'rtl' : 'ltr'
   root.dataset['theme'] = theme
   void i18n.changeLanguage(prefs.language)
+  // Animate colour changes only after the first paint, so startup never fades.
+  if (!root.dataset['ready']) requestAnimationFrame(() => (root.dataset['ready'] = ''))
 }
 
 export function PrefsProvider({ children }: { children: ReactNode }) {

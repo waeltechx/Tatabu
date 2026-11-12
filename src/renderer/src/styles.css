@@ -104,6 +104,9 @@ body {
   font-family: var(--font-body-v);
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
+}
+
+:root[data-ready] body {
   transition:
     background-color 0.2s,
     color 0.2s;

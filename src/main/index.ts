@@ -1,6 +1,8 @@
-import { app, BrowserWindow, nativeTheme, shell } from 'electron'
+import { app, BrowserWindow, dialog, nativeTheme, shell } from 'electron'
 import { join } from 'node:path'
 import { registerIpc } from './ipc'
+import { closeServices, initServices } from './services'
+import { mainText } from './i18n'
 
 const isDev = !app.isPackaged
 
@@ -54,12 +56,26 @@ if (!app.requestSingleInstanceLock()) {
 
   void app.whenReady().then(() => {
     app.setAppUserModelId('com.waeltechx.tatabu')
+    try {
+      initServices()
+    } catch (err) {
+      const t = mainText()
+      const message = err instanceof Error ? err.message : String(err)
+      dialog.showErrorBox(
+        t.startupErrorTitle,
+        message.startsWith('DATABASE_TOO_NEW') ? t.databaseTooNew : `${t.databaseError}\n\n${message}`
+      )
+      app.quit()
+      return
+    }
     registerIpc()
     createWindow()
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
   })
+
+  app.on('will-quit', () => closeServices())
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
