@@ -79,6 +79,11 @@
       "crumb": "You / Master CV",
       "title": "Master CV",
       "sub": "Every fact your CVs and letters may use. Nothing else gets in."
+    },
+    "teach": {
+      "crumb": "CV Studio / My design",
+      "title": "Teach it your design",
+      "sub": "Upload your PDF once. We rebuild the layout, you approve it."
     }
   },
   "common": {
@@ -236,7 +241,9 @@
     "UNSUPPORTED_FILE": "This file type can't be read. Use a PDF or a Word (.docx) file.",
     "CV_NO_TEXT": "No text found in this file. It may be a scanned image. Export your CV as a PDF with real text, or upload the Word file.",
     "PDF_FAILED": "The PDF couldn't be made. Try again.",
-    "MASTER_CV_MISSING": "Add your master CV first. Letters and CVs are built only from its facts."
+    "MASTER_CV_MISSING": "Add your master CV first. Letters and CVs are built only from its facts.",
+    "FILE_TOO_LARGE": "That file is too large. Pick one under 20 MB.",
+    "DESIGN_ROUNDS": "No rounds left. Save the template or use the ATS template."
   },
   "mic": {
     "start": "Dictate",
@@ -724,6 +731,55 @@
         "entry": "Left out for this job",
         "section": "Section left out"
       }
-    }
+    },
+    "mineSub": "Recreated from your PDF.",
+    "recheck": "Re-check my design",
+    "teach": "Teach it your design"
+  },
+  "teach": {
+    "st1": "Upload PDF",
+    "st2": "AI reads the layout",
+    "st3": "Compare · round {{round}} of {{max}}",
+    "st4": "Save template",
+    "kicker": "01 / Your designed CV",
+    "uploadTitle": "Upload the PDF of your CV",
+    "uploadSub": "Use the CV whose look you like. We read its layout, colours and sections, then pour your text into it for every job. Your text always comes from your master CV.",
+    "upload": "Upload PDF",
+    "useMaster": "Use {{name}}",
+    "noMasterPdf": "Your master CV wasn't uploaded as a PDF. Upload the PDF instead.",
+    "sampleNote": "You have no master CV yet, so the recreation shows sample text.",
+    "drawing": "Drawing your pages…",
+    "reading": "Reading the layout… this can take a minute.",
+    "fixing": "Fixing the template…",
+    "howKicker": "How it works",
+    "how1": "1. Upload your CV as a PDF.",
+    "how2": "2. Compare our recreation with your original and say what's different. Up to 3 rounds.",
+    "how3": "3. Save it. Only the text changes per job; the layout stays yours.",
+    "original": "Your original",
+    "recreation": "Our recreation",
+    "yourText": "Your text",
+    "pageAlt": "Page {{n}} of your original CV",
+    "photoKept": "Photo kept",
+    "diffKicker": "What's different?",
+    "diffSub": "Describe it in your words, or by voice. The AI fixes the template and shows a new round.",
+    "diffPlaceholder": "e.g. The name should be bolder, and the blue is a bit darker in mine.",
+    "roundsLeft": "Rounds left: {{count}}",
+    "noRounds": "No rounds left",
+    "fix": "Fix it",
+    "fixed": "Here is the next round.",
+    "found": "We found",
+    "save": "Looks right · save template",
+    "saved": "Your design is saved. Pick “My design” in CV Studio.",
+    "useAts": "Use the ATS template instead",
+    "keepOld": "Keep my saved design",
+    "note": "Only the text changes per job. The layout stays yours.",
+    "noVision": "This model can't read images",
+    "noVisionSub": "Reading a design needs a model that can see pictures. Switch to a provider with a vision model in Settings, or use the ATS template.",
+    "toSettings": "Open Settings",
+    "savedKicker": "Your saved design",
+    "mine": "My design",
+    "recheck": "Re-check",
+    "remove": "Remove",
+    "removeConfirm": "Remove your saved design? CVs will use the ATS template."
   }
 }

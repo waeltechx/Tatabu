@@ -57,9 +57,10 @@ export function tailorSystem(code: string, name: string): string {
 
 const Item = z.object({
   text: z.string(),
-  sources: z.array(z.string()).describe('Keys of the facts this text uses.'),
+  sources: z.array(z.string()).default([]).describe('Keys of the facts this text uses.'),
   translations: z
     .array(z.object({ source: z.string(), target: z.string() }))
+    .default([])
     .describe('Names or terms translated from a fact: {source: text in the fact, target: text here}.')
 })
 
@@ -67,13 +68,16 @@ export const TailorOutput = z.object({
   headline: Item,
   summary: Item,
   experience: z.array(z.object({ id: z.string(), title: Item, bullets: z.array(Item) })),
-  education: z.array(z.object({ id: z.string(), degree: Item, details: z.array(Item) })),
+  education: z.array(z.object({ id: z.string(), degree: Item, details: z.array(Item).default([]) })).default([]),
   skills: z.array(Item),
-  languages: z.array(Item),
-  certificates: z.array(z.object({ id: z.string(), name: Item, detail: Item })),
-  projects: z.array(z.object({ id: z.string(), name: Item, detail: Item })),
-  other: z.array(z.object({ id: z.string(), title: Item, lines: z.array(Item) })),
-  missing: z.array(z.string()).describe('Job requirements the facts do not show (in the target language). Not added to the CV.'),
+  languages: z.array(Item).default([]),
+  certificates: z.array(z.object({ id: z.string(), name: Item, detail: Item.optional() })).default([]),
+  projects: z.array(z.object({ id: z.string(), name: Item, detail: Item.optional() })).default([]),
+  other: z.array(z.object({ id: z.string(), title: Item, lines: z.array(Item).default([]) })).default([]),
+  missing: z
+    .array(z.string())
+    .default([])
+    .describe('Job requirements the facts do not show (in the target language). Not added to the CV.'),
   labels: z
     .object({
       summary: z.string(),
@@ -83,8 +87,11 @@ export const TailorOutput = z.object({
       languages: z.string(),
       certificates: z.string(),
       projects: z.string(),
+      contact: z.string(),
       present: z.string()
     })
+    .partial()
+    .default({})
     .describe('Standard CV section names in the target language, and the word for an ongoing end date.')
 })
 export type TailorOutput = z.infer<typeof TailorOutput>

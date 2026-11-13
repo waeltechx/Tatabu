@@ -109,3 +109,8 @@ export function runText(
 export function runJson<T>(req: Parameters<typeof chatJson<T>>[2], override?: ProviderId) {
   return chatJson(fetchFn, textTarget(override), req)
 }
+
+/** A structured task that looks at images, on a model of the active provider that can read them. */
+export async function runVisionJson<T>(req: Parameters<typeof chatJson<T>>[2], override?: ProviderId) {
+  return chatJson(fetchFn, await visionTarget(override), req)
+}

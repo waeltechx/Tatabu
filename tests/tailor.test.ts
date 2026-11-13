@@ -3,7 +3,7 @@ import { cleanCv, cvFacts } from '@shared/cv'
 import { atsCvDoc } from '@shared/docs/cv'
 import { applyChoices, checkableItems, cvLabels, describeSource, diffCv, localEnd, resolveCv } from '@shared/tailor'
 import { verifyItems } from '@shared/verify'
-import { buildTailored, tailorSystem, tailorUser, type TailorOutput } from '../src/main/ai/tasks/tailor'
+import { buildTailored, TailorOutput, tailorSystem, tailorUser } from '../src/main/ai/tasks/tailor'
 import { EMPTY_JOB } from '@shared/applications'
 
 // All names below are invented.
@@ -54,6 +54,7 @@ const LABELS = {
   languages: '',
   certificates: '',
   projects: '',
+  contact: '',
   present: ''
 }
 
@@ -224,5 +225,20 @@ describe('tailor prompts', () => {
     expect(user).toContain('emphasis only, not a fact')
     expect(tailorSystem('fr', 'Français')).toContain('professional Français')
     expect(tailorSystem('en', 'English')).toContain('list it under `missing`')
+  })
+})
+
+describe('lenient answers', () => {
+  it('accepts a minimal answer without labels or the rarer sections', () => {
+    const parsed = TailorOutput.parse({
+      headline: { text: 'Data Analyst', sources: ['headline'] },
+      summary: { text: 'Data analyst.', sources: ['summary'] },
+      experience: [{ id: 'e1', title: { text: 'Senior Data Analyst' }, bullets: [] }],
+      skills: [{ text: 'SQL', sources: ['skills.1'] }]
+    })
+    expect(parsed.labels).toEqual({})
+    expect(parsed.missing).toEqual([])
+    const { cv } = buildTailored(parsed, MASTER)
+    expect(cv.experience[0]!.title.sources).toEqual(['e1.title'])
   })
 })

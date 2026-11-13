@@ -61,6 +61,7 @@ export interface CvLabels {
   languages: string
   certificates: string
   projects: string
+  contact: string
   present: string
 }
 
@@ -125,6 +126,7 @@ const BUILT_IN: Record<string, CvLabels> = {
     languages: 'Languages',
     certificates: 'Certificates',
     projects: 'Projects',
+    contact: 'Contact',
     present: 'Present'
   },
   de: {
@@ -135,6 +137,7 @@ const BUILT_IN: Record<string, CvLabels> = {
     languages: 'Sprachen',
     certificates: 'Zertifikate',
     projects: 'Projekte',
+    contact: 'Kontakt',
     present: 'heute'
   },
   ar: {
@@ -145,6 +148,7 @@ const BUILT_IN: Record<string, CvLabels> = {
     languages: 'اللغات',
     certificates: 'الشهادات',
     projects: 'المشاريع',
+    contact: 'التواصل',
     present: 'حتى الآن'
   }
 }

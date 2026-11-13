@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Download, ExternalLink, FolderOpen, LoaderCircle, Plus, ShieldCheck, TriangleAlert } from 'lucide-react'
@@ -8,6 +8,7 @@ import { clsx } from 'clsx'
 import { PROVIDER_NAMES, textProvider, type ProviderId } from '@shared/ai'
 import { languageCode } from '@shared/docs/common'
 import { atsCvDoc } from '@shared/docs/cv'
+import { designDoc } from '@shared/design'
 import type { MasterCv } from '@shared/cv'
 import {
   allItems,
@@ -31,6 +32,7 @@ import { MicButton } from '@/components/MicButton'
 import { DocPreview } from '@/components/docs/DocPreview'
 import { AppPicker, NoApplications, useChosenApp } from '@/components/docs/AppPicker'
 import { FactWarnings, showField, type WarningGroup } from '@/components/docs/FactWarnings'
+import { designKey } from './TeachDesignView'
 
 const areaClass =
   'w-full resize-y rounded-card border-ui border-soft bg-field px-[11px] py-2 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
@@ -196,6 +198,9 @@ export function CvStudioView() {
   const { data: settings } = useSettings()
   const { data: profile = EMPTY_PROFILE } = useProfile()
   const { data: masterState } = useQuery({ queryKey: docKeys.master, queryFn: () => invoke('cv:get'), staleTime: 0 })
+  const { data: designState } = useQuery({ queryKey: designKey, queryFn: () => invoke('design:get'), staleTime: 0 })
+  const design = designState?.saved ?? null
+  const navigate = useNavigate()
   const master = masterState?.cv ?? null
 
   const [active, setActive] = useState('')
@@ -267,7 +272,20 @@ export function CvStudioView() {
 
   const doc = useMemo(() => {
     if (!master) return null
+    const mine = draft?.look === 'mine' && design
     if (!shown || !draft) {
+      if (mine) {
+        const code = meta.code
+        return designDoc({
+          template: design,
+          cv: { ...master },
+          labels: cvLabels(code),
+          photo: design.photo,
+          lang: code,
+          dir: meta.dir,
+          paper: settings?.paper
+        })
+      }
       return atsCvDoc({
         cv: { ...master },
         profile,
@@ -278,6 +296,16 @@ export function CvStudioView() {
       })
     }
     const { cv, keys } = resolveCv(master, shown, labels, meta.code)
+    if (mine)
+      return designDoc({
+        template: design,
+        cv,
+        labels,
+        photo: design.photo,
+        lang: meta.code,
+        dir: meta.dir,
+        paper: settings?.paper
+      })
     // Highlight lines whose change is on: rewritten and reworded text.
     const marks = new Set<string>()
     for (const c of draft.changes) {
@@ -290,7 +318,7 @@ export function CvStudioView() {
       }
     }
     return atsCvDoc({ cv, profile, labels, lang: meta.code, dir: meta.dir, paper: settings?.paper, marks })
-  }, [master, shown, draft, labels, meta.code, meta.dir, profile, settings?.paper])
+  }, [master, shown, draft, labels, meta.code, meta.dir, profile, settings?.paper, design])
 
   if (!isPending && apps.length === 0) {
     return (
@@ -436,14 +464,26 @@ export function CvStudioView() {
                 <b className="mt-2 block text-[12.5px] font-semibold">{t('cvStudio.ats')}</b>
                 <span className="mt-0.5 block text-[11px] leading-snug opacity-80">{t('cvStudio.atsSub')}</span>
               </button>
-              <div
-                className="cursor-not-allowed rounded-card border-ui border-soft bg-field p-2.5 text-start opacity-70"
-                aria-disabled
+              <button
+                type="button"
+                aria-pressed={draft?.look === 'mine' && !!design}
+                onClick={() => (design ? edit({ look: 'mine' }) : navigate('/cv/design'))}
+                className={clsx(
+                  'cursor-pointer rounded-card border-ui p-2.5 text-start',
+                  draft?.look === 'mine' && design ? 'border-strong bg-yellow text-on-accent shadow-hard' : 'border-soft bg-field'
+                )}
               >
                 <LookThumb side />
                 <b className="mt-2 block text-[12.5px] font-semibold">{t('cvStudio.mine')}</b>
-                <span className="mt-0.5 block text-[11px] leading-snug text-muted">{t('cvStudio.mineSoon')}</span>
-              </div>
+                <span className="mt-0.5 block text-[11px] leading-snug opacity-80">
+                  {design ? t('cvStudio.mineSub') : t('cvStudio.mineSoon')}
+                </span>
+              </button>
+            </div>
+            <div className="mt-2.5 text-end">
+              <Link to="/cv/design" className="text-[11.5px] font-semibold text-ink underline">
+                {design ? t('cvStudio.recheck') : t('cvStudio.teach')}
+              </Link>
             </div>
           </Panel>
 

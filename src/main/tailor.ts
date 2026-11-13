@@ -3,6 +3,7 @@ import type { ProviderId } from '@shared/ai'
 import type { Application } from '@shared/applications'
 import { cvFacts, cvFactsPrompt, type MasterCv } from '@shared/cv'
 import { atsCvDoc } from '@shared/docs/cv'
+import { designDoc } from '@shared/design'
 import { docLabels, languageCode, type DocHtml } from '@shared/docs/common'
 import type { SavedPdf } from '@shared/documents'
 import type { Profile } from '@shared/profile'
@@ -23,6 +24,7 @@ import { getDocument, saveDocument } from './repo/documents'
 import { getProfile } from './repo/profile'
 import { findLanguage, paperSize, pdfName, printDoc, storePdf } from './documents'
 import { fixItem, getMasterCv } from './cv'
+import { savedDesign } from './design'
 import { runJson } from './ai/service'
 import { buildTailored, TailorOutput, tailorSystem, tailorUser } from './ai/tasks/tailor'
 
@@ -226,6 +228,19 @@ export function buildCvDoc(state: CvTailorState, master: MasterCv, profile: Prof
   const labels = cvLabels(lang.code, state.labels)
   const cv = state.tailored ? applyChoices(master, state.tailored, state.changes, state.rejected, state.edits) : null
   const resolved = cv ? resolveCv(master, cv, labels, lang.code).cv : { ...master, language: lang.code }
+  // "My design" when one is saved; the ATS template otherwise.
+  const design = state.look === 'mine' ? savedDesign() : null
+  if (design) {
+    return designDoc({
+      template: design,
+      cv: resolved,
+      labels,
+      photo: design.photo,
+      lang: lang.code,
+      dir: lang.dir,
+      paper: paperSize()
+    })
+  }
   return atsCvDoc({ cv: resolved, profile, labels, lang: lang.code, dir: lang.dir, paper: paperSize(), marks })
 }
 

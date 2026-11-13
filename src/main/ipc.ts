@@ -29,6 +29,18 @@ import {
   saveLetter
 } from './letters'
 import { cvState, fixCvItem, keepCvItem, printCv, saveCvState, tailorCv } from './tailor'
+import {
+  designState,
+  discardDesign,
+  fixDesign,
+  masterSourcePdf,
+  readDesign,
+  readDesignPdf,
+  recheckDesign,
+  removeDesign,
+  saveDesign,
+  setDesignPhoto
+} from './design'
 import { dismissCvWarning, fixItem, masterSourceText, masterState, readCv, saveMasterCv, uploadCv } from './cv'
 import {
   addPickedFiles,
@@ -365,4 +377,26 @@ export function registerIpc(): void {
   handle('cvs:fix', (id, state, itemId, provider) => fixCvItem(String(id), state ?? {}, String(itemId), pick(provider)))
   handle('cvs:keep', (id, state, itemId) => keepCvItem(String(id), state ?? {}, String(itemId)))
   handle('cvs:print', (id, state) => printCv(String(id), state ?? {}))
+
+  handle('design:get', () => designState())
+  handle('design:pick', async () => {
+    const t = mainText()
+    const win = parentWindow()
+    const options = {
+      title: t.chooseDesignTitle,
+      properties: ['openFile'] as Array<'openFile'>,
+      filters: [{ name: t.pdfFilter, extensions: ['pdf'] }]
+    }
+    const picked = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options)
+    const source = picked.filePaths[0]
+    return picked.canceled || !source ? null : readDesignPdf(source)
+  })
+  handle('design:masterPdf', () => masterSourcePdf())
+  handle('design:read', (input, provider) => readDesign(input, pick(provider)))
+  handle('design:photo', (dataUrl) => setDesignPhoto(String(dataUrl ?? '')))
+  handle('design:fix', (feedback, provider) => fixDesign(String(feedback ?? ''), pick(provider)))
+  handle('design:save', () => saveDesign())
+  handle('design:recheck', () => recheckDesign())
+  handle('design:discard', () => discardDesign())
+  handle('design:remove', () => removeDesign())
 }

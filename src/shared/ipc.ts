@@ -8,6 +8,7 @@
 import type { FixRequest, MasterCv, MasterState } from './cv'
 import type { EnclosureOption, LetterState } from './letter'
 import type { CvTailorState } from './tailor'
+import type { DesignSource, DesignState } from './design'
 import type { AiSettings, DocLanguage, ImportedFile, Referee, RefereeInput, SecretName, SettingsView } from './settings'
 import type { ModelInfo, ProviderId } from './ai'
 import type { PaperSize, Profile } from './profile'
@@ -154,6 +155,21 @@ export interface IpcContract {
   'cvs:fix': { args: [applicationId: string, state: CvTailorState, itemId: string, provider?: ProviderId]; result: CvTailorState }
   'cvs:keep': { args: [applicationId: string, state: CvTailorState, itemId: string]; result: CvTailorState }
   'cvs:print': { args: [applicationId: string, state: CvTailorState]; result: SavedPdf }
+
+  // Teach your design
+  'design:get': { args: []; result: DesignState }
+  /** Asks for a PDF and hands its bytes to the renderer, which draws the pages. Null if cancelled. */
+  'design:pick': { args: []; result: DesignSource | null }
+  /** The PDF the master CV was read from, if it was a PDF. */
+  'design:masterPdf': { args: []; result: DesignSource | null }
+  /** Round 1: page images → template. */
+  'design:read': { args: [input: { filename: string; pages: string[] }, provider?: ProviderId]; result: DesignState }
+  'design:photo': { args: [dataUrl: string]; result: DesignState }
+  'design:fix': { args: [feedback: string, provider?: ProviderId]; result: DesignState }
+  'design:save': { args: []; result: DesignState }
+  'design:recheck': { args: []; result: DesignState }
+  'design:discard': { args: []; result: DesignState }
+  'design:remove': { args: []; result: DesignState }
 }
 
 export type IpcChannel = keyof IpcContract
@@ -233,7 +249,17 @@ export const IPC_CHANNELS = [
   'cvs:tailor',
   'cvs:fix',
   'cvs:keep',
-  'cvs:print'
+  'cvs:print',
+  'design:get',
+  'design:pick',
+  'design:masterPdf',
+  'design:read',
+  'design:photo',
+  'design:fix',
+  'design:save',
+  'design:recheck',
+  'design:discard',
+  'design:remove'
 ] as const satisfies readonly IpcChannel[]
 
 // Compile-time check: every channel in the contract is in the allowlist above.

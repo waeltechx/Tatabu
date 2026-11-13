@@ -111,6 +111,8 @@ export const ERROR_CODES = [
   'CV_NO_TEXT',
   'PDF_FAILED',
   'MASTER_CV_MISSING',
+  'FILE_TOO_LARGE',
+  'DESIGN_ROUNDS',
   // Raised in the renderer
   'MIC_DENIED',
   'MIC_UNAVAILABLE'
