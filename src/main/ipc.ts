@@ -28,6 +28,7 @@ import {
   printLetter,
   saveLetter
 } from './letters'
+import { cvState, fixCvItem, keepCvItem, printCv, saveCvState, tailorCv } from './tailor'
 import { dismissCvWarning, fixItem, masterSourceText, masterState, readCv, saveMasterCv, uploadCv } from './cv'
 import {
   addPickedFiles,
@@ -357,4 +358,11 @@ export function registerIpc(): void {
   handle('letter:keep', (id, state, itemId) => dismissLetterWarnings(String(id), state ?? {}, String(itemId)))
   handle('letter:prompt', (id, state) => letterPrompt(String(id), state ?? {}))
   handle('letter:print', (id, state) => printLetter(String(id), state ?? {}))
+
+  handle('cvs:get', (id, languageId) => cvState(String(id), String(languageId)))
+  handle('cvs:save', (id, state) => saveCvState(String(id), state ?? {}))
+  handle('cvs:tailor', (id, state, provider) => tailorCv(String(id), state ?? {}, pick(provider)))
+  handle('cvs:fix', (id, state, itemId, provider) => fixCvItem(String(id), state ?? {}, String(itemId), pick(provider)))
+  handle('cvs:keep', (id, state, itemId) => keepCvItem(String(id), state ?? {}, String(itemId)))
+  handle('cvs:print', (id, state) => printCv(String(id), state ?? {}))
 }

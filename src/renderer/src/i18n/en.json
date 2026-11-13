@@ -622,5 +622,108 @@
       "ar-classic": "Classic mirrored",
       "ar-modern": "Modern header"
     }
+  },
+  "cvStudio": {
+    "kicker1": "01 / Pick the job",
+    "kicker2": "02 / Choose the look",
+    "language": "Language",
+    "addLanguage": "Add a document language in Settings",
+    "ats": "ATS template",
+    "atsSub": "Clean, one column. Passes company filters.",
+    "mine": "My design",
+    "mineSoon": "Teach it your own CV design first.",
+    "groundedSub": "Nothing is added. Your facts are only reordered, trimmed and reworded for this job.",
+    "noMasterSub": "Tailored CVs are built only from your master CV. Add it first.",
+    "focus": "Anything to highlight?",
+    "optional": "(optional)",
+    "focusPlaceholder": "e.g. Lead with my dashboard work",
+    "focusHint": "This only steers what comes first. It never adds facts.",
+    "tailor": "Tailor my CV",
+    "tailoring": "Tailoring…",
+    "tailored": "Your tailored CV is ready. Check what changed before you save it.",
+    "tabs": {
+      "preview": "Preview",
+      "changes": "What changed",
+      "edit": "Edit"
+    },
+    "fromMaster": "Your master CV",
+    "saving": "Saving…",
+    "draftSaved": "✓ Draft saved",
+    "previewHint": "This is your master CV. Tailor it to see it shaped for this job.",
+    "noChanges": "Nothing changed.",
+    "translatedNote": "This CV is translated from your master CV, so rewording isn't listed and text changes can't be undone here. Edit any line in the Edit tab.",
+    "accept": "Use this change",
+    "reject": "Undo this change",
+    "cantUndo": "Can't undo in a translated CV. Edit the line instead.",
+    "from": "From your CV: {{src}}",
+    "leftOutOn": "Left out · switch off to put it back",
+    "leftOutOff": "Put back in the CV",
+    "missing": "Not in your CV, so not added",
+    "missingSub": "The job asks for these. Add them to your master CV only if they're true.",
+    "undoAll": "Undo all",
+    "undoConfirm": "Undo every change and your own edits? The CV goes back to your master CV's wording.",
+    "openFolder": "Open folder",
+    "savePdf": "Save as PDF",
+    "src": {
+      "summary": "summary",
+      "headline": "headline",
+      "skills": "skills",
+      "languages": "languages"
+    },
+    "fields": {
+      "headline": "Headline",
+      "summary": "Summary",
+      "role": "Role",
+      "education": "Education",
+      "skills": "Skills",
+      "languages": "Languages",
+      "entries": "Certificates and projects"
+    },
+    "chg": {
+      "rewritten": {
+        "headline": "Headline rewritten",
+        "summary": "Summary rewritten",
+        "skills": "Skills rewritten",
+        "experience": "Experience rewritten",
+        "bullet": "Bullet rewritten",
+        "role": "Role rewritten",
+        "education": "Education rewritten",
+        "entry": "Entry rewritten",
+        "section": "Section rewritten"
+      },
+      "reordered": {
+        "headline": "Headline moved",
+        "summary": "Summary moved",
+        "skills": "Skills reordered",
+        "experience": "Roles reordered",
+        "bullet": "Bullets reordered",
+        "role": "Role moved",
+        "education": "Education reordered",
+        "entry": "Entries reordered",
+        "section": "Sections reordered"
+      },
+      "reworded": {
+        "headline": "Headline reworded",
+        "summary": "Summary reworded",
+        "skills": "Skills reworded",
+        "experience": "Experience reworded",
+        "bullet": "Bullet reworded",
+        "role": "Role reworded",
+        "education": "Education reworded",
+        "entry": "Entry reworded",
+        "section": "Section reworded"
+      },
+      "left_out": {
+        "headline": "Headline left out",
+        "summary": "Summary left out",
+        "skills": "Skills left out for this job",
+        "experience": "Experience left out",
+        "bullet": "Bullet left out for this job",
+        "role": "Role left out for this job",
+        "education": "Education left out",
+        "entry": "Left out for this job",
+        "section": "Section left out"
+      }
+    }
   }
 }

@@ -7,6 +7,7 @@
  */
 import type { FixRequest, MasterCv, MasterState } from './cv'
 import type { EnclosureOption, LetterState } from './letter'
+import type { CvTailorState } from './tailor'
 import type { AiSettings, DocLanguage, ImportedFile, Referee, RefereeInput, SecretName, SettingsView } from './settings'
 import type { ModelInfo, ProviderId } from './ai'
 import type { PaperSize, Profile } from './profile'
@@ -144,6 +145,15 @@ export interface IpcContract {
   'letter:keep': { args: [applicationId: string, state: LetterState, itemId: string]; result: LetterState }
   'letter:prompt': { args: [applicationId: string, state: LetterState]; result: string }
   'letter:print': { args: [applicationId: string, state: LetterState]; result: SavedPdf }
+
+  // CV Studio (one tailored CV per application and document language)
+  'cvs:get': { args: [applicationId: string, languageId: string]; result: CvTailorState }
+  /** Saves the user's choices (accepted changes, edits, kept warnings); returns fresh warnings. */
+  'cvs:save': { args: [applicationId: string, state: CvTailorState]; result: CvTailorState }
+  'cvs:tailor': { args: [applicationId: string, state: CvTailorState, provider?: ProviderId]; result: CvTailorState }
+  'cvs:fix': { args: [applicationId: string, state: CvTailorState, itemId: string, provider?: ProviderId]; result: CvTailorState }
+  'cvs:keep': { args: [applicationId: string, state: CvTailorState, itemId: string]; result: CvTailorState }
+  'cvs:print': { args: [applicationId: string, state: CvTailorState]; result: SavedPdf }
 }
 
 export type IpcChannel = keyof IpcContract
@@ -217,7 +227,13 @@ export const IPC_CHANNELS = [
   'letter:fix',
   'letter:keep',
   'letter:prompt',
-  'letter:print'
+  'letter:print',
+  'cvs:get',
+  'cvs:save',
+  'cvs:tailor',
+  'cvs:fix',
+  'cvs:keep',
+  'cvs:print'
 ] as const satisfies readonly IpcChannel[]
 
 // Compile-time check: every channel in the contract is in the allowlist above.

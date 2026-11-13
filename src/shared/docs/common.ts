@@ -207,7 +207,7 @@ export function formatDocDate(date: Date, code: string): string {
 
 /** Fonts bundled with the app; Arabic falls back to IBM Plex Sans Arabic automatically. */
 export const DOC_FONT = "'Inter', 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif"
-export const DOC_FONT_HEAD = "'Space Grotesk', 'Inter', 'Noto Sans Arabic', sans-serif"
+export const DOC_FONT_HEAD = "'Space Grotesk', 'IBM Plex Sans Arabic', 'Inter', 'Noto Sans Arabic', sans-serif"
 
 export function pageCss(paper: 'A4' | 'Letter' = 'A4', margin = '22mm 20mm 20mm 22mm'): string {
   return `
