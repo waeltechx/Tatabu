@@ -7,6 +7,8 @@
  */
 import type { AiSettings, DocLanguage, ImportedFile, Referee, RefereeInput, SecretName, SettingsView } from './settings'
 import type { ModelInfo, ProviderId } from './ai'
+import type { PaperSize, Profile } from './profile'
+import type { ReferenceState, SavedPdf } from './documents'
 import type {
   AppFile,
   Application,
@@ -100,6 +102,22 @@ export interface IpcContract {
   'files:open': { args: [string]; result: void }
   'files:combine': { args: [applicationId: string, fileIds: string[], filename: string]; result: CombineResult }
   'library:list': { args: []; result: LibraryItem[] }
+  /** Asks for a file and keeps a copy in _Library under the given name. */
+  'library:add': { args: [label: string]; result: LibraryItem[] }
+  'library:rename': { args: [id: string, label: string]; result: LibraryItem[] }
+  /** Moves the file to the trash. */
+  'library:remove': { args: [id: string]; result: LibraryItem[] }
+  'library:open': { args: [id: string]; result: void }
+
+  'profile:get': { args: []; result: Profile }
+  'profile:save': { args: [Partial<Profile>]; result: Profile }
+  'settings:setPaper': { args: [PaperSize]; result: SettingsView }
+
+  /** The References page of an application (its own referees or the defaults). */
+  'refs:get': { args: [applicationId: string]; result: ReferenceState }
+  'refs:save': { args: [applicationId: string, state: ReferenceState]; result: ReferenceState }
+  /** Prints the References PDF into the application folder. */
+  'refs:print': { args: [applicationId: string, state: ReferenceState]; result: SavedPdf }
 }
 
 export type IpcChannel = keyof IpcContract
@@ -147,7 +165,17 @@ export const IPC_CHANNELS = [
   'files:delete',
   'files:open',
   'files:combine',
-  'library:list'
+  'library:list',
+  'library:add',
+  'library:rename',
+  'library:remove',
+  'library:open',
+  'profile:get',
+  'profile:save',
+  'settings:setPaper',
+  'refs:get',
+  'refs:save',
+  'refs:print'
 ] as const satisfies readonly IpcChannel[]
 
 // Compile-time check: every channel in the contract is in the allowlist above.

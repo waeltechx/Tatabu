@@ -60,6 +60,7 @@ export function settingsView(): SettingsView {
     dataFolder: dataFolder(),
     onboarded: getSetting(d, 'onboarded', false),
     secureStorage: getSecrets().available(),
-    checks: getChecks(d)
+    checks: getChecks(d),
+    paper: getSetting<string>(d, 'paper', 'A4') === 'Letter' ? 'Letter' : 'A4'
   }
 }

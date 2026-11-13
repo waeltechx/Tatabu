@@ -7,6 +7,8 @@ import { AppShell } from '@/components/layout/AppShell'
 import { PlaceholderView } from '@/views/PlaceholderView'
 import { SettingsView } from '@/views/settings/SettingsView'
 import { DashboardView } from '@/views/dashboard/DashboardView'
+import { ProfileView } from '@/views/profile/ProfileView'
+import { ReferenceView } from '@/views/reference/ReferenceView'
 import { AddApplicationView } from '@/views/applications/AddApplicationView'
 import { ApplicationsView } from '@/views/applications/ApplicationsView'
 import { OnboardingView } from '@/views/OnboardingView'
@@ -44,9 +46,9 @@ export default function App() {
                 <Route path="applications/:id" element={<ApplicationsView />} />
                 <Route path="cv" element={<PlaceholderView page="cvStudio" />} />
                 <Route path="cover-letter" element={<PlaceholderView page="coverLetter" />} />
-                <Route path="reference" element={<PlaceholderView page="reference" />} />
+                <Route path="reference" element={<ReferenceView />} />
                 <Route path="email" element={<PlaceholderView page="email" />} />
-                <Route path="profile" element={<PlaceholderView page="profile" />} />
+                <Route path="profile" element={<ProfileView />} />
                 <Route path="settings" element={<SettingsView />} />
               </Route>
             </Route>

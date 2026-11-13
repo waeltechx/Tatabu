@@ -19,7 +19,9 @@
   },
   "dependencies": {
     "electron-updater": "^6.8.11",
+    "mammoth": "^1.13.0",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.5.438",
     "zod": "^4.6.7"
   },
   "devDependencies": {

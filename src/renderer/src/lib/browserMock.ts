@@ -17,6 +17,7 @@ import {
 } from '@shared/settings'
 import type { ModelInfo, ProviderCheck, ProviderId } from '@shared/ai'
 import { createAppMocks } from './browserMockApps'
+import { createDocMocks } from './browserMockDocs'
 
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
@@ -60,12 +61,15 @@ export function installBrowserMock(): void {
     { id: 'ar', name: 'العربية', dir: 'rtl', builtin: true }
   ]
   let referees: Referee[] = []
+  let paper: 'A4' | 'Letter' = 'A4'
   const checks: Partial<Record<SecretName, ProviderCheck>> = {}
   const appMocks = createAppMocks({
     hasGroq: () => secrets.has('groq'),
     cv: () => cv,
     hasReferees: () => referees.length > 0
   })
+
+  const docMocks = createDocMocks({ referees: () => referees, apps: appMocks })
 
   const mask = (k: string): string => `${k.slice(0, 4)}${'•'.repeat(16)}${k.slice(-4)}`
   const view = () => ({
@@ -76,11 +80,13 @@ export function installBrowserMock(): void {
     dataFolder,
     onboarded,
     secureStorage: true,
-    checks: { ...checks }
+    checks: { ...checks },
+    paper
   })
 
+  // Channels without a mock reject, so a missing one shows up as an error toast.
   const handlers: {
-    [C in IpcChannel]: (...args: IpcArgs<C>) => IpcResult<C> | Promise<IpcResult<C>>
+    [C in IpcChannel]?: (...args: IpcArgs<C>) => IpcResult<C> | Promise<IpcResult<C>>
   } = {
     'app:info': () => ({ version: '0.0.0-browser', platform: 'browser' }),
     'prefs:get': () => prefs,
@@ -127,6 +133,8 @@ export function installBrowserMock(): void {
       ;[next[i], next[j]] = [next[j]!, next[i]!]
       return (referees = next)
     },
+    'settings:setPaper': (p) => ((paper = p), view()),
+    ...docMocks,
     'storage:open': () => undefined,
     'storage:change': () => ((dataFolder = 'D:\\Jobs\\Tatabu'), view()),
     'library:importCv': () => (cv = { id: 'lib_demo', filename: 'My CV.pdf' }),
@@ -163,7 +171,9 @@ export function installBrowserMock(): void {
   const api: TatabuApi = {
     invoke: (channel, ...args) => {
       try {
-        return Promise.resolve((handlers[channel] as (...a: unknown[]) => never)(...args))
+        const fn = handlers[channel] as ((...a: unknown[]) => never) | undefined
+        if (!fn) return Promise.reject(new Error(`NOT_FOUND: no browser mock for ${channel}`))
+        return Promise.resolve(fn(...args))
       } catch (err) {
         return Promise.reject(err)
       }

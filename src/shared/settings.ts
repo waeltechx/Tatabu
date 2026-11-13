@@ -39,6 +39,8 @@ export interface SettingsView {
   secureStorage: boolean
   /** Last successful connection test per provider. */
   checks: Partial<Record<SecretName, ProviderCheck>>
+  /** Paper size for every printed document. */
+  paper: 'A4' | 'Letter'
 }
 
 export interface Referee {

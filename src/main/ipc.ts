@@ -14,7 +14,9 @@ import { mainText } from './i18n'
 import { forgetProvider, modelsFor, testAndRemember, transcribeAudio } from './ai/service'
 import { getAiSettings } from './repo/settings'
 import { listApplications, getApplication } from './repo/applications'
-import { listLibrary } from './repo/library'
+import { getProfile, saveProfile } from './repo/profile'
+import { addToLibrary, libraryItems, libraryPath, removeLibrary, renameLibrary } from './library'
+import { printReference, referenceState, saveReferenceState } from './documents'
 import {
   addPickedFiles,
   attachLibrary,
@@ -218,12 +220,11 @@ export function registerIpc(): void {
   })
   handle('apps:setup', () => {
     const db = getDb()
-    const profile = db.prepare('SELECT full_name FROM profile WHERE id = 1').get() as { full_name: string } | undefined
     const referees = db.prepare('SELECT COUNT(*) AS n FROM referees').get() as { n: number }
     return {
       groq: getSecrets().status('groq').set,
       cv: latestCvSource(db) !== null,
-      profile: !!profile?.full_name.trim(),
+      profile: !!getProfile(db).fullName.trim(),
       referees: Number(referees.n) > 0
     }
   })
@@ -263,5 +264,42 @@ export function registerIpc(): void {
   handle('files:combine', (applicationId, fileIds, filename) =>
     combine(String(applicationId), Array.isArray(fileIds) ? fileIds.map(String) : [], String(filename ?? ''))
   )
-  handle('library:list', () => listLibrary(getDb()))
+  handle('library:list', () => libraryItems())
+  handle('library:add', async (label) => {
+    const t = mainText()
+    const win = parentWindow()
+    const options = {
+      title: t.chooseFilesTitle,
+      properties: ['openFile'] as Array<'openFile'>,
+      filters: [
+        { name: t.documentsFilter, extensions: ['pdf', 'docx', 'doc', 'png', 'jpg', 'jpeg', 'webp', 'txt', 'odt'] },
+        { name: t.allFilesFilter, extensions: ['*'] }
+      ]
+    }
+    const result = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options)
+    const source = result.filePaths[0]
+    if (result.canceled || !source) return libraryItems()
+    return addToLibrary(source, String(label ?? ''))
+  })
+  handle('library:rename', (id, label) => renameLibrary(String(id), String(label ?? '')))
+  handle('library:remove', async (id) => {
+    const { items, path } = removeLibrary(String(id))
+    if (path) await shell.trashItem(path)
+    return items
+  })
+  handle('library:open', async (id) => {
+    const error = await shell.openPath(libraryPath(String(id)))
+    if (error) throw new Error(error)
+  })
+
+  // --- profile & documents ---------------------------------------------------
+  handle('profile:get', () => getProfile(getDb()))
+  handle('profile:save', (input) => saveProfile(getDb(), input ?? {}))
+  handle('settings:setPaper', (paper) => {
+    setSetting(getDb(), 'paper', paper === 'Letter' ? 'Letter' : 'A4')
+    return settingsView()
+  })
+  handle('refs:get', (applicationId) => referenceState(String(applicationId)))
+  handle('refs:save', (applicationId, state) => saveReferenceState(String(applicationId), state ?? {}))
+  handle('refs:print', (applicationId, state) => printReference(String(applicationId), state ?? {}))
 }

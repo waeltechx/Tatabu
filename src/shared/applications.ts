@@ -149,6 +149,8 @@ export interface LibraryItem {
   label: string
   filename: string
   kind: FileKind
+  size?: number
+  missing?: boolean
 }
 
 export interface CombineResult {
