@@ -23,7 +23,10 @@ const NAV: NavItem[] = [
 export function Sidebar() {
   const { t } = useTranslation()
   // Applications live under the dashboard in the menu.
-  const inApps = useLocation().pathname.startsWith('/applications')
+  const path = useLocation().pathname
+  const inApps = path.startsWith('/applications')
+  // The master CV is part of the profile.
+  const inMaster = path.startsWith('/cv/master')
   return (
     <aside className="flex min-h-full w-60 shrink-0 flex-col border-e border-strong bg-surface px-5 pt-[25px] pb-[22px]">
       <div className="ps-1 font-logo text-[27px] leading-tight font-bold">منصة تتبع</div>
@@ -37,7 +40,8 @@ export function Sidebar() {
             to={to}
             end={to === '/'}
             className={({ isActive: active }) => {
-              const isActive = active || (to === '/' && inApps)
+              const isActive =
+                (active && !(to === '/cv' && inMaster)) || (to === '/' && inApps) || (to === '/profile' && inMaster)
               return clsx(
                 'flex h-[46px] items-center gap-3 rounded-card border-ui px-3.5 text-[14px] text-ink no-underline',
                 isActive

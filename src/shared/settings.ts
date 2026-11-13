@@ -107,6 +107,9 @@ export const ERROR_CODES = [
   'NOTHING_TO_COMBINE',
   'FILE_MISSING',
   'TEXT_EMPTY',
+  'UNSUPPORTED_FILE',
+  'CV_NO_TEXT',
+  'PDF_FAILED',
   // Raised in the renderer
   'MIC_DENIED',
   'MIC_UNAVAILABLE'

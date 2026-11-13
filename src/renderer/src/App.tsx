@@ -9,6 +9,7 @@ import { SettingsView } from '@/views/settings/SettingsView'
 import { DashboardView } from '@/views/dashboard/DashboardView'
 import { ProfileView } from '@/views/profile/ProfileView'
 import { ReferenceView } from '@/views/reference/ReferenceView'
+import { MasterCvView } from '@/views/profile/MasterCvView'
 import { AddApplicationView } from '@/views/applications/AddApplicationView'
 import { ApplicationsView } from '@/views/applications/ApplicationsView'
 import { OnboardingView } from '@/views/OnboardingView'
@@ -19,7 +20,9 @@ const queryClient = new QueryClient({
 
 function ThemedToaster() {
   const { resolvedTheme, prefs } = usePrefs()
-  return <Toaster theme={resolvedTheme} dir={prefs.language === 'ar' ? 'rtl' : 'ltr'} position="bottom-right" />
+  const rtl = prefs.language === 'ar'
+  // Away from the sidebar, which sits on the right in Arabic.
+  return <Toaster theme={resolvedTheme} dir={rtl ? 'rtl' : 'ltr'} position={rtl ? 'bottom-left' : 'bottom-right'} />
 }
 
 /** Sends a first-time user to the welcome screen until they finish it. */
@@ -49,6 +52,7 @@ export default function App() {
                 <Route path="reference" element={<ReferenceView />} />
                 <Route path="email" element={<PlaceholderView page="email" />} />
                 <Route path="profile" element={<ProfileView />} />
+                <Route path="cv/master" element={<MasterCvView />} />
                 <Route path="settings" element={<SettingsView />} />
               </Route>
             </Route>

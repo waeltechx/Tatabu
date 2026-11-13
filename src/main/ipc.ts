@@ -17,6 +17,7 @@ import { listApplications, getApplication } from './repo/applications'
 import { getProfile, saveProfile } from './repo/profile'
 import { addToLibrary, libraryItems, libraryPath, removeLibrary, renameLibrary } from './library'
 import { printReference, referenceState, saveReferenceState } from './documents'
+import { dismissCvWarning, fixItem, masterSourceText, masterState, readCv, saveMasterCv, uploadCv } from './cv'
 import {
   addPickedFiles,
   attachLibrary,
@@ -302,4 +303,35 @@ export function registerIpc(): void {
   handle('refs:get', (applicationId) => referenceState(String(applicationId)))
   handle('refs:save', (applicationId, state) => saveReferenceState(String(applicationId), state ?? {}))
   handle('refs:print', (applicationId, state) => printReference(String(applicationId), state ?? {}))
+
+  // --- master CV ---------------------------------------------------------------
+  handle('cv:get', () => masterState())
+  handle('cv:upload', async () => {
+    const t = mainText()
+    const win = parentWindow()
+    const options = {
+      title: t.chooseCvTitle,
+      properties: ['openFile'] as Array<'openFile'>,
+      filters: [{ name: t.cvFilter, extensions: ['pdf', 'docx', 'txt', 'md'] }]
+    }
+    const picked = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options)
+    const source = picked.filePaths[0]
+    if (picked.canceled || !source) return null
+    return uploadCv(source)
+  })
+  handle('cv:read', (provider) => readCv(provider && isSecretName(provider) ? provider : undefined))
+  handle('cv:save', (cv) => saveMasterCv(cv ?? {}))
+  handle('cv:dismiss', (id) => dismissCvWarning(String(id)))
+  handle('cv:fix', (text, problems, provider) =>
+    fixItem(
+      {
+        text: String(text ?? ''),
+        problems: Array.isArray(problems) ? problems : [],
+        sources: [masterSourceText()],
+        language: masterState().cv?.language ?? 'en'
+      },
+      provider && isSecretName(provider) ? provider : undefined
+    )
+  )
+  handle('ai:fix', (req, provider) => fixItem(req, provider && isSecretName(provider) ? provider : undefined))
 }

@@ -122,3 +122,18 @@ body {
   background: var(--yellow);
   color: #202329;
 }
+
+/* "Show me": the field holding a flagged fact flashes yellow for a moment. */
+@keyframes fact-flash {
+  0%,
+  60% {
+    box-shadow: 0 0 0 3px var(--color-yellow);
+    border-color: var(--color-strong);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.fact-flash {
+  animation: fact-flash 1.8s ease-out;
+}

@@ -5,6 +5,7 @@
  * The preload exposes exactly these as `window.tatabu.invoke(channel, ...args)`
  * and the main process registers a handler for each (see src/main/ipc.ts).
  */
+import type { FixRequest, MasterCv, MasterState } from './cv'
 import type { AiSettings, DocLanguage, ImportedFile, Referee, RefereeInput, SecretName, SettingsView } from './settings'
 import type { ModelInfo, ProviderId } from './ai'
 import type { PaperSize, Profile } from './profile'
@@ -118,6 +119,19 @@ export interface IpcContract {
   'refs:save': { args: [applicationId: string, state: ReferenceState]; result: ReferenceState }
   /** Prints the References PDF into the application folder. */
   'refs:print': { args: [applicationId: string, state: ReferenceState]; result: SavedPdf }
+
+  // Master CV
+  'cv:get': { args: []; result: MasterState }
+  /** Picks a CV file and keeps it in the library, ready to read. Null when cancelled. */
+  'cv:upload': { args: []; result: MasterState | null }
+  /** Reads the newest uploaded CV with AI and replaces the master CV. */
+  'cv:read': { args: [provider?: ProviderId]; result: MasterState }
+  'cv:save': { args: [MasterCv]; result: MasterState }
+  'cv:dismiss': { args: [warningId: string]; result: MasterState }
+  /** "Fix it" on the master CV: the item is rewritten from the CV file's own text. */
+  'cv:fix': { args: [text: string, problems: string[], provider?: ProviderId]; result: string }
+  /** "Fix it" anywhere else: rewrite from the given sources. */
+  'ai:fix': { args: [FixRequest, provider?: ProviderId]; result: string }
 }
 
 export type IpcChannel = keyof IpcContract
@@ -175,7 +189,14 @@ export const IPC_CHANNELS = [
   'settings:setPaper',
   'refs:get',
   'refs:save',
-  'refs:print'
+  'refs:print',
+  'cv:get',
+  'cv:upload',
+  'cv:read',
+  'cv:save',
+  'cv:dismiss',
+  'cv:fix',
+  'ai:fix'
 ] as const satisfies readonly IpcChannel[]
 
 // Compile-time check: every channel in the contract is in the allowlist above.
