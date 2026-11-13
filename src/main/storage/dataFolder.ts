@@ -3,7 +3,7 @@
  * plus `_Library/` for reusable files. Plain fs, no Electron, so it can be tested.
  * Paths stored in the database are relative to this folder.
  */
-import { cpSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, copyFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, copyFileSync, writeFileSync } from 'node:fs'
 import { basename, extname, isAbsolute, join, relative, resolve } from 'node:path'
 import { applicationFolderName, withCollisionSuffix } from '@shared/folderName'
 
@@ -46,16 +46,43 @@ export function renameApplicationFolder(root: string, current: string, company: 
   return name
 }
 
+/** A free "name.ext" in `dir` (case-insensitive), adding " (2)", " (3)"… when taken. */
+function freeName(dir: string, filename: string): string {
+  const ext = extname(filename)
+  const stem = basename(filename, ext)
+  const isTaken = existsIgnoringCase(dir)
+  return `${withCollisionSuffix(stem, (n) => isTaken(`${n}${ext}`))}${ext}`
+}
+
+/** Copies a file into `<root>/<dirRel>/`, keeping its name unless taken. Returns the relative path. */
+export function copyIntoFolder(root: string, dirRel: string, sourcePath: string, filename = basename(sourcePath)): string {
+  const dir = join(root, dirRel)
+  mkdirSync(dir, { recursive: true })
+  const name = freeName(dir, filename)
+  copyFileSync(sourcePath, join(dir, name))
+  return `${dirRel}/${name}`
+}
+
+/** Writes bytes as a new file in `<root>/<dirRel>/`. Returns the relative path. */
+export function writeIntoFolder(root: string, dirRel: string, filename: string, data: Uint8Array): string {
+  const dir = join(root, dirRel)
+  mkdirSync(dir, { recursive: true })
+  const name = freeName(dir, filename)
+  writeFileSync(join(dir, name), data)
+  return `${dirRel}/${name}`
+}
+
 /** Copies a file into `_Library/`, keeping its name unless taken. Returns the relative path. */
 export function copyIntoLibrary(root: string, sourcePath: string): string {
   ensureDataFolder(root)
-  const dir = join(root, LIBRARY_DIR)
-  const ext = extname(sourcePath)
-  const stem = basename(sourcePath, ext)
-  const isTaken = existsIgnoringCase(dir)
-  const name = withCollisionSuffix(stem, (n) => isTaken(`${n}${ext}`))
-  copyFileSync(sourcePath, join(dir, `${name}${ext}`))
-  return `${LIBRARY_DIR}/${name}${ext}`
+  return copyIntoFolder(root, LIBRARY_DIR, sourcePath)
+}
+
+/** Absolute path of a stored relative path, refusing anything that escapes the documents folder. */
+export function resolveInside(root: string, relPath: string): string {
+  const abs = resolve(root, relPath)
+  if (!isInside(abs, resolve(root))) throw new Error('NOT_FOUND')
+  return abs
 }
 
 function isInside(child: string, parent: string): boolean {

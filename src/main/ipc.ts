@@ -13,6 +13,24 @@ import { copyIntoLibrary, ensureDataFolder, moveDataFolder, resolveTargetFolder 
 import { mainText } from './i18n'
 import { forgetProvider, modelsFor, testAndRemember, transcribeAudio } from './ai/service'
 import { getAiSettings } from './repo/settings'
+import { listApplications, getApplication } from './repo/applications'
+import { listLibrary } from './repo/library'
+import {
+  addPickedFiles,
+  attachLibrary,
+  changeFileType,
+  checkDuplicates,
+  combine,
+  createApplication,
+  editApplication,
+  extractJob,
+  filePath,
+  folderPath,
+  listFiles,
+  rememberPicked,
+  removeApplication,
+  removeFile
+} from './applications'
 
 type Handler<C extends IpcChannel> = (...args: IpcArgs<C>) => IpcResult<C> | Promise<IpcResult<C>>
 
@@ -180,4 +198,70 @@ export function registerIpc(): void {
     if (!(audio instanceof Uint8Array)) throw new Error('AUDIO_EMPTY')
     return transcribeAudio(audio, String(mimeType))
   })
+
+  // --- applications ----------------------------------------------------------
+  handle('apps:list', () => listApplications(getDb()))
+  handle('apps:get', (id) => getApplication(getDb(), String(id)))
+  handle('apps:extract', (text, link, provider) =>
+    extractJob(String(text), String(link ?? ''), provider && isSecretName(provider) ? provider : undefined)
+  )
+  handle('apps:checkDuplicate', (query) => checkDuplicates(query ?? {}))
+  handle('apps:create', (input, attachments) => createApplication(input, Array.isArray(attachments) ? attachments : []))
+  handle('apps:update', (id, patch) => editApplication(String(id), patch ?? {}))
+  handle('apps:delete', async (id, trashFolder) => {
+    const folder = removeApplication(String(id))
+    if (trashFolder && folder) await shell.trashItem(folder)
+  })
+  handle('apps:openFolder', async (id) => {
+    const error = await shell.openPath(folderPath(String(id)))
+    if (error) throw new Error(error)
+  })
+  handle('apps:setup', () => {
+    const db = getDb()
+    const profile = db.prepare('SELECT full_name FROM profile WHERE id = 1').get() as { full_name: string } | undefined
+    const referees = db.prepare('SELECT COUNT(*) AS n FROM referees').get() as { n: number }
+    return {
+      groq: getSecrets().status('groq').set,
+      cv: latestCvSource(db) !== null,
+      profile: !!profile?.full_name.trim(),
+      referees: Number(referees.n) > 0
+    }
+  })
+
+  // --- files -----------------------------------------------------------------
+  handle('files:pick', async () => {
+    const t = mainText()
+    const win = parentWindow()
+    const options = {
+      title: t.chooseFilesTitle,
+      properties: ['openFile', 'multiSelections'] as Array<'openFile' | 'multiSelections'>,
+      filters: [
+        { name: t.documentsFilter, extensions: ['pdf', 'docx', 'doc', 'png', 'jpg', 'jpeg', 'webp', 'txt', 'odt'] },
+        { name: t.allFilesFilter, extensions: ['*'] }
+      ]
+    }
+    const result = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options)
+    return result.canceled ? [] : rememberPicked(result.filePaths)
+  })
+  handle('files:list', (applicationId) => listFiles(String(applicationId)))
+  handle('files:add', (applicationId, tokens, type) =>
+    addPickedFiles(String(applicationId), Array.isArray(tokens) ? tokens.map(String) : [], type)
+  )
+  handle('files:attachLibrary', (applicationId, ids) =>
+    attachLibrary(String(applicationId), Array.isArray(ids) ? ids.map(String) : [])
+  )
+  handle('files:setType', (fileId, type) => changeFileType(String(fileId), type))
+  handle('files:delete', async (fileId) => {
+    const { files, path } = removeFile(String(fileId))
+    if (path) await shell.trashItem(path)
+    return files
+  })
+  handle('files:open', async (fileId) => {
+    const error = await shell.openPath(filePath(String(fileId)))
+    if (error) throw new Error(error)
+  })
+  handle('files:combine', (applicationId, fileIds, filename) =>
+    combine(String(applicationId), Array.isArray(fileIds) ? fileIds.map(String) : [], String(filename ?? ''))
+  )
+  handle('library:list', () => listLibrary(getDb()))
 }

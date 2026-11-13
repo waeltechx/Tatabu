@@ -6,6 +6,9 @@ import { useSettings } from '@/lib/api'
 import { AppShell } from '@/components/layout/AppShell'
 import { PlaceholderView } from '@/views/PlaceholderView'
 import { SettingsView } from '@/views/settings/SettingsView'
+import { DashboardView } from '@/views/dashboard/DashboardView'
+import { AddApplicationView } from '@/views/applications/AddApplicationView'
+import { ApplicationsView } from '@/views/applications/ApplicationsView'
 import { OnboardingView } from '@/views/OnboardingView'
 
 const queryClient = new QueryClient({
@@ -35,7 +38,10 @@ export default function App() {
             <Route element={<FirstRunGate />}>
               <Route path="welcome" element={<OnboardingView />} />
               <Route element={<AppShell />}>
-                <Route index element={<PlaceholderView page="dashboard" />} />
+                <Route index element={<DashboardView />} />
+                <Route path="applications" element={<ApplicationsView />} />
+                <Route path="applications/new" element={<AddApplicationView />} />
+                <Route path="applications/:id" element={<ApplicationsView />} />
                 <Route path="cv" element={<PlaceholderView page="cvStudio" />} />
                 <Route path="cover-letter" element={<PlaceholderView page="coverLetter" />} />
                 <Route path="reference" element={<PlaceholderView page="reference" />} />

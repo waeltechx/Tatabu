@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FileText, FileUser, IdCard, LayoutGrid, Mail, Settings, ShieldCheck, UserRound, type LucideIcon } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -22,6 +22,8 @@ const NAV: NavItem[] = [
 
 export function Sidebar() {
   const { t } = useTranslation()
+  // Applications live under the dashboard in the menu.
+  const inApps = useLocation().pathname.startsWith('/applications')
   return (
     <aside className="flex min-h-full w-60 shrink-0 flex-col border-e border-strong bg-surface px-5 pt-[25px] pb-[22px]">
       <div className="ps-1 font-logo text-[27px] leading-tight font-bold">منصة تتبع</div>
@@ -34,14 +36,15 @@ export function Sidebar() {
             key={to}
             to={to}
             end={to === '/'}
-            className={({ isActive }) =>
-              clsx(
+            className={({ isActive: active }) => {
+              const isActive = active || (to === '/' && inApps)
+              return clsx(
                 'flex h-[46px] items-center gap-3 rounded-card border-ui px-3.5 text-[14px] text-ink no-underline',
                 isActive
                   ? 'border-strong bg-yellow font-semibold text-on-accent shadow-hard'
                   : 'border-transparent font-medium hover:bg-field'
               )
-            }
+            }}
           >
             <Icon size={20} strokeWidth={1.8} aria-hidden />
             <span className="flex-1">{t(`nav.${key}`)}</span>

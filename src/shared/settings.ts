@@ -101,6 +101,10 @@ export const ERROR_CODES = [
   'AI_NO_VISION',
   'AUDIO_TOO_LARGE',
   'AUDIO_EMPTY',
+  // Applications and files
+  'NOTHING_TO_COMBINE',
+  'FILE_MISSING',
+  'TEXT_EMPTY',
   // Raised in the renderer
   'MIC_DENIED',
   'MIC_UNAVAILABLE'

@@ -11,6 +11,9 @@ const TEXT = {
     cancel: 'Cancel',
     chooseCvTitle: 'Choose your CV',
     cvFilter: 'CV (PDF or Word)',
+    chooseFilesTitle: 'Choose files to attach',
+    documentsFilter: 'Documents and images',
+    allFilesFilter: 'All files',
     startupErrorTitle: 'Tatabu could not start',
     databaseTooNew: 'Your data was saved by a newer version of Tatabu. Please install the latest version.',
     databaseError: 'Tatabu could not open its database.'
@@ -24,6 +27,9 @@ const TEXT = {
     cancel: 'إلغاء',
     chooseCvTitle: 'اختار سيرتك الذاتية',
     cvFilter: 'سيرة ذاتية (PDF أو Word)',
+    chooseFilesTitle: 'اختار ملفات لترفقها',
+    documentsFilter: 'مستندات وصور',
+    allFilesFilter: 'كل الملفات',
     startupErrorTitle: 'ما قدر تتبع يشتغل',
     databaseTooNew: 'بياناتك محفوظة بنسخة أحدث من تتبع. نزّل آخر نسخة لو سمحت.',
     databaseError: 'ما قدر تتبع يفتح قاعدة البيانات.'

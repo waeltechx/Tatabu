@@ -16,6 +16,7 @@ import {
   type SecretName
 } from '@shared/settings'
 import type { ModelInfo, ProviderCheck, ProviderId } from '@shared/ai'
+import { createAppMocks } from './browserMockApps'
 
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
@@ -60,6 +61,11 @@ export function installBrowserMock(): void {
   ]
   let referees: Referee[] = []
   const checks: Partial<Record<SecretName, ProviderCheck>> = {}
+  const appMocks = createAppMocks({
+    hasGroq: () => secrets.has('groq'),
+    cv: () => cv,
+    hasReferees: () => referees.length > 0
+  })
 
   const mask = (k: string): string => `${k.slice(0, 4)}${'•'.repeat(16)}${k.slice(-4)}`
   const view = () => ({
@@ -145,6 +151,7 @@ export function installBrowserMock(): void {
       if (!secrets.has(provider)) throw new Error('AI_NO_KEY')
       return MOCK_MODELS[provider]
     },
+    ...appMocks,
     'voice:access': () => true,
     'voice:transcribe': async (audio) => {
       await wait(800)

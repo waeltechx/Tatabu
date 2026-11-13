@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "electron-updater": "^6.8.11",
+    "pdf-lib": "^1.17.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
