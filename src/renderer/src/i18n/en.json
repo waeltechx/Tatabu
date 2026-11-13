@@ -1,5 +1,7 @@
 {
-  "brand": { "tagline": "Local · private" },
+  "brand": {
+    "tagline": "Local · private"
+  },
   "nav": {
     "workspace": "Workspace",
     "dashboard": "Dashboard",
@@ -23,13 +25,41 @@
     "savedOnDevice": "Saved on this device"
   },
   "pages": {
-    "dashboard": { "crumb": "Your job search, in focus", "title": "Dashboard", "sub": "A little structure. A lot of possibility." },
-    "cvStudio": { "crumb": "Document studio / CV", "title": "CV Studio", "sub": "Same facts. A sharper fit for every job." },
-    "coverLetter": { "crumb": "Document studio / Cover letter", "title": "Cover letter", "sub": "Your experience. Your voice. A stronger introduction." },
-    "reference": { "crumb": "Document studio / References", "title": "References", "sub": "Saved once. Ready for every application." },
-    "email": { "crumb": "Inbox / Status", "title": "Email status", "sub": "Paste a reply. We find the application and the new status." },
-    "profile": { "crumb": "You / Profile", "title": "Profile", "sub": "The details on every document you send." },
-    "settings": { "crumb": "Preferences / Settings", "title": "Settings", "sub": "Your keys. Your language. Your folders." }
+    "dashboard": {
+      "crumb": "Your job search, in focus",
+      "title": "Dashboard",
+      "sub": "A little structure. A lot of possibility."
+    },
+    "cvStudio": {
+      "crumb": "Document studio / CV",
+      "title": "CV Studio",
+      "sub": "Same facts. A sharper fit for every job."
+    },
+    "coverLetter": {
+      "crumb": "Document studio / Cover letter",
+      "title": "Cover letter",
+      "sub": "Your experience. Your voice. A stronger introduction."
+    },
+    "reference": {
+      "crumb": "Document studio / References",
+      "title": "References",
+      "sub": "Saved once. Ready for every application."
+    },
+    "email": {
+      "crumb": "Inbox / Status",
+      "title": "Email status",
+      "sub": "Paste a reply. We find the application and the new status."
+    },
+    "profile": {
+      "crumb": "You / Profile",
+      "title": "Profile",
+      "sub": "The details on every document you send."
+    },
+    "settings": {
+      "crumb": "Preferences / Settings",
+      "title": "Settings",
+      "sub": "Your keys. Your language. Your folders."
+    }
   },
   "common": {
     "comingSoon": "This screen is being built.",
@@ -38,7 +68,8 @@
     "edit": "Edit",
     "delete": "Delete",
     "done": "Done",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "retry": "Retry"
   },
   "settings": {
     "ai": {
@@ -49,7 +80,7 @@
       "apiKey": "API key",
       "show": "Show",
       "hide": "Hide",
-      "change": "Change",
+      "change": "Change key",
       "remove": "Remove key",
       "saved": "Saved on this device",
       "voice": "Voice",
@@ -61,7 +92,22 @@
       "provider": "Provider",
       "noSecureStorage": "This computer offers no secure storage, so keys can't be saved here.",
       "keySaved": "Key saved.",
-      "keyRemoved": "Key removed."
+      "keyRemoved": "Key removed.",
+      "test": "Test",
+      "testing": "Testing…",
+      "connected": "Connected",
+      "vision": "Reads images · CV design works",
+      "noVision": "No model here reads images · CV design won't work",
+      "model": "Model",
+      "modelAuto": "Automatic ({{model}})",
+      "modelAutoPlain": "Automatic",
+      "modelsLoading": "Loading models…",
+      "modelsFailed": "Couldn't load the model list.",
+      "readsImages": "reads images",
+      "tryVoice": "Try dictation",
+      "tryVoiceHint": "Press the mic, say a sentence in any language, press again.",
+      "heard": "Heard",
+      "nothingHeard": "Nothing was heard. Try again a little closer to the mic."
     },
     "refs": {
       "label": "Default references",
@@ -145,6 +191,28 @@
     "LANGUAGE_NAME_EMPTY": "Type the language's name first.",
     "LANGUAGE_BUILTIN": "English and Arabic are always available.",
     "REFEREE_NAME_EMPTY": "A referee needs a name.",
-    "NOT_FOUND": "That item no longer exists."
+    "NOT_FOUND": "That item no longer exists.",
+    "AI_NO_KEY": "Add an API key for this provider in Settings first.",
+    "AI_AUTH": "The provider rejected this key. Check it in Settings.",
+    "AI_RATE_LIMIT": "The provider's usage limit was reached. Wait a minute and try again.",
+    "AI_MODEL_MISSING": "The provider doesn't offer this model. Pick another one in Settings.",
+    "AI_SERVER": "The provider is having trouble right now. Try again in a moment.",
+    "AI_TIMEOUT": "The provider took too long to answer. Try again.",
+    "AI_NETWORK": "Couldn't reach the provider. Check your internet connection.",
+    "AI_BAD_REQUEST": "The provider refused the request.",
+    "AI_INVALID_OUTPUT": "The answer came back in the wrong shape. Try again.",
+    "AI_NO_VISION": "None of this provider's models can read images.",
+    "AUDIO_TOO_LARGE": "The recording is too long (25 MB at most). Record a shorter part.",
+    "AUDIO_EMPTY": "Nothing was recorded.",
+    "MIC_DENIED": "Tatabu isn't allowed to use the microphone. Allow it in your system settings.",
+    "MIC_UNAVAILABLE": "No microphone was found."
+  },
+  "mic": {
+    "start": "Dictate",
+    "stop": "Stop and write it down",
+    "working": "Writing it down…"
+  },
+  "ai": {
+    "tryWith": "Try with {{name}}"
   }
 }

@@ -1,4 +1,5 @@
 /** Types shared by the main process and the renderer for settings and storage. */
+import type { ProviderCheck } from './ai'
 
 /** Providers that can take over text work while Groq keeps voice. */
 export const ALT_PROVIDERS = ['gemini', 'openai', 'openrouter'] as const
@@ -16,7 +17,11 @@ export interface AiSettings {
   altModel: string
 }
 
-export const DEFAULT_AI_SETTINGS: AiSettings = { useAltText: false, altProvider: 'gemini', altModel: '' }
+export const DEFAULT_AI_SETTINGS: AiSettings = {
+  useAltText: false,
+  altProvider: 'gemini',
+  altModel: ''
+}
 
 export interface KeyStatus {
   set: boolean
@@ -32,6 +37,8 @@ export interface SettingsView {
   onboarded: boolean
   /** False when the OS offers no secure storage; keys can't be saved then. */
   secureStorage: boolean
+  /** Last successful connection test per provider. */
+  checks: Partial<Record<SecretName, ProviderCheck>>
 }
 
 export interface Referee {
@@ -80,6 +87,22 @@ export const ERROR_CODES = [
   'LANGUAGE_NAME_EMPTY',
   'LANGUAGE_BUILTIN',
   'REFEREE_NAME_EMPTY',
-  'NOT_FOUND'
+  'NOT_FOUND',
+  // AI and voice
+  'AI_NO_KEY',
+  'AI_AUTH',
+  'AI_RATE_LIMIT',
+  'AI_MODEL_MISSING',
+  'AI_SERVER',
+  'AI_TIMEOUT',
+  'AI_NETWORK',
+  'AI_BAD_REQUEST',
+  'AI_INVALID_OUTPUT',
+  'AI_NO_VISION',
+  'AUDIO_TOO_LARGE',
+  'AUDIO_EMPTY',
+  // Raised in the renderer
+  'MIC_DENIED',
+  'MIC_UNAVAILABLE'
 ] as const
 export type ErrorCode = (typeof ERROR_CODES)[number]

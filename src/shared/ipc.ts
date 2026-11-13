@@ -5,15 +5,8 @@
  * The preload exposes exactly these as `window.tatabu.invoke(channel, ...args)`
  * and the main process registers a handler for each (see src/main/ipc.ts).
  */
-import type {
-  AiSettings,
-  DocLanguage,
-  ImportedFile,
-  Referee,
-  RefereeInput,
-  SecretName,
-  SettingsView
-} from './settings'
+import type { AiSettings, DocLanguage, ImportedFile, Referee, RefereeInput, SecretName, SettingsView } from './settings'
+import type { ModelInfo, ProviderId } from './ai'
 
 export type ThemePref = 'light' | 'dark' | 'system'
 export type UiLanguage = 'en' | 'ar'
@@ -58,6 +51,16 @@ export interface IpcContract {
   /** Asks for a CV file (PDF/Word) and keeps a copy in _Library. Null if cancelled. */
   'library:importCv': { args: []; result: ImportedFile | null }
   'library:latestCv': { args: []; result: ImportedFile | null }
+
+  /** Tests a provider's key and remembers the result (Settings chips). */
+  'ai:test': { args: [ProviderId]; result: SettingsView }
+  /** Chat models the provider offers, for the model dropdown. */
+  'ai:models': { args: [ProviderId]; result: ModelInfo[] }
+
+  /** Asks the OS for microphone access where it needs asking (macOS). */
+  'voice:access': { args: []; result: boolean }
+  /** Recorded audio → text, with Groq Whisper. */
+  'voice:transcribe': { args: [Uint8Array, string]; result: string }
 }
 
 export type IpcChannel = keyof IpcContract
@@ -83,7 +86,11 @@ export const IPC_CHANNELS = [
   'storage:open',
   'storage:change',
   'library:importCv',
-  'library:latestCv'
+  'library:latestCv',
+  'ai:test',
+  'ai:models',
+  'voice:access',
+  'voice:transcribe'
 ] as const satisfies readonly IpcChannel[]
 
 // Compile-time check: every channel in the contract is in the allowlist above.

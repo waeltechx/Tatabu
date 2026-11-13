@@ -1,10 +1,12 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff, KeyRound } from 'lucide-react'
 import { toast } from 'sonner'
 import type { KeyStatus, SecretName } from '@shared/settings'
 import { invoke, keys, useErrorToast, useWrite } from '@/lib/api'
 import { Button, FieldLabel, TextInput } from '@/components/ui'
+
+const linkClass = 'cursor-pointer text-[11.5px] text-muted underline underline-offset-[3px] hover:text-ink'
 
 /** One API key: masked when saved, with Show / Change / Remove; an input when empty. */
 export function KeyField({
@@ -15,6 +17,7 @@ export function KeyField({
   disabled,
   saveLabel,
   compact,
+  actions,
   className
 }: {
   name: SecretName
@@ -25,6 +28,8 @@ export function KeyField({
   saveLabel?: string
   /** Narrow places: no Show/Change buttons once saved, only the masked key. */
   compact?: boolean
+  /** Extra buttons beside a saved key (e.g. "Test"). */
+  actions?: ReactNode
   className?: string
 }) {
   const { t } = useTranslation()
@@ -116,23 +121,23 @@ export function KeyField({
               <span className="truncate select-all">{revealed ?? status.masked}</span>
             </div>
             {!compact && (
-              <>
-                <Button onClick={() => void toggleReveal()}>
-                  {revealed !== null ? <EyeOff /> : <Eye />}
-                  {revealed !== null ? t('settings.ai.hide') : t('settings.ai.show')}
-                </Button>
-                <Button onClick={() => setEditing(true)}>{t('settings.ai.change')}</Button>
-              </>
+              <Button onClick={() => void toggleReveal()}>
+                {revealed !== null ? <EyeOff /> : <Eye />}
+                {revealed !== null ? t('settings.ai.hide') : t('settings.ai.show')}
+              </Button>
             )}
+            {actions}
           </div>
-          <button
-            type="button"
-            onClick={remove}
-            disabled={write.isPending}
-            className="mt-2 cursor-pointer text-[11.5px] text-muted underline underline-offset-[3px] hover:text-ink"
-          >
-            {t('settings.ai.remove')}
-          </button>
+          <div className="mt-2 flex gap-3.5">
+            {!compact && (
+              <button type="button" onClick={() => setEditing(true)} className={linkClass}>
+                {t('settings.ai.change')}
+              </button>
+            )}
+            <button type="button" onClick={remove} disabled={write.isPending} className={linkClass}>
+              {t('settings.ai.remove')}
+            </button>
+          </div>
         </>
       )}
     </div>

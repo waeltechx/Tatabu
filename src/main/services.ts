@@ -3,7 +3,7 @@ import { app, safeStorage } from 'electron'
 import { join } from 'node:path'
 import { openDatabase, type Db } from './db/open'
 import { createSecretStore, type Cipher, type SecretStore } from './repo/secrets'
-import { getAiSettings, getSetting, setSetting } from './repo/settings'
+import { getAiSettings, getChecks, getSetting, setSetting } from './repo/settings'
 import { ensureDataFolder } from './storage/dataFolder'
 import type { SettingsView } from '@shared/settings'
 
@@ -59,6 +59,7 @@ export function settingsView(): SettingsView {
     keys: getSecrets().allStatus(),
     dataFolder: dataFolder(),
     onboarded: getSetting(d, 'onboarded', false),
-    secureStorage: getSecrets().available()
+    secureStorage: getSecrets().available(),
+    checks: getChecks(d)
   }
 }

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, nativeTheme, shell } from 'electron'
+import { app, BrowserWindow, dialog, nativeTheme, session, shell } from 'electron'
 import { join } from 'node:path'
 import { registerIpc } from './ipc'
 import { closeServices, initServices } from './services'
@@ -43,6 +43,17 @@ function createWindow(): void {
   }
 }
 
+/** The only permission the app ever grants: the microphone, for dictation. */
+function allowMicrophoneOnly(): void {
+  const isAudio = (types: readonly string[] | undefined): boolean => !!types?.length && types.every((t) => t === 'audio')
+  session.defaultSession.setPermissionRequestHandler((_wc, permission, callback, details) => {
+    callback(permission === 'media' && isAudio((details as { mediaTypes?: string[] }).mediaTypes))
+  })
+  session.defaultSession.setPermissionCheckHandler((_wc, permission, _origin, details) => {
+    return permission === 'media' && (details as { mediaType?: string }).mediaType !== 'video'
+  })
+}
+
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
@@ -68,6 +79,7 @@ if (!app.requestSingleInstanceLock()) {
       app.quit()
       return
     }
+    allowMicrophoneOnly()
     registerIpc()
     createWindow()
     app.on('activate', () => {

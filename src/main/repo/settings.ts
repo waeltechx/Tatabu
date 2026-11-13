@@ -1,5 +1,6 @@
 import type { Db } from '../db/open'
-import { ALT_PROVIDERS, DEFAULT_AI_SETTINGS, type AiSettings } from '@shared/settings'
+import { ALT_PROVIDERS, DEFAULT_AI_SETTINGS, SECRET_NAMES, type AiSettings, type SecretName } from '@shared/settings'
+import type { ProviderCheck } from '@shared/ai'
 
 /** Key/value settings stored as JSON in the `settings` table. */
 export function getSetting<T>(db: Db, key: string, fallback: T): T {
@@ -13,9 +14,10 @@ export function getSetting<T>(db: Db, key: string, fallback: T): T {
 }
 
 export function setSetting(db: Db, key: string, value: unknown): void {
-  db.prepare(
-    'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value'
-  ).run(key, JSON.stringify(value))
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value').run(
+    key,
+    JSON.stringify(value)
+  )
 }
 
 export function getAiSettings(db: Db): AiSettings {
@@ -36,4 +38,29 @@ export function updateAiSettings(db: Db, patch: Partial<AiSettings>): AiSettings
   }
   setSetting(db, 'ai', next)
   return next
+}
+
+// --- provider checks ("Test" results) ----------------------------------------
+
+export function getChecks(db: Db): Partial<Record<SecretName, ProviderCheck>> {
+  const raw = getSetting<Record<string, unknown>>(db, 'checks', {})
+  const out: Partial<Record<SecretName, ProviderCheck>> = {}
+  for (const name of SECRET_NAMES) {
+    const c = raw[name] as Partial<ProviderCheck> | undefined
+    if (c && typeof c.model === 'string' && typeof c.testedAt === 'string') {
+      out[name] = {
+        model: c.model,
+        testedAt: c.testedAt,
+        visionModel: typeof c.visionModel === 'string' ? c.visionModel : null
+      }
+    }
+  }
+  return out
+}
+
+export function setCheck(db: Db, name: SecretName, check: ProviderCheck | null): void {
+  const all = getChecks(db)
+  if (check) all[name] = check
+  else delete all[name]
+  setSetting(db, 'checks', all)
 }

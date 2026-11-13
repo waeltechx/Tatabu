@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell, systemPreferences } from 'electron'
 import { basename } from 'node:path'
 import type { IpcArgs, IpcChannel, IpcResult, UiPrefs } from '@shared/ipc'
 import { ALT_PROVIDERS, type AiSettings } from '@shared/settings'
@@ -11,6 +11,8 @@ import { listReferees, moveReferee, removeReferee, saveReferee } from './repo/re
 import { addLibraryFile, latestCvSource } from './repo/library'
 import { copyIntoLibrary, ensureDataFolder, moveDataFolder, resolveTargetFolder } from './storage/dataFolder'
 import { mainText } from './i18n'
+import { forgetProvider, modelsFor, testAndRemember, transcribeAudio } from './ai/service'
+import { getAiSettings } from './repo/settings'
 
 type Handler<C extends IpcChannel> = (...args: IpcArgs<C>) => IpcResult<C> | Promise<IpcResult<C>>
 
@@ -42,7 +44,10 @@ function secretName(name: unknown) {
 export function registerIpc(): void {
   applyTheme(readPrefs())
 
-  handle('app:info', () => ({ version: app.getVersion(), platform: process.platform }))
+  handle('app:info', () => ({
+    version: app.getVersion(),
+    platform: process.platform
+  }))
 
   handle('prefs:get', () => readPrefs())
   handle('prefs:set', (patch) => {
@@ -54,7 +59,12 @@ export function registerIpc(): void {
   // --- settings & keys -------------------------------------------------------
   handle('settings:get', () => settingsView())
   handle('settings:setAi', (patch) => {
-    updateAiSettings(getDb(), sanitizeAiPatch(patch))
+    const before = getAiSettings(getDb())
+    const after = updateAiSettings(getDb(), sanitizeAiPatch(patch))
+    // A different model may answer differently: the old test result no longer applies.
+    if (before.altProvider === after.altProvider && before.altModel !== after.altModel) {
+      forgetProvider(after.altProvider)
+    }
     return settingsView()
   })
   handle('settings:completeOnboarding', () => {
@@ -63,6 +73,7 @@ export function registerIpc(): void {
   })
   handle('secrets:set', (name, value) => {
     getSecrets().set(secretName(name), typeof value === 'string' ? value : null)
+    forgetProvider(secretName(name))
     return settingsView()
   })
   handle('secrets:reveal', (name) => getSecrets().get(secretName(name)) ?? '')
@@ -123,9 +134,7 @@ export function registerIpc(): void {
       message: t.moveMessage,
       detail: `${from}\n→\n${to}`
     }
-    const { response } = win
-      ? await dialog.showMessageBox(win, confirmOptions)
-      : await dialog.showMessageBox(confirmOptions)
+    const { response } = win ? await dialog.showMessageBox(win, confirmOptions) : await dialog.showMessageBox(confirmOptions)
     if (response !== 0) return null
 
     moveDataFolder(from, to)
@@ -146,7 +155,29 @@ export function registerIpc(): void {
     const source = picked.filePaths[0]
     if (picked.canceled || !source) return null
     const relPath = copyIntoLibrary(dataFolder(), source)
-    return addLibraryFile(getDb(), { label: 'CV', kind: 'cv_source', filename: basename(relPath), relPath })
+    return addLibraryFile(getDb(), {
+      label: 'CV',
+      kind: 'cv_source',
+      filename: basename(relPath),
+      relPath
+    })
   })
   handle('library:latestCv', () => latestCvSource(getDb()))
+
+  // --- AI and voice ----------------------------------------------------------
+  handle('ai:test', async (provider) => {
+    await testAndRemember(secretName(provider))
+    return settingsView()
+  })
+  handle('ai:models', (provider) => modelsFor(secretName(provider)))
+
+  handle('voice:access', async () => {
+    if (process.platform !== 'darwin') return true
+    if (systemPreferences.getMediaAccessStatus('microphone') === 'granted') return true
+    return systemPreferences.askForMediaAccess('microphone')
+  })
+  handle('voice:transcribe', (audio, mimeType) => {
+    if (!(audio instanceof Uint8Array)) throw new Error('AUDIO_EMPTY')
+    return transcribeAudio(audio, String(mimeType))
+  })
 }
