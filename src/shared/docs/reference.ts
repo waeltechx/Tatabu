@@ -18,7 +18,9 @@ export function referenceDoc(input: ReferenceDocInput): DocHtml {
   const L = docLabels(input.lang)
   const p = input.profile
   const contact = [p.email, p.phone].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ')
-  const address = lines(p.address).map(esc).join(' · ')
+  const address = lines(p.address)
+    .map((l) => `<bdi>${esc(l)}</bdi>`)
+    .join(' · ')
 
   const referees = input.referees
     .filter((r) => [r.name, r.affiliation, r.email, r.phone, r.address].some((v) => v?.trim()))
@@ -30,7 +32,9 @@ export function referenceDoc(input: ReferenceDocInput): DocHtml {
         .filter(Boolean)
         .map((x) => `<div>${x}</div>`)
         .join('')
-      const addr = lines(r.address).map(esc).join(', ')
+      const addr = lines(r.address)
+        .map((l) => `<bdi>${esc(l)}</bdi>`)
+        .join(', ')
       return `<section class="ref">
         ${r.name ? `<h3>${esc(r.name)}</h3>` : ''}
         ${r.affiliation ? `<div class="aff">${esc(r.affiliation)}</div>` : ''}

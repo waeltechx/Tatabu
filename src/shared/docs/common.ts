@@ -109,6 +109,9 @@ export interface DocLabels {
   subject: string
   enclosures: string
   page: string
+  date: string
+  coverLetter: string
+  cv: string
 }
 
 const EN: DocLabels = {
@@ -128,7 +131,10 @@ const EN: DocLabels = {
   address: 'Address',
   subject: 'Subject',
   enclosures: 'Enclosures',
-  page: 'Page'
+  page: 'Page',
+  date: 'Date',
+  coverLetter: 'Cover letter',
+  cv: 'CV'
 }
 
 const LABELS: Record<string, DocLabels> = {
@@ -144,7 +150,10 @@ const LABELS: Record<string, DocLabels> = {
     address: 'العنوان',
     subject: 'الموضوع',
     enclosures: 'المرفقات',
-    page: 'صفحة'
+    page: 'صفحة',
+    date: 'التاريخ',
+    coverLetter: 'رسالة التقديم',
+    cv: 'السيرة الذاتية'
   },
   de: {
     references: 'Referenzen',
@@ -163,7 +172,10 @@ const LABELS: Record<string, DocLabels> = {
     address: 'Adresse',
     subject: 'Betreff',
     enclosures: 'Anlagen',
-    page: 'Seite'
+    page: 'Seite',
+    date: 'Datum',
+    coverLetter: 'Anschreiben',
+    cv: 'Lebenslauf'
   }
 }
 

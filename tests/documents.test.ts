@@ -80,7 +80,7 @@ describe('references document', () => {
     expect(doc.title).toBe('References')
     expect(doc.body).toContain('For the Data &lt;Analyst&gt; position at Nordlicht')
     expect(doc.body).not.toContain('<Analyst>')
-    expect(doc.body).toContain('Weserstraße 21 · 12047 Berlin')
+    expect(doc.body).toContain('<bdi>Weserstraße 21</bdi> · <bdi>12047 Berlin</bdi>')
     expect(doc.lang).toBe('en')
   })
 

@@ -6,6 +6,7 @@
  * and the main process registers a handler for each (see src/main/ipc.ts).
  */
 import type { FixRequest, MasterCv, MasterState } from './cv'
+import type { EnclosureOption, LetterState } from './letter'
 import type { AiSettings, DocLanguage, ImportedFile, Referee, RefereeInput, SecretName, SettingsView } from './settings'
 import type { ModelInfo, ProviderId } from './ai'
 import type { PaperSize, Profile } from './profile'
@@ -132,6 +133,17 @@ export interface IpcContract {
   'cv:fix': { args: [text: string, problems: string[], provider?: ProviderId]; result: string }
   /** "Fix it" anywhere else: rewrite from the given sources. */
   'ai:fix': { args: [FixRequest, provider?: ProviderId]; result: string }
+
+  // Cover letters (one per application and document language)
+  'letter:get': { args: [applicationId: string, languageId: string]; result: LetterState }
+  'letter:save': { args: [applicationId: string, state: LetterState]; result: LetterState }
+  'letter:options': { args: [applicationId: string]; result: EnclosureOption[] }
+  'letter:prepare': { args: [applicationId: string, state: LetterState, provider?: ProviderId]; result: LetterState }
+  'letter:generate': { args: [applicationId: string, state: LetterState, provider?: ProviderId]; result: LetterState }
+  'letter:fix': { args: [applicationId: string, state: LetterState, itemId: string, provider?: ProviderId]; result: LetterState }
+  'letter:keep': { args: [applicationId: string, state: LetterState, itemId: string]; result: LetterState }
+  'letter:prompt': { args: [applicationId: string, state: LetterState]; result: string }
+  'letter:print': { args: [applicationId: string, state: LetterState]; result: SavedPdf }
 }
 
 export type IpcChannel = keyof IpcContract
@@ -196,7 +208,16 @@ export const IPC_CHANNELS = [
   'cv:save',
   'cv:dismiss',
   'cv:fix',
-  'ai:fix'
+  'ai:fix',
+  'letter:get',
+  'letter:save',
+  'letter:options',
+  'letter:prepare',
+  'letter:generate',
+  'letter:fix',
+  'letter:keep',
+  'letter:prompt',
+  'letter:print'
 ] as const satisfies readonly IpcChannel[]
 
 // Compile-time check: every channel in the contract is in the allowlist above.

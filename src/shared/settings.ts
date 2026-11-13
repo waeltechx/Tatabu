@@ -110,6 +110,7 @@ export const ERROR_CODES = [
   'UNSUPPORTED_FILE',
   'CV_NO_TEXT',
   'PDF_FAILED',
+  'MASTER_CV_MISSING',
   // Raised in the renderer
   'MIC_DENIED',
   'MIC_UNAVAILABLE'

@@ -51,9 +51,10 @@ export function DocPreview({
     const screenCss = doc.css.replace(/@page\s*\{[^}]*\}/g, '')
     root.innerHTML = `<style>
       :host { all: initial; display: block; }
-      .page { background: #fff; color: #1d2433; width: ${size.w}mm; min-height: ${size.h}mm; padding: ${pageMargin(doc.css)}; box-sizing: border-box; }
       mark.tatabu-hl { background: #ffe45b; color: inherit; outline: 2px solid #ffe45b; border-radius: 2px; }
       ${screenCss.replace(/\bhtml\s*,\s*body\b|\bbody\b/g, '.page')}
+      /* After the document's own rules, which reset body padding. */
+      .page { background: #fff; color: #1d2433; width: ${size.w}mm; min-height: ${size.h}mm; padding: ${pageMargin(doc.css)}; box-sizing: border-box; }
     </style><div class="page" dir="${doc.dir}" lang="${doc.lang}">${doc.body}</div>`
 
     if (highlight && highlight.trim()) {

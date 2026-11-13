@@ -10,6 +10,7 @@ import { DashboardView } from '@/views/dashboard/DashboardView'
 import { ProfileView } from '@/views/profile/ProfileView'
 import { ReferenceView } from '@/views/reference/ReferenceView'
 import { MasterCvView } from '@/views/profile/MasterCvView'
+import { CoverLetterView } from '@/views/letter/CoverLetterView'
 import { AddApplicationView } from '@/views/applications/AddApplicationView'
 import { ApplicationsView } from '@/views/applications/ApplicationsView'
 import { OnboardingView } from '@/views/OnboardingView'
@@ -48,7 +49,7 @@ export default function App() {
                 <Route path="applications/new" element={<AddApplicationView />} />
                 <Route path="applications/:id" element={<ApplicationsView />} />
                 <Route path="cv" element={<PlaceholderView page="cvStudio" />} />
-                <Route path="cover-letter" element={<PlaceholderView page="coverLetter" />} />
+                <Route path="cover-letter" element={<CoverLetterView />} />
                 <Route path="reference" element={<ReferenceView />} />
                 <Route path="email" element={<PlaceholderView page="email" />} />
                 <Route path="profile" element={<ProfileView />} />

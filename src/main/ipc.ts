@@ -17,6 +17,17 @@ import { listApplications, getApplication } from './repo/applications'
 import { getProfile, saveProfile } from './repo/profile'
 import { addToLibrary, libraryItems, libraryPath, removeLibrary, renameLibrary } from './library'
 import { printReference, referenceState, saveReferenceState } from './documents'
+import {
+  dismissLetterWarnings,
+  enclosureOptions,
+  fixLetterItem,
+  generateLetter,
+  letterPrompt,
+  letterState,
+  prepareLetter,
+  printLetter,
+  saveLetter
+} from './letters'
 import { dismissCvWarning, fixItem, masterSourceText, masterState, readCv, saveMasterCv, uploadCv } from './cv'
 import {
   addPickedFiles,
@@ -334,4 +345,16 @@ export function registerIpc(): void {
     )
   )
   handle('ai:fix', (req, provider) => fixItem(req, provider && isSecretName(provider) ? provider : undefined))
+
+  // --- cover letters -------------------------------------------------------------
+  const pick = (p: unknown) => (p && isSecretName(p) ? p : undefined)
+  handle('letter:get', (id, languageId) => letterState(String(id), String(languageId)))
+  handle('letter:save', (id, state) => saveLetter(String(id), state ?? {}))
+  handle('letter:options', (id) => enclosureOptions(String(id)))
+  handle('letter:prepare', (id, state, provider) => prepareLetter(String(id), state ?? {}, pick(provider)))
+  handle('letter:generate', (id, state, provider) => generateLetter(String(id), state ?? {}, pick(provider)))
+  handle('letter:fix', (id, state, itemId, provider) => fixLetterItem(String(id), state ?? {}, String(itemId), pick(provider)))
+  handle('letter:keep', (id, state, itemId) => dismissLetterWarnings(String(id), state ?? {}, String(itemId)))
+  handle('letter:prompt', (id, state) => letterPrompt(String(id), state ?? {}))
+  handle('letter:print', (id, state) => printLetter(String(id), state ?? {}))
 }
