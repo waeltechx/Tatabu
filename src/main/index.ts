@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { registerIpc } from './ipc'
 import { closeServices, initServices } from './services'
 import { mainText } from './i18n'
+import { startUpdateChecks } from './updates'
 
 const isDev = !app.isPackaged
 
@@ -82,6 +83,7 @@ if (!app.requestSingleInstanceLock()) {
     allowMicrophoneOnly()
     registerIpc()
     createWindow()
+    startUpdateChecks()
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })

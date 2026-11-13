@@ -46,9 +46,9 @@
       "sub": "Saved once. Ready for every application."
     },
     "email": {
-      "crumb": "Inbox / Status",
+      "crumb": "Application tools / Email status",
       "title": "Email status",
-      "sub": "Paste a reply. We find the application and the new status."
+      "sub": "From inbox update to your next move."
     },
     "profile": {
       "crumb": "You / Profile",
@@ -185,9 +185,19 @@
       "naming": "Each application gets its own folder",
       "exampleCompany": "Personio",
       "exampleTitle": "Frontend Engineer",
-      "moved": "Your files are in the new folder."
+      "moved": "Your files are in the new folder.",
+      "backup": "Backup",
+      "backupNote": "Back up everything (database + files) as one .zip, or restore on a new laptop. API keys are never included.",
+      "exportBackup": "Export backup",
+      "restoreBackup": "Restore…",
+      "backupSaved": "Backup saved ({{count}} files)."
     },
-    "savedBar": "All changes saved on this device"
+    "savedBar": "All changes saved on this device",
+    "about": {
+      "label": "About",
+      "title": "Version and updates",
+      "version": "Version"
+    }
   },
   "onboarding": {
     "crumb": "Welcome · 3 quick steps",
@@ -243,7 +253,10 @@
     "PDF_FAILED": "The PDF couldn't be made. Try again.",
     "MASTER_CV_MISSING": "Add your master CV first. Letters and CVs are built only from its facts.",
     "FILE_TOO_LARGE": "That file is too large. Pick one under 20 MB.",
-    "DESIGN_ROUNDS": "No rounds left. Save the template or use the ATS template."
+    "DESIGN_ROUNDS": "No rounds left. Save the template or use the ATS template.",
+    "NO_APPLICATIONS": "Add an application first, then paste the email.",
+    "BACKUP_INVALID": "That file isn't a Tatabu backup, or it's damaged.",
+    "BACKUP_TOO_NEW": "This backup is from a newer version of Tatabu. Update the app first."
   },
   "mic": {
     "start": "Dictate",
@@ -781,5 +794,63 @@
     "recheck": "Re-check",
     "remove": "Remove",
     "removeConfirm": "Remove your saved design? CVs will use the ATS template."
+  },
+  "email": {
+    "kicker1": "01 / Paste the email",
+    "title1": "What landed in your inbox?",
+    "sub1": "Any language. We'll help you connect the dots.",
+    "placeholder": "Paste the whole email here: sender, subject and text.",
+    "pastedOnly": "Pasted text only · no inbox connection",
+    "analyze": "Analyze email",
+    "analyzing": "Reading the email…",
+    "kicker2": "02 / Review the suggestion",
+    "emptyTitle": "The suggestion shows up here",
+    "emptySub": "We match the email to one of your applications and suggest its new status. You check it before anything changes.",
+    "reading": "Reading the email…",
+    "headline": {
+      "saved": "Looks like it's still saved.",
+      "applied": "Looks like your application arrived.",
+      "interview": "Looks like an interview.",
+      "offer": "Looks like an offer!",
+      "rejected": "Looks like a no this time.",
+      "withdrawn": "Looks like it was withdrawn."
+    },
+    "noMatch": "No clear match.",
+    "matched": "Matched application",
+    "chooseApp": "Choose an application…",
+    "suggested": "Suggested status",
+    "confidence": "Match confidence",
+    "level": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "lowConfidence": "Confidence is low. Check the application and status before you confirm.",
+    "noMatchHint": "The email didn't clearly match any application. Choose it yourself if you know which one it is.",
+    "why": "Why this suggestion?",
+    "preview": "Change preview",
+    "already": "Already {{status}}. Nothing to change.",
+    "pickFirst": "Choose an application to see the change.",
+    "discard": "Discard",
+    "confirm": "Confirm & update",
+    "updated": "{{name}} is now {{status}}.",
+    "callKicker": "Always your call",
+    "callTitle": "Nothing changes until you confirm.",
+    "callSub": "Check the matched application and status first. If confidence is low, verify the details or choose them yourself.",
+    "modelLine": "Read by {{provider}}"
+  },
+  "update": {
+    "available": "Version {{version}} is out",
+    "ready": "Version {{version}} is ready",
+    "whatsNew": "What's new",
+    "download": "Download",
+    "restart": "Restart to update",
+    "later": "Later",
+    "check": "Check for updates",
+    "checking": "Checking for updates…",
+    "upToDate": "You have the latest version.",
+    "downloading": "Downloading version {{version}}… {{percent}}%",
+    "failed": "Couldn't check for updates. Try again later.",
+    "idle": "Tatabu checks quietly each time it starts."
   }
 }

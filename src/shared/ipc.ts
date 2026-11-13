@@ -9,6 +9,8 @@ import type { FixRequest, MasterCv, MasterState } from './cv'
 import type { EnclosureOption, LetterState } from './letter'
 import type { CvTailorState } from './tailor'
 import type { DesignSource, DesignState } from './design'
+import type { EmailAnalysis } from './email'
+import type { UpdateState } from './updates'
 import type { AiSettings, DocLanguage, ImportedFile, Referee, RefereeInput, SecretName, SettingsView } from './settings'
 import type { ModelInfo, ProviderId } from './ai'
 import type { PaperSize, Profile } from './profile'
@@ -170,6 +172,22 @@ export interface IpcContract {
   'design:recheck': { args: []; result: DesignState }
   'design:discard': { args: []; result: DesignState }
   'design:remove': { args: []; result: DesignState }
+
+  // --- email status ----------------------------------------------------------
+  /** Suggests an application and status for a pasted email. Saves nothing. */
+  'email:analyze': { args: [text: string, provider?: ProviderId]; result: EmailAnalysis }
+
+  // --- backup ----------------------------------------------------------------
+  /** Asks where to save, then writes database + documents as one .zip. Null if cancelled. */
+  'backup:export': { args: []; result: { path: string; files: number } | null }
+  /** Asks for a backup .zip, confirms, replaces everything and reloads the window. False if cancelled. */
+  'backup:restore': { args: []; result: boolean }
+
+  // --- updates ---------------------------------------------------------------
+  'update:state': { args: []; result: UpdateState }
+  'update:check': { args: []; result: UpdateState }
+  /** Windows: restart and install. macOS: open the .dmg download. */
+  'update:install': { args: []; result: void }
 }
 
 export type IpcChannel = keyof IpcContract
@@ -259,7 +277,13 @@ export const IPC_CHANNELS = [
   'design:save',
   'design:recheck',
   'design:discard',
-  'design:remove'
+  'design:remove',
+  'email:analyze',
+  'backup:export',
+  'backup:restore',
+  'update:state',
+  'update:check',
+  'update:install'
 ] as const satisfies readonly IpcChannel[]
 
 // Compile-time check: every channel in the contract is in the allowlist above.

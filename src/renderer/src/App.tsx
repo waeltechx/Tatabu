@@ -4,7 +4,7 @@ import { Toaster } from 'sonner'
 import { PrefsProvider, usePrefs } from '@/lib/prefs'
 import { useSettings } from '@/lib/api'
 import { AppShell } from '@/components/layout/AppShell'
-import { PlaceholderView } from '@/views/PlaceholderView'
+import { EmailView } from '@/views/email/EmailView'
 import { SettingsView } from '@/views/settings/SettingsView'
 import { DashboardView } from '@/views/dashboard/DashboardView'
 import { ProfileView } from '@/views/profile/ProfileView'
@@ -54,7 +54,7 @@ export default function App() {
                 <Route path="cv/design" element={<TeachDesignView />} />
                 <Route path="cover-letter" element={<CoverLetterView />} />
                 <Route path="reference" element={<ReferenceView />} />
-                <Route path="email" element={<PlaceholderView page="email" />} />
+                <Route path="email" element={<EmailView />} />
                 <Route path="profile" element={<ProfileView />} />
                 <Route path="cv/master" element={<MasterCvView />} />
                 <Route path="settings" element={<SettingsView />} />

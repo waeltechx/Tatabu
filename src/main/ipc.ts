@@ -28,6 +28,9 @@ import {
   printLetter,
   saveLetter
 } from './letters'
+import { analyzeEmail } from './email'
+import { exportBackup, restoreBackup } from './backup'
+import { checkForUpdates, installUpdate, updateState } from './updates'
 import { cvState, fixCvItem, keepCvItem, printCv, saveCvState, tailorCv } from './tailor'
 import {
   designState,
@@ -399,4 +402,12 @@ export function registerIpc(): void {
   handle('design:recheck', () => recheckDesign())
   handle('design:discard', () => discardDesign())
   handle('design:remove', () => removeDesign())
+
+  // --- email status, backup, updates ------------------------------------------
+  handle('email:analyze', (text, provider) => analyzeEmail(String(text ?? ''), pick(provider)))
+  handle('backup:export', () => exportBackup())
+  handle('backup:restore', () => restoreBackup())
+  handle('update:state', () => updateState())
+  handle('update:check', () => checkForUpdates())
+  handle('update:install', () => installUpdate())
 }

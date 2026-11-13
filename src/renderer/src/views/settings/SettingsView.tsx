@@ -7,6 +7,7 @@ import { ReferencesCard } from './ReferencesCard'
 import { AppearanceCard } from './AppearanceCard'
 import { LanguagesCard } from './LanguagesCard'
 import { StorageCard } from './StorageCard'
+import { AboutCard } from './AboutCard'
 
 export function SettingsView() {
   const { t } = useTranslation()
@@ -26,6 +27,7 @@ export function SettingsView() {
               <AppearanceCard />
               <LanguagesCard />
               <StorageCard settings={settings} />
+              <AboutCard />
             </div>
           </div>
           <div className="mt-6 flex h-11 items-center gap-2 rounded-card border-ui border-paper-ink bg-green px-4 text-[12.5px] text-paper-ink">

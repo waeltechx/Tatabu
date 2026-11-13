@@ -113,6 +113,9 @@ export const ERROR_CODES = [
   'MASTER_CV_MISSING',
   'FILE_TOO_LARGE',
   'DESIGN_ROUNDS',
+  'NO_APPLICATIONS',
+  'BACKUP_INVALID',
+  'BACKUP_TOO_NEW',
   // Raised in the renderer
   'MIC_DENIED',
   'MIC_UNAVAILABLE'
