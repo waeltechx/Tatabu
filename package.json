@@ -1,7 +1,7 @@
 {
   "name": "tatabu",
   "productName": "Tatabu",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Tatabu (منصة تتبع) — a local, private job application tracker with AI-tailored CVs and cover letters.",
   "main": "./out/main/index.js",
   "author": "waeltechx",

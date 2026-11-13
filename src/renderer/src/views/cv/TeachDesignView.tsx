@@ -341,7 +341,9 @@ export function TeachDesignView() {
               }
             >
               <span>{t('teach.save')}</span>
-              <span aria-hidden>→</span>
+              <span aria-hidden className="inline-block rtl:rotate-180">
+                →
+              </span>
             </Button>
             <Button
               variant="ghost"

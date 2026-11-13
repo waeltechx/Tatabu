@@ -542,7 +542,13 @@ export function CvStudioView() {
               onClick={() => void tailor()}
             >
               <span>{busy === 'tailor' ? t('cvStudio.tailoring') : t('cvStudio.tailor')}</span>
-              {busy === 'tailor' ? <LoaderCircle className="animate-spin" /> : <span aria-hidden>→</span>}
+              {busy === 'tailor' ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                <span aria-hidden className="inline-block rtl:rotate-180">
+                  →
+                </span>
+              )}
             </Button>
           </section>
         </div>

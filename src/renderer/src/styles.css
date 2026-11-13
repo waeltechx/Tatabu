@@ -112,6 +112,18 @@ body {
     color 0.2s;
 }
 
+/*
+ * Text the user typed keeps its own direction (dir="auto") but lines up with the
+ * interface, so a Latin job title sits on the right in Arabic. Zero specificity:
+ * text-center and friends still win.
+ */
+:where(:root[dir='rtl'] [dir='auto']:not(input, textarea)) {
+  text-align: right;
+}
+:where(:root[dir='ltr'] [dir='auto']:not(input, textarea)) {
+  text-align: left;
+}
+
 /* Keyboard focus that matches the brutalist style. */
 :focus-visible {
   outline: 2px solid var(--ink);

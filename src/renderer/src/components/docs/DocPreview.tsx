@@ -66,7 +66,8 @@ export function DocPreview({
 
   return (
     <div ref={frame} className={clsx('relative w-full overflow-hidden', className)}>
-      <div style={{ height: `${size.h * MM * scale}px` }} className="min-h-full">
+      {/* Left-to-right box: the full-size page is scaled from its top-left corner, also in an Arabic UI. */}
+      <div dir="ltr" style={{ height: `${size.h * MM * scale}px` }} className="min-h-full">
         <div
           ref={host}
           dir="ltr"

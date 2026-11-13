@@ -386,7 +386,13 @@ export function CoverLetterView() {
               onClick={() => void runForSelected('prepare')}
             >
               <span>{busy === 'prepare' ? t('letter.preparing') : t('letter.prepare')}</span>
-              {busy === 'prepare' ? <LoaderCircle className="animate-spin" /> : <span aria-hidden>→</span>}
+              {busy === 'prepare' ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                <span aria-hidden className="inline-block rtl:rotate-180">
+                  →
+                </span>
+              )}
             </Button>
             {busy === 'prepare' && progress && <p className="label-mono mt-2">{progress}</p>}
           </Panel>
@@ -483,7 +489,13 @@ export function CoverLetterView() {
               onClick={() => void runForSelected('write')}
             >
               <span>{busy === 'write' ? t('letter.writing') : t('letter.write')}</span>
-              {busy === 'write' ? <LoaderCircle className="animate-spin" /> : <span aria-hidden>→</span>}
+              {busy === 'write' ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                <span aria-hidden className="inline-block rtl:rotate-180">
+                  →
+                </span>
+              )}
             </Button>
             {busy === 'write' && progress && <p className="label-mono mt-2 !text-[#4a4560]">{progress}</p>}
           </section>
