@@ -2,7 +2,7 @@
 import { readFileSync, statSync, existsSync } from 'node:fs'
 import { basename } from 'node:path'
 import type { ProviderId } from '@shared/ai'
-import { MAX_DESIGN_ROUNDS, sanitizeTemplate, type DesignDraft, type DesignSource, type DesignState } from '@shared/design'
+import { designUnits, MAX_DESIGN_ROUNDS, sanitizeTemplate, type DesignDraft, type DesignSource, type DesignState } from '@shared/design'
 import { safeImage } from '@shared/docs/common'
 import { getDb, dataFolder } from './services'
 import { nowIso } from './db/open'
@@ -122,7 +122,7 @@ export async function readDesign(input: { filename: string; pages: string[] }, o
   )
   const out = result.data
   writeRow('draft', {
-    ...sanitizeTemplate(out),
+    ...sanitizeTemplate(designUnits(out)),
     sourceName: String(input.filename ?? '').slice(0, 200),
     pages,
     photo: '',
@@ -168,7 +168,7 @@ export async function fixDesign(feedback: string, override?: ProviderId): Promis
   const out = result.data
   writeRow('draft', {
     ...draft,
-    ...sanitizeTemplate(out),
+    ...sanitizeTemplate(designUnits(out)),
     found: notes(out.found).length ? notes(out.found) : draft.found,
     differences: notes(out.differences),
     // Keep the photo we already cut out unless the model now sees none.

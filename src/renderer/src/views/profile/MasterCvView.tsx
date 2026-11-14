@@ -201,13 +201,13 @@ export function MasterCvView() {
   // A warning disappears as soon as the user changes the text it is about.
   const warnings = (state?.warnings ?? []).filter((w) => facts[w.itemId] === w.text)
 
-  if (!state) return <PageHeader page="master" />
+  if (!state) return <PageHeader page="master" back="/profile" />
 
   const busy = read.isPending || upload.isPending
   if (!state.cv || busy) {
     return (
       <>
-        <PageHeader page="master" />
+        <PageHeader page="master" back="/profile" />
         <StartCard
           busy={busy}
           sourceName={state.unread ? state.source?.filename : undefined}
@@ -262,7 +262,7 @@ export function MasterCvView() {
 
   return (
     <>
-      <PageHeader page="master" actions={saveButton} />
+      <PageHeader page="master" back="/profile" actions={saveButton} />
       {state.unread && state.source && (
         <div className="mb-5 flex items-center gap-3 rounded-card border-ui border-paper-ink bg-yellow px-4 py-3 text-[12.5px] text-paper-ink">
           <FileText size={16} />

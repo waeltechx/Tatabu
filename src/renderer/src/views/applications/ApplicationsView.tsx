@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
-import { Check, ChevronDown, Copy, ExternalLink, FolderOpen, Plus, Search, Trash2, X } from 'lucide-react'
+import { Check, ChevronDown, Copy, ExternalLink, FileText, FileUser, FolderOpen, IdCard, Plus, Search, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { clsx } from 'clsx'
 import { WORK_MODES, type Application, type ApplicationPatch, type JobFields } from '@shared/applications'
@@ -304,7 +304,7 @@ function Detail({ app }: { app: Application }) {
         <span className="label-mono" dir="ltr">
           #{String(app.number).padStart(3, '0')}
         </span>
-        <Link to="/applications" aria-label={t('common.close')} className="text-muted hover:text-ink">
+        <Link to="/applications" replace aria-label={t('common.close')} className="text-muted hover:text-ink">
           <X size={18} />
         </Link>
       </div>
@@ -339,6 +339,23 @@ function Detail({ app }: { app: Application }) {
           <FolderOpen />
           {t('apps.openFolder')}
         </Button>
+        {/* Straight to this job's documents, instead of the menu and picking the job again. */}
+        {(
+          [
+            ['/cv', 'cvStudio', FileUser],
+            ['/cover-letter', 'coverLetter', FileText],
+            ['/reference', 'reference', IdCard]
+          ] as const
+        ).map(([to, key, Icon]) => (
+          <Link
+            key={to}
+            to={`${to}?app=${app.id}`}
+            className="inline-flex h-[38px] items-center gap-2 rounded-card border-ui border-strong bg-surface px-3.5 text-[12.5px] font-semibold text-ink no-underline hover:bg-field"
+          >
+            <Icon size={15} />
+            {t(`nav.${key}`)}
+          </Link>
+        ))}
         {savedAt > 0 && (
           <span className="label-mono ms-auto flex items-center gap-1.5">
             <Check size={13} />
@@ -395,6 +412,7 @@ export function ApplicationsView() {
     <>
       <PageHeader
         page="applications"
+        back="/"
         actions={
           <Button variant="primary" onClick={() => navigate('/applications/new')}>
             <Plus />
@@ -420,6 +438,7 @@ export function ApplicationsView() {
               <li key={a.id}>
                 <NavLink
                   to={`/applications/${a.id}`}
+                  replace
                   className={({ isActive }) =>
                     clsx(
                       'block rounded-card border-ui px-4 py-3 text-ink no-underline',

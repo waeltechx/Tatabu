@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cleanCv } from '@shared/cv'
-import { designDoc, fillTemplate, sanitizeTemplate, templateData } from '@shared/design'
+import { designDoc, designUnits, fillTemplate, sanitizeTemplate, templateData } from '@shared/design'
 import { cvLabels } from '@shared/tailor'
 import { cleanPhotoBox, designFixUser, designSystem } from '../src/main/ai/tasks/design'
 
@@ -108,5 +108,16 @@ describe('right-to-left designs', () => {
       'a { background: linear-gradient(270deg, red, blue) }'
     )
     expect(mirrorCss('.bright { color: red }')).toBe('.bright { color: red }')
+  })
+})
+
+describe('designUnits', () => {
+  it('turns image pixels, vw and vh into mm on the 210mm page', () => {
+    const out = designUnits({
+      html: '<div style="padding: 55px">{{name}}</div>',
+      css: '.side { width: 352px; margin: -11PX 0 .5px; } .x { height: 100vh; width: 50vw; line-height: 1.4; }'
+    })
+    expect(out.html).toBe('<div style="padding: 10.5mm">{{name}}</div>')
+    expect(out.css).toBe('.side { width: 67.2mm; margin: -2.1mm 0 0.1mm; } .x { height: 297mm; width: 105mm; line-height: 1.4; }')
   })
 })

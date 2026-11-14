@@ -202,6 +202,7 @@ export function AddApplicationView() {
     <>
       <PageHeader
         page={step === 1 ? 'addPaste' : 'addReview'}
+        back="/"
         actions={
           <span className="me-6 self-end pb-1 font-mono text-[14px] tracking-wide" dir="ltr">
             {step === 1 ? '01' : '02'} &nbsp;/&nbsp; 02

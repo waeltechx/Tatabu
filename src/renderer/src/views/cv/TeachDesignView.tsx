@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { clsx } from 'clsx'
 import type { ProviderId } from '@shared/ai'
 import { cleanCv, type MasterCv } from '@shared/cv'
-import { designDoc, MAX_DESIGN_ROUNDS, type DesignDraft, type DesignSource, type DesignState } from '@shared/design'
+import { DESIGN_IMAGE_WIDTH, designDoc, MAX_DESIGN_ROUNDS, type DesignDraft, type DesignSource, type DesignState } from '@shared/design'
 import { cvLabels } from '@shared/tailor'
 import { invoke, errorCode, useAiErrorToast, useErrorToast, useSettings } from '@/lib/api'
 import { docKeys, useProfile } from '@/lib/docs'
@@ -118,7 +118,7 @@ export function TeachDesignView() {
     setNoVision(false)
     try {
       setPhase('drawing')
-      const pages = await renderPdfPages(source.data, 2)
+      const pages = await renderPdfPages(source.data, 2, DESIGN_IMAGE_WIDTH)
       setPhase('reading')
       await readPages(source.filename, pages, provider)
     } catch (err) {
@@ -197,7 +197,7 @@ export function TeachDesignView() {
 
   return (
     <>
-      <PageHeader page="teach" />
+      <PageHeader page="teach" back="/cv" />
       <Steps step={step} round={draft?.round ?? 1} />
       {visionCard}
 

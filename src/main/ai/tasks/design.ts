@@ -3,6 +3,7 @@
  * HTML/CSS template with placeholders, so any CV text can be poured into it.
  */
 import { z } from 'zod'
+import { DESIGN_IMAGE_WIDTH } from '@shared/design'
 
 const PLACEHOLDERS = `PLACEHOLDERS (Mustache style; every value is escaped automatically)
 - Single values: {{name}} {{headline}} {{summary}} {{email}} {{phone}} {{location}} {{photo}} {{skillsText}}
@@ -27,8 +28,12 @@ const RULES = `TEMPLATE RULES
 - Return the BODY markup only (no <html>, <head>, <body>, <style> or <script>) and the CSS separately.
 - Recreate the layout faithfully: columns and their widths, colours (exact hex values you see), the sidebar,
   section order, heading style, rules and dividers, spacing, font sizes and weights, how dates and titles sit.
-- The page is ${'A4'} (210mm wide) with NO page margin: put the white space inside your layout with padding.
+- The page is A4 (210mm wide) with NO page margin: put the white space inside your layout with padding.
   Full-bleed sidebars are fine.
+- SIZES: each image is ${DESIGN_IMAGE_WIDTH} pixels wide and shows the full 210mm page width, so 1mm is about
+  ${(DESIGN_IMAGE_WIDTH / 210).toFixed(1)} image pixels. Measure widths, paddings, gaps and font sizes in the image and write
+  them in mm or pt (1pt = 0.353mm). Never use vw, vh or percentage heights. Any px you write is read as IMAGE pixels.
+- Match the density: the same amount of text should fill the same share of the page as in the image.
 - The text will be DIFFERENT and may be LONGER than in the image. So: no fixed heights, no absolute positioning
   of text, no overflow hidden on text. Content must flow and may continue on a second page.
   For a coloured sidebar that runs the full height, put a background gradient on the outer wrapper

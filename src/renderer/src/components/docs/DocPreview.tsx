@@ -31,16 +31,25 @@ export function DocPreview({
   const host = useRef<HTMLDivElement>(null)
   const frame = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(0.5)
+  // The document's real height, so a second page shows instead of being cut off.
+  const [contentH, setContentH] = useState(0)
   const size = PAPER[paper]
 
   useLayoutEffect(() => {
     const el = frame.current
     if (!el) return
     const update = (): void => setScale(el.clientWidth / (size.w * MM))
+    const measure = (): void => setContentH(host.current?.offsetHeight ?? 0)
     update()
+    measure()
     const ro = new ResizeObserver(update)
     ro.observe(el)
-    return () => ro.disconnect()
+    const content = new ResizeObserver(measure)
+    if (host.current) content.observe(host.current)
+    return () => {
+      ro.disconnect()
+      content.disconnect()
+    }
   }, [size.w])
 
   useEffect(() => {
@@ -56,6 +65,7 @@ export function DocPreview({
       /* After the document's own rules, which reset body padding. */
       .page { background: #fff; color: #1d2433; width: ${size.w}mm; min-height: ${size.h}mm; padding: ${pageMargin(doc.css)}; box-sizing: border-box; }
     </style><div class="page" dir="${doc.dir}" lang="${doc.lang}">${doc.body}</div>`
+    setContentH(el.offsetHeight)
 
     if (highlight && highlight.trim()) {
       const page = root.querySelector('.page')
@@ -67,7 +77,7 @@ export function DocPreview({
   return (
     <div ref={frame} className={clsx('relative w-full overflow-hidden', className)}>
       {/* Left-to-right box: the full-size page is scaled from its top-left corner, also in an Arabic UI. */}
-      <div dir="ltr" style={{ height: `${size.h * MM * scale}px` }} className="min-h-full">
+      <div dir="ltr" style={{ height: `${Math.max(size.h * MM, contentH) * scale}px` }} className="min-h-full">
         <div
           ref={host}
           dir="ltr"

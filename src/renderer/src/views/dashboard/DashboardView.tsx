@@ -278,7 +278,7 @@ function SetupChecklist() {
   const items = [
     { key: 'groq', done: !!data?.groq, to: '/settings' },
     { key: 'profile', done: !!data?.profile, to: '/profile' },
-    { key: 'cv', done: !!data?.cv, to: '/settings' },
+    { key: 'cv', done: !!data?.cv, to: '/cv/master' },
     { key: 'referees', done: !!data?.referees, to: '/settings' }
   ] as const
   const doneCount = items.filter((i) => i.done).length

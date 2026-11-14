@@ -10,6 +10,25 @@ import type { CvLabels } from './tailor'
 
 export const MAX_DESIGN_ROUNDS = 3
 
+/** How wide (in pixels) the CV pages are drawn for the vision model; the prompt and unit conversion rely on it. */
+export const DESIGN_IMAGE_WIDTH = 1100
+
+/**
+ * The model measures in pixels of the page image, but the page is printed 210mm wide
+ * (794 CSS px), so its px came out ~40% too big and spilled onto more pages.
+ * Turns px (as image pixels), vw and vh into mm.
+ * shortcut: assumes an A4-wide page (Letter is 3% wider), fine until Letter users report drift.
+ */
+export function designUnits(t: DesignTemplate): DesignTemplate {
+  const mmPer = { px: 210 / DESIGN_IMAGE_WIDTH, vw: 2.1, vh: 2.97 }
+  const fix = (s: string): string =>
+    s.replace(/(-?(?:\d+\.?\d*|\.\d+))\s*(px|vw|vh)\b/gi, (_m, n: string, unit: string) => {
+      const mm = Number(n) * mmPer[unit.toLowerCase() as keyof typeof mmPer]
+      return `${Math.round(mm * 100) / 100}mm`
+    })
+  return { html: fix(t.html), css: fix(t.css) }
+}
+
 export interface DesignTemplate {
   html: string
   css: string
