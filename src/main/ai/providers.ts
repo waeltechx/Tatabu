@@ -35,12 +35,6 @@ export const PROVIDERS: Record<ProviderId, ProviderSpec> = {
       'X-Title': 'Tatabu'
     }
   },
-  xai: {
-    baseUrl: 'https://api.x.ai/v1',
-    defaultModel: 'grok-4-fast-non-reasoning',
-    // Fast non-reasoning models write quickly and cheaply; reasoning ones next, then the full model.
-    preferred: [/^grok-[\d-]+-fast-non-reasoning$/, /^grok-[\d-]+-fast(-reasoning)?$/, /^grok-\d+(-\d+)?$/]
-  },
   // The user's own OpenAI-compatible endpoint. Its base URL and model live in the AI settings.
   custom: {
     baseUrl: '',
@@ -63,7 +57,6 @@ export function isChatModel(id: string): boolean {
 /** Name-based guess for providers whose model list doesn't say what a model reads. */
 export function looksLikeVision(provider: ProviderId, id: string): boolean | null {
   if (provider === 'gemini') return /^gemini/i.test(id) ? true : null
-  if (provider === 'xai') return /grok-code|grok-3-mini/i.test(id) ? false : /^grok-[4-9]|vision/i.test(id) ? true : null
   if (/vision|-vl\b|vl-|llama-4|scout|maverick|pixtral|gpt-4o|gpt-4\.1|gpt-5|gemma-3|qwen.*vl|omni/i.test(id)) return true
   if (/gpt-oss|gpt-3\.5|deepseek-r1|kimi|compound|allam|qwen3-32b/i.test(id)) return false
   return null

@@ -1,6 +1,7 @@
 import type { Db } from '../db/open'
 import {
   ALT_PROVIDERS,
+  VISION_PROVIDERS,
   DEFAULT_AI_SETTINGS,
   SECRET_NAMES,
   normalizeBaseUrl,
@@ -35,13 +36,17 @@ export function getAiSettings(db: Db): AiSettings {
     altModel: typeof raw.altModel === 'string' ? raw.altModel : '',
     customName: typeof raw.customName === 'string' ? raw.customName : '',
     customBaseUrl: typeof raw.customBaseUrl === 'string' ? normalizeBaseUrl(raw.customBaseUrl) : '',
-    customModel: typeof raw.customModel === 'string' ? raw.customModel : ''
+    customModel: typeof raw.customModel === 'string' ? raw.customModel : '',
+    visionProvider: VISION_PROVIDERS.includes(raw.visionProvider as never)
+      ? raw.visionProvider!
+      : DEFAULT_AI_SETTINGS.visionProvider
   }
 }
 
 export function updateAiSettings(db: Db, patch: Partial<AiSettings>): AiSettings {
   const next = { ...getAiSettings(db), ...patch }
   if (!ALT_PROVIDERS.includes(next.altProvider)) next.altProvider = DEFAULT_AI_SETTINGS.altProvider
+  if (!VISION_PROVIDERS.includes(next.visionProvider)) next.visionProvider = DEFAULT_AI_SETTINGS.visionProvider
   // A model belongs to one provider; switching provider clears it.
   if (patch.altProvider && patch.altProvider !== getAiSettings(db).altProvider && patch.altModel === undefined) {
     next.altModel = ''

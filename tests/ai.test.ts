@@ -9,7 +9,7 @@ import { chatJson, chatText, extractJson, jsonSchemaFor, resetQuirks, type ChatT
 import { isChatModel, parseModelList, pickDefaultModel, visionCandidates } from '../src/main/ai/providers'
 import { testProvider } from '../src/main/ai/check'
 import { audioType, MAX_AUDIO_BYTES, transcribe } from '../src/main/ai/voice'
-import { otherTextProvider, providerName, textProvider } from '@shared/ai'
+import { otherTextProvider, providerName, textProvider, visionOrder } from '@shared/ai'
 import { DEFAULT_AI_SETTINGS, normalizeBaseUrl, SECRET_NAMES, type KeyStatus, type SecretName } from '@shared/settings'
 
 // --- a scripted fetch ---------------------------------------------------------
@@ -507,6 +507,17 @@ describe('text provider choice', () => {
     expect(otherTextProvider({ ai, keys: keys(['groq']) })).toBe('groq')
   })
 
+  it('reads images on its own provider while writing stays on Groq', () => {
+    const ai = { ...DEFAULT_AI_SETTINGS }
+    // Automatic: the writing provider first, then every other provider that has a key.
+    expect(visionOrder({ ai, keys: keys(['groq']) })).toEqual(['groq'])
+    expect(visionOrder({ ai, keys: keys(['groq', 'openai', 'gemini']) })).toEqual(['groq', 'gemini', 'openai'])
+    // A chosen provider is the only one asked, and writing does not move.
+    const chosen = { ...ai, visionProvider: 'gemini' as const }
+    expect(visionOrder({ ai: chosen, keys: keys(['groq']) })).toEqual(['gemini'])
+    expect(textProvider({ ai: chosen, keys: keys(['groq', 'gemini']) })).toBe('groq')
+  })
+
   it('treats the custom provider as ready once it has a base URL, key or not', () => {
     const ai = { ...DEFAULT_AI_SETTINGS, altProvider: 'custom' as const }
     expect(otherTextProvider({ ai, keys: keys(['groq']) })).toBeNull()
@@ -517,13 +528,12 @@ describe('text provider choice', () => {
   it('shows the name the user gave the custom provider', () => {
     expect(providerName('custom', { customName: ' My Claude ' })).toBe('My Claude')
     expect(providerName('custom', { customName: '' })).toBe('Custom')
-    expect(providerName('xai')).toBe('Grok')
   })
 })
 
-// --- Grok and the custom provider -------------------------------------------------------------
+// --- The custom provider ----------------------------------------------------------------------
 
-describe('custom and Grok providers', () => {
+describe('custom provider', () => {
   it('normalizes base URLs and rejects anything but http(s)', () => {
     expect(normalizeBaseUrl(' https://api.example.com/v1/ ')).toBe('https://api.example.com/v1')
     expect(normalizeBaseUrl('http://localhost:11434/v1')).toBe('http://localhost:11434/v1')
@@ -564,14 +574,5 @@ describe('custom and Grok providers', () => {
     await expect(
       testProvider(fetch, 'custom', 'k', (models) => pickDefaultModel('custom', models), 'https://x.example.com/v1')
     ).rejects.toMatchObject({ code: 'AI_MODEL_MISSING' })
-  })
-
-  it('prefers a fast Grok model and skips image generators', () => {
-    const list = parseModelList('xai', {
-      data: [{ id: 'grok-4' }, { id: 'grok-4-fast-non-reasoning' }, { id: 'grok-2-image-1212' }, { id: 'grok-imagine-v1' }]
-    })
-    expect(list.map((m) => m.id)).toEqual(['grok-4', 'grok-4-fast-non-reasoning'])
-    expect(pickDefaultModel('xai', list)).toBe('grok-4-fast-non-reasoning')
-    expect(list.find((m) => m.id === 'grok-4')?.vision).toBe(true)
   })
 })

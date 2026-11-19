@@ -43,11 +43,6 @@ const MOCK_MODELS: Record<ProviderId, ModelInfo[]> = {
     { id: 'google/gemini-2.5-flash', vision: true },
     { id: 'openai/gpt-oss-120b', vision: false }
   ],
-  xai: [
-    { id: 'grok-4', vision: true },
-    { id: 'grok-4-fast-non-reasoning', vision: true },
-    { id: 'grok-code-fast-1', vision: false }
-  ],
   custom: [
     { id: 'claude-sonnet-4-5', vision: null },
     { id: 'claude-haiku-4-5', vision: null }
@@ -58,7 +53,6 @@ const MOCK_DEFAULT: Record<ProviderId, string> = {
   gemini: 'gemini-3-flash',
   openai: 'gpt-5-mini',
   openrouter: 'openai/gpt-oss-120b',
-  xai: 'grok-4-fast-non-reasoning',
   custom: 'claude-sonnet-4-5'
 }
 

@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronDown, Image, LoaderCircle, Mic, Plug, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { clsx } from 'clsx'
-import { ALT_PROVIDERS, normalizeBaseUrl, type AltProvider, type SettingsView } from '@shared/settings'
+import { ALT_PROVIDERS, VISION_PROVIDERS, normalizeBaseUrl, type AltProvider, type SettingsView } from '@shared/settings'
 import { providerName, textProvider, type ProviderId } from '@shared/ai'
 import { errorCode, invoke, keys, useModels, useWrite } from '@/lib/api'
 import { Button, Card, Chip, FieldLabel, inputClass, Segmented, Switch, TextInput } from '@/components/ui'
@@ -28,11 +28,6 @@ const KEY_PAGES: Record<KeyedProvider, { host: string; url: string; placeholder:
     host: 'openrouter.ai',
     url: 'https://openrouter.ai/keys',
     placeholder: 'sk-or-…'
-  },
-  xai: {
-    host: 'console.x.ai',
-    url: 'https://console.x.ai',
-    placeholder: 'xai-…'
   }
 }
 
@@ -108,7 +103,7 @@ function StatusChips({
       {children}
       {!error &&
         check &&
-        textProvider(settings) === provider &&
+        (settings.ai.visionProvider === 'auto' ? textProvider(settings) : settings.ai.visionProvider) === provider &&
         (check.visionModel ? (
           <span title={check.visionModel}>
             <Chip tone="blue" icon={<Image />}>
@@ -323,6 +318,78 @@ function CustomProvider({ settings, secureStorage }: { settings: SettingsView; s
   )
 }
 
+/** Who reads images. Only "Teach your design" needs it, so writing can stay on Groq. */
+function VisionSection({ settings }: { settings: SettingsView }) {
+  const { t } = useTranslation()
+  const setAi = useWrite(keys.settings, (patch: Partial<SettingsView['ai']>) => invoke('settings:setAi', patch))
+  const { ai, keys: keyStatus, secureStorage } = settings
+  const choice = ai.visionProvider
+  const keyed = choice === 'gemini' || choice === 'openai' || choice === 'openrouter' ? choice : null
+  const page = keyed ? KEY_PAGES[keyed] : null
+  const status = keyed ? keyStatus[keyed] : null
+  const test = useProviderTest(keyed ?? 'gemini', status?.masked ?? '')
+  // The key (or custom endpoint) is already on screen in the writing section above.
+  const shownAbove = choice === 'groq' || (ai.useAltText && ai.altProvider === choice)
+  const writing = providerName(textProvider(settings), ai)
+
+  return (
+    <>
+      <div className="mt-3.5 h-[1.5px] bg-soft" />
+      <div className="mt-3">
+        <b className="block text-[13px] font-semibold">{t('settings.ai.visionTitle')}</b>
+        <span className="text-[11.5px] text-muted">{t('settings.ai.visionDesc', { name: writing })}</span>
+      </div>
+      <div className="mt-2">
+        <Segmented
+          label={t('settings.ai.visionTitle')}
+          value={choice}
+          onChange={(visionProvider) => setAi.mutate([{ visionProvider }])}
+          options={VISION_PROVIDERS.map((p) => ({
+            value: p,
+            label:
+              p === 'auto'
+                ? t('settings.ai.visionAuto')
+                : p === 'custom'
+                  ? ai.customName.trim() || t('settings.ai.customShort')
+                  : providerName(p),
+            icon: p === 'custom' ? <Plug /> : undefined
+          }))}
+        />
+      </div>
+
+      {choice === 'auto' ? (
+        <p className="mt-2 text-[11.5px] leading-snug text-muted">{t('settings.ai.visionAutoHint')}</p>
+      ) : shownAbove ? (
+        <p className="mt-2 text-[11.5px] leading-snug text-muted">
+          {t('settings.ai.visionSameKey', { name: providerName(choice, ai) })}
+        </p>
+      ) : keyed && page && status ? (
+        <>
+          <KeyField
+            key={keyed}
+            name={keyed}
+            status={status}
+            label={`${t('settings.ai.apiKey')} · ${providerName(keyed)}`}
+            placeholder={page.placeholder}
+            disabled={!secureStorage}
+            actions={<TestButton pending={test.isPending} onClick={() => test.mutate()} />}
+          />
+          {status.set ? (
+            <StatusChips provider={keyed} settings={settings} error={test.error} />
+          ) : (
+            <p className="mt-2 text-[11.5px] leading-snug text-muted">
+              {keyed === 'gemini' && <>{t('settings.ai.visionGeminiTip')} </>}
+              {t('settings.ai.getKeyAt')} <ExternalLink href={page.url}>{page.host}</ExternalLink>
+            </p>
+          )}
+        </>
+      ) : (
+        <CustomProvider settings={settings} secureStorage={secureStorage} />
+      )}
+    </>
+  )
+}
+
 function TryVoice() {
   const { t } = useTranslation()
   const [heard, setHeard] = useState('')
@@ -444,6 +511,8 @@ export function AiKeysCard({ settings }: { settings: SettingsView }) {
           )}
         </div>
       )}
+
+      <VisionSection settings={settings} />
     </Card>
   )
 }

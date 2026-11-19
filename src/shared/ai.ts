@@ -9,7 +9,6 @@ export const PROVIDER_NAMES: Record<ProviderId, string> = {
   gemini: 'Gemini',
   openai: 'OpenAI',
   openrouter: 'OpenRouter',
-  xai: 'Grok',
   custom: 'Custom'
 }
 
@@ -49,6 +48,17 @@ type KeyView = { ai: AiSettings; keys: Record<SecretName, KeyStatus> }
  */
 export function textProvider(view: KeyView): ProviderId {
   return view.ai.useAltText ? view.ai.altProvider : 'groq'
+}
+
+/** The providers to ask for an image-reading model, in order. */
+export function visionOrder(view: KeyView): ProviderId[] {
+  const choice = view.ai.visionProvider
+  if (choice && choice !== 'auto') return [choice]
+  const text = textProvider(view)
+  const rest = (['gemini', 'openai', 'openrouter', 'custom', 'groq'] as const).filter(
+    (p) => p !== text && providerReady(view, p)
+  )
+  return [text, ...rest]
 }
 
 /** The provider offered as "Try with …" after a failure, if it has a key. */

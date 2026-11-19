@@ -42,9 +42,17 @@ describe('settings', () => {
   it('keeps the custom provider when switching away and back', () => {
     const db = openDatabase(':memory:')
     updateAiSettings(db, { altProvider: 'custom', customName: 'Mine', customBaseUrl: 'https://x.example.com/v1', customModel: 'm1' })
-    updateAiSettings(db, { altProvider: 'xai' })
+    updateAiSettings(db, { altProvider: 'openai' })
     const back = updateAiSettings(db, { altProvider: 'custom' })
     expect(back).toMatchObject({ customName: 'Mine', customBaseUrl: 'https://x.example.com/v1', customModel: 'm1' })
+  })
+
+  it('keeps the image-reading provider apart from writing', () => {
+    const db = openDatabase(':memory:')
+    expect(getAiSettings(db).visionProvider).toBe('auto')
+    const next = updateAiSettings(db, { visionProvider: 'gemini' })
+    expect(next).toMatchObject({ visionProvider: 'gemini', useAltText: false })
+    expect(updateAiSettings(db, { visionProvider: 'xai' as never }).visionProvider).toBe('auto')
   })
 
   it('ignores an unknown provider', () => {
@@ -81,7 +89,7 @@ describe('secrets', () => {
   it('reports every key', () => {
     const db = openDatabase(':memory:')
     const all = createSecretStore(db, fakeCipher()).allStatus()
-    expect(Object.keys(all).sort()).toEqual(['custom', 'gemini', 'groq', 'openai', 'openrouter', 'xai'])
+    expect(Object.keys(all).sort()).toEqual(['custom', 'gemini', 'groq', 'openai', 'openrouter'])
   })
 
   it('masks short keys completely', () => {

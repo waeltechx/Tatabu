@@ -4,7 +4,7 @@
  * than the provider's HTTPS endpoint.
  */
 import type { ModelInfo, ProviderId } from '@shared/ai'
-import { textProvider } from '@shared/ai'
+import { textProvider, visionOrder } from '@shared/ai'
 import { getAiSettings, getChecks, setCheck } from '../repo/settings'
 import { getDb, getSecrets, settingsView } from '../services'
 import { AiError, type FetchFn } from './http'
@@ -57,20 +57,43 @@ export function textTarget(override?: ProviderId): ChatTarget {
   return { provider, key, model, baseUrl: baseUrlFor(provider) }
 }
 
-/** A model of the active text provider that reads images (found once, then remembered). */
-export async function visionTarget(override?: ProviderId): Promise<ChatTarget> {
-  const text = textTarget(override)
-  const known = getChecks(getDb())[text.provider]
+/** A model of `provider` that reads images (found once, then remembered), or null if it has none. */
+async function visionOn(provider: ProviderId): Promise<ChatTarget | null> {
+  const text = textTarget(provider)
+  const known = getChecks(getDb())[provider]
   if (known?.visionModel) return { ...text, model: known.visionModel }
-  const models = await listModelsLenient(fetchFn, text.provider, text.key, text.baseUrl)
-  const visionModel = await findVisionModel(fetchFn, text.provider, text.key, text.model, models, text.baseUrl)
-  if (!visionModel) throw new AiError('AI_NO_VISION', text.provider)
-  setCheck(getDb(), text.provider, {
-    model: text.model,
-    testedAt: new Date().toISOString(),
+  const models = await listModelsLenient(fetchFn, provider, text.key, text.baseUrl)
+  const visionModel = await findVisionModel(fetchFn, provider, text.key, text.model, models, text.baseUrl)
+  if (!visionModel) return null
+  setCheck(getDb(), provider, {
+    model: known?.model ?? text.model,
+    testedAt: known?.testedAt ?? new Date().toISOString(),
     visionModel
   })
   return { ...text, model: visionModel }
+}
+
+/**
+ * Where an image-reading task goes: the provider chosen for images, or (on "auto") the writing
+ * provider and then every other provider with a key. `override` is the explicit "Try with <other>".
+ */
+export async function visionTarget(override?: ProviderId): Promise<ChatTarget> {
+  const order = override ? [override] : visionOrder(settingsView())
+  let failure: unknown = null
+  let sawNoVision = false
+  for (const provider of order) {
+    try {
+      const target = await visionOn(provider)
+      if (target) return target
+      sawNoVision = true
+    } catch (err) {
+      // One chosen provider: its own error (no key, offline...) says what to fix.
+      if (order.length === 1) throw err
+      failure ??= err
+    }
+  }
+  if (failure && !sawNoVision) throw failure
+  throw new AiError('AI_NO_VISION', order.join(', '))
 }
 
 const modelCache = new Map<ProviderId, { at: number; models: ModelInfo[] }>()

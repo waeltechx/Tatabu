@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell, systemPreferences } from 'electron'
 import { basename } from 'node:path'
 import type { IpcArgs, IpcChannel, IpcResult, UiPrefs } from '@shared/ipc'
-import { ALT_PROVIDERS, normalizeBaseUrl, type AiSettings } from '@shared/settings'
+import { ALT_PROVIDERS, VISION_PROVIDERS, normalizeBaseUrl, type AiSettings } from '@shared/settings'
 import { readPrefs, writePrefs } from './prefs'
 import { dataFolder, getDb, getSecrets, setDataFolder, settingsView } from './services'
 import { setSetting, updateAiSettings } from './repo/settings'
@@ -81,6 +81,7 @@ function sanitizeAiPatch(patch: Partial<AiSettings>): Partial<AiSettings> {
   if (typeof patch.useAltText === 'boolean') out.useAltText = patch.useAltText
   if (ALT_PROVIDERS.includes(patch.altProvider as never)) out.altProvider = patch.altProvider
   if (typeof patch.altModel === 'string') out.altModel = patch.altModel.trim().slice(0, 200)
+  if (VISION_PROVIDERS.includes(patch.visionProvider as never)) out.visionProvider = patch.visionProvider
   if (typeof patch.customName === 'string') out.customName = patch.customName.trim().slice(0, 40)
   if (typeof patch.customModel === 'string') out.customModel = patch.customModel.trim().slice(0, 200)
   if (typeof patch.customBaseUrl === 'string') {
@@ -380,7 +381,9 @@ export function registerIpc(): void {
   handle('letter:options', (id) => enclosureOptions(String(id)))
   handle('letter:prepare', (id, state, provider) => prepareLetter(String(id), state ?? {}, pick(provider)))
   handle('letter:generate', (id, state, provider) => generateLetter(String(id), state ?? {}, pick(provider)))
-  handle('letter:fix', (id, state, itemId, provider) => fixLetterItem(String(id), state ?? {}, String(itemId), pick(provider)))
+  handle('letter:fix', (id, state, itemId, provider) =>
+    fixLetterItem(String(id), state ?? {}, String(itemId), pick(provider))
+  )
   handle('letter:keep', (id, state, itemId) => dismissLetterWarnings(String(id), state ?? {}, String(itemId)))
   handle('letter:prompt', (id, state) => letterPrompt(String(id), state ?? {}))
   handle('letter:print', (id, state) => printLetter(String(id), state ?? {}))

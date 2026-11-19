@@ -2,11 +2,18 @@
 import type { ProviderCheck } from './ai'
 
 /**
- * Providers that can take over text work while Groq keeps voice. `xai` is
- * Grok; `custom` is any OpenAI-compatible endpoint the user adds themselves.
+ * Providers that can take over text work (or read images) while Groq keeps voice.
+ * `custom` is any OpenAI-compatible endpoint the user adds themselves.
  */
-export const ALT_PROVIDERS = ['gemini', 'openai', 'openrouter', 'xai', 'custom'] as const
+export const ALT_PROVIDERS = ['gemini', 'openai', 'openrouter', 'custom'] as const
 export type AltProvider = (typeof ALT_PROVIDERS)[number]
+
+/**
+ * Who reads images (only "Teach your design" needs it). `auto` tries the writing provider first,
+ * then any other provider that has a key, so writing can stay on Groq.
+ */
+export const VISION_PROVIDERS = ['auto', 'groq', ...ALT_PROVIDERS] as const
+export type VisionProvider = (typeof VISION_PROVIDERS)[number]
 
 /** Every API key the app can hold. Stored encrypted, never sent to the renderer in full unless revealed. */
 export const SECRET_NAMES = ['groq', ...ALT_PROVIDERS] as const
@@ -22,6 +29,8 @@ export interface AiSettings {
   customName: string
   customBaseUrl: string
   customModel: string
+  /** The provider that reads images; writing is unaffected. */
+  visionProvider: VisionProvider
 }
 
 export const DEFAULT_AI_SETTINGS: AiSettings = {
@@ -30,7 +39,8 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   altModel: '',
   customName: '',
   customBaseUrl: '',
-  customModel: ''
+  customModel: '',
+  visionProvider: 'auto'
 }
 
 /** A usable custom base URL: http(s) with a host. Returns the trimmed URL without a trailing slash, or ''. */
