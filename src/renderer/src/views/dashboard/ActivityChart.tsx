@@ -28,7 +28,8 @@ export function ActivityChart({ apps }: { apps: Application[] }) {
   const oldest = dates.reduce((min, d) => (d < min ? d : min), dates[0] ?? '')
   const canGoBack = !!oldest && localDay(new Date(oldest)) < buckets[0]!.from
 
-  const fmt = (iso: string, opts: Intl.DateTimeFormatOptions): string => new Intl.DateTimeFormat(locale(prefs.language), opts).format(date(iso))
+  const fmt = (iso: string, opts: Intl.DateTimeFormatOptions): string =>
+    new Intl.DateTimeFormat(locale(prefs.language), opts).format(date(iso))
   const short = (iso: string): string => fmt(iso, { day: 'numeric', month: 'short' })
   const label = (b: Bucket): string =>
     unit === 'day'
@@ -53,9 +54,9 @@ export function ActivityChart({ apps }: { apps: Application[] }) {
   const every = Math.ceil(buckets.length / 7)
 
   return (
-    <section className="rounded-card border-ui border-strong bg-surface px-6 py-5">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h2 className="me-auto font-head text-[18px] font-bold">{t('dash.activity')}</h2>
+    <section className="min-w-0 rounded-card border-ui border-strong bg-surface p-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <h2 className="me-auto font-head text-[15px] font-bold">{t('dash.activity')}</h2>
         <div className="flex rounded-card border-ui border-soft p-0.5" role="group" aria-label={t('dash.span')}>
           {(Object.keys(SPANS) as Span[]).map((s) => (
             <button
@@ -64,7 +65,7 @@ export function ActivityChart({ apps }: { apps: Application[] }) {
               aria-pressed={span === s}
               onClick={() => change(s)}
               className={clsx(
-                'h-7 cursor-pointer rounded-[5px] px-2.5 text-[11.5px] font-medium',
+                'h-6 cursor-pointer rounded-[5px] px-2 text-[11px] font-medium',
                 span === s ? 'bg-ink text-surface' : 'text-muted hover:text-ink'
               )}
             >
@@ -74,7 +75,7 @@ export function ActivityChart({ apps }: { apps: Application[] }) {
         </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-2 flex min-h-6 items-center gap-2">
         {/* Left is the past, like the chart itself, in both interface directions. */}
         <div className="flex gap-1" dir="ltr">
           <button
@@ -83,9 +84,9 @@ export function ActivityChart({ apps }: { apps: Application[] }) {
             disabled={!canGoBack}
             title={canGoBack ? t('dash.earlier') : t('dash.noEarlier')}
             aria-label={t('dash.earlier')}
-            className="flex size-7 cursor-pointer items-center justify-center rounded-card border-ui border-strong bg-surface hover:bg-field disabled:cursor-not-allowed disabled:border-soft disabled:text-muted"
+            className="flex size-6 cursor-pointer items-center justify-center rounded-[5px] border-ui border-strong bg-surface hover:bg-field disabled:cursor-not-allowed disabled:border-soft disabled:text-muted"
           >
-            <ChevronLeft size={15} />
+            <ChevronLeft size={14} />
           </button>
           <button
             type="button"
@@ -93,37 +94,44 @@ export function ActivityChart({ apps }: { apps: Application[] }) {
             disabled={back === 0}
             title={t('dash.later')}
             aria-label={t('dash.later')}
-            className="flex size-7 cursor-pointer items-center justify-center rounded-card border-ui border-strong bg-surface hover:bg-field disabled:cursor-not-allowed disabled:border-soft disabled:text-muted"
+            className="flex size-6 cursor-pointer items-center justify-center rounded-[5px] border-ui border-strong bg-surface hover:bg-field disabled:cursor-not-allowed disabled:border-soft disabled:text-muted"
           >
-            <ChevronRight size={15} />
+            <ChevronRight size={14} />
           </button>
         </div>
-        <span className="text-[12px] font-medium" dir="auto">
-          {range}
+        {/* What the pointer (or keyboard focus) is on takes the range's place, so the chart needs no extra row. */}
+        <span className="flex min-w-0 items-center gap-1.5 truncate text-[12px]" aria-live="polite" dir="auto">
+          {shown ? (
+            <>
+              <span
+                className={clsx(
+                  'size-2 shrink-0 rounded-[2px] border border-strong',
+                  !shown.count ? 'bg-field' : shown === top ? 'bg-purple' : 'bg-yellow'
+                )}
+              />
+              <b className="truncate font-semibold">{label(shown)}</b>
+              <span className="text-muted">·</span>
+              <span className="whitespace-nowrap">{t('dash.addedCount', { count: shown.count })}</span>
+            </>
+          ) : (
+            <span className="truncate font-medium" title={t('dash.hoverHint')}>
+              {range}
+            </span>
+          )}
         </span>
-        {back > 0 && (
-          <button type="button" onClick={() => step(-back)} className="cursor-pointer text-[11.5px] font-semibold text-ink underline">
+        {back > 0 && !shown && (
+          <button
+            type="button"
+            onClick={() => step(-back)}
+            className="cursor-pointer text-[11.5px] font-semibold text-ink underline"
+          >
             {t('dash.backToToday')}
           </button>
         )}
         <span className="label-mono ms-auto">{t('dash.added', { count: sum })}</span>
       </div>
 
-      {/* What the pointer (or keyboard focus) is on. Always one line tall, so nothing jumps. */}
-      <div className="mt-3 flex h-6 items-center gap-2 text-[12.5px]" aria-live="polite">
-        {shown ? (
-          <>
-            <span className={clsx('size-2.5 rounded-[2px] border border-strong', !shown.count ? 'bg-field' : shown === top ? 'bg-purple' : 'bg-yellow')} />
-            <b className="font-semibold">{label(shown)}</b>
-            <span className="text-muted">·</span>
-            <span>{t('dash.addedCount', { count: shown.count })}</span>
-          </>
-        ) : (
-          <span className="text-muted">{t('dash.hoverHint')}</span>
-        )}
-      </div>
-
-      <div className="mt-1 flex h-[132px] items-stretch gap-1" dir="ltr" onMouseLeave={() => setActive(null)}>
+      <div className="mt-2 flex h-[88px] items-stretch gap-1" dir="ltr" onMouseLeave={() => setActive(null)}>
         {buckets.map((b, i) => {
           const on = active === i
           const isToday = unit === 'day' && b.from === today
@@ -143,12 +151,14 @@ export function ActivityChart({ apps }: { apps: Application[] }) {
                 next?.focus()
               }}
               className={clsx(
-                'group relative flex min-w-0 flex-1 cursor-default flex-col items-center justify-end gap-1 rounded-[3px] outline-none',
+                'group relative flex min-w-0 flex-1 cursor-default flex-col items-center justify-end gap-0.5 rounded-[3px]',
                 on && 'bg-field'
               )}
             >
               {b.count > 0 && buckets.length <= 31 && (
-                <span className={clsx('font-mono text-[10px] leading-none', on ? 'font-semibold text-ink' : 'text-muted')}>{b.count}</span>
+                <span className={clsx('font-mono text-[10px] leading-none', on ? 'font-semibold text-ink' : 'text-muted')}>
+                  {b.count}
+                </span>
               )}
               <span
                 className={clsx(
@@ -157,14 +167,16 @@ export function ActivityChart({ apps }: { apps: Application[] }) {
                   on && b.count === 0 && 'border-strong',
                   on && 'shadow-hard'
                 )}
-                style={{ height: b.count ? `${Math.max(8, (b.count / max) * 96)}px` : '4px' }}
+                style={{
+                  height: b.count ? `${Math.max(6, (b.count / max) * 62)}px` : '3px'
+                }}
               />
               <span className={clsx('h-[3px] w-full rounded-full', isToday ? 'bg-ink' : 'bg-transparent')} />
             </button>
           )
         })}
       </div>
-      <div className="mt-1.5 flex gap-1 font-mono text-[10px] text-muted" dir="ltr">
+      <div className="mt-1 flex gap-1 font-mono text-[10px] text-muted" dir="ltr">
         {buckets.map((b, i) => (
           <span key={b.from} dir="auto" className="min-w-0 flex-1 overflow-visible text-center whitespace-nowrap">
             {unit === 'day' && b.from === today ? t('dash.today') : i % every === 0 && i < buckets.length - 2 ? tick(b) : ''}

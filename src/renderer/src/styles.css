@@ -34,6 +34,12 @@
   --soft: #363941;
   --strong: #d9d5ca;
   --shadow: #000000;
+  /* Softer accents on dark: full-strength pastels glare against #15161a. Ink text on them stays readable. */
+  --yellow: #e3cb55;
+  --green: #a8c7a1;
+  --purple: #a99bdc;
+  --blue: #9cbfd1;
+  --pink: #d8a89e;
   color-scheme: dark;
 }
 

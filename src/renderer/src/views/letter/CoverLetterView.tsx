@@ -10,19 +10,20 @@ import {
   LoaderCircle,
   PenLine,
   Plus,
+  RotateCcw,
   ShieldCheck,
   TriangleAlert,
   X
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { clsx } from 'clsx'
+import { cn } from '@/lib/cn'
 import { providerName, textProvider, type ProviderId } from '@shared/ai'
 import { languageCode } from '@shared/docs/common'
 import { letterDoc } from '@shared/docs/letter'
 import { LTR_LAYOUTS, RTL_LAYOUTS, wordCount, type LetterLayout, type LetterState } from '@shared/letter'
 import { EMPTY_PROFILE, type Profile } from '@shared/profile'
 import type { DocLanguage } from '@shared/settings'
-import { invoke, useAiErrorToast, useErrorToast, useLanguages, useSettings } from '@/lib/api'
+import { errorCode, invoke, useAiErrorToast, useErrorToast, useLanguages, useSettings } from '@/lib/api'
 import { appKeys } from '@/lib/apps'
 import { docKeys, useProfile } from '@/lib/docs'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -33,12 +34,28 @@ import { AppPicker, NoApplications, SelectField, useChosenApp } from '@/componen
 import { FactWarnings, type WarningGroup } from '@/components/docs/FactWarnings'
 
 const areaClass =
-  'w-full resize-y rounded-card border-ui border-soft bg-field px-[11px] py-2.5 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
+  'w-full resize-y rounded-card border-ui border-soft bg-field px-2.5 py-1.5 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
+
+/** "01 / Set the direction" → the step number and the title, so the title can be a real heading. */
+function splitKicker(kicker: string): [string, string] {
+  const m = /^\s*(\d+)\s*\/\s*(.+)$/.exec(kicker)
+  return m ? [m[1]!, m[2]!] : ['', kicker]
+}
 
 function Panel({ kicker, children, className }: { kicker?: string; children: React.ReactNode; className?: string }) {
+  const [num, title] = splitKicker(kicker ?? '')
   return (
-    <section className={clsx('rounded-card border-ui border-strong bg-surface px-5 py-5', className)}>
-      {kicker && <div className="label-mono">{kicker}</div>}
+    <section className={cn('rounded-card border-ui border-strong bg-surface p-3', className)}>
+      {kicker && (
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="font-head text-[15px] leading-snug font-bold">{title}</h2>
+          {num && (
+            <span className="label-mono shrink-0" aria-hidden>
+              {num}
+            </span>
+          )}
+        </div>
+      )}
       {children}
     </section>
   )
@@ -71,15 +88,20 @@ function SenderFields({ profile }: { profile: Profile }) {
   }
   if (!missing && !touched) return null
   return (
-    <div className={clsx('mt-4 rounded-card border-ui px-4 py-3.5', missing ? 'border-paper-ink bg-yellow text-paper-ink' : 'border-soft bg-field')}>
+    <div
+      className={cn(
+        'mt-3 rounded-card border-ui px-3 py-2.5',
+        missing ? 'border-paper-ink bg-yellow text-paper-ink' : 'border-soft bg-field'
+      )}
+    >
       <div className="flex items-center gap-2 text-[12.5px] font-semibold">
-        {missing ? <TriangleAlert size={15} className="shrink-0" /> : <Check size={15} className="shrink-0" />}
+        {missing ? <TriangleAlert size={14} className="shrink-0" /> : <Check size={14} className="shrink-0" />}
         {missing ? t('letter.senderMissing') : t('letter.senderDone')}
       </div>
-      <p className="mt-1 text-[12px]">{t('letter.senderSub')}</p>
-      <div className="mt-3 grid grid-cols-2 gap-x-4">
-        <div>
-          <label htmlFor="l-name" className="mb-1.5 block text-[12px] font-semibold">
+      <p className="mt-0.5 text-[11.5px]">{t('letter.senderSub')}</p>
+      <div className="mt-2 grid grid-cols-2 gap-x-3">
+        <div className="min-w-0">
+          <label htmlFor="l-name" className="mb-1 block text-[12px] font-semibold">
             {t('profile.fullName')}
           </label>
           <TextInput
@@ -94,8 +116,8 @@ function SenderFields({ profile }: { profile: Profile }) {
             className="!bg-[#fffdf9] !text-paper-ink"
           />
         </div>
-        <div>
-          <label htmlFor="l-address" className="mb-1.5 block text-[12px] font-semibold">
+        <div className="min-w-0">
+          <label htmlFor="l-address" className="mb-1 block text-[12px] font-semibold">
             {t('letter.senderAddress')}
           </label>
           <textarea
@@ -109,7 +131,7 @@ function SenderFields({ profile }: { profile: Profile }) {
               setAddress(e.target.value)
             }}
             onBlur={() => address.trim() !== profile.address && save({ address })}
-            className={clsx(areaClass, '!bg-[#fffdf9] !text-paper-ink')}
+            className={cn(areaClass, '!bg-[#fffdf9] !text-paper-ink')}
           />
         </div>
       </div>
@@ -172,7 +194,7 @@ function LayoutPicker({
     ]
   )
   return (
-    <div className={clsx('grid gap-3', layouts.length === 4 ? 'grid-cols-4' : 'grid-cols-3')}>
+    <div className={cn('grid gap-2', layouts.length === 4 ? 'grid-cols-4' : 'grid-cols-3')}>
       {docs.map(({ layout, doc }) => {
         const on = state.layout === layout
         return (
@@ -181,15 +203,16 @@ function LayoutPicker({
             type="button"
             onClick={() => onPick(layout)}
             aria-pressed={on}
-            className={clsx(
-              'cursor-pointer rounded-card border-ui p-2 text-start',
+            className={cn(
+              'min-w-0 cursor-pointer rounded-card border-ui p-1.5 text-start',
               on ? 'border-strong bg-yellow text-on-accent shadow-hard' : 'border-soft bg-field hover:border-strong'
             )}
           >
-            <div className="pointer-events-none max-h-[118px] overflow-hidden border border-[#cfccc3] bg-white">
+            {/* The top of the page is enough to tell the layouts apart. */}
+            <div className="pointer-events-none max-h-[64px] overflow-hidden border border-[#cfccc3] bg-white">
               <DocPreview doc={doc} paper={settings?.paper} />
             </div>
-            <b className="mt-2 block text-[11.5px] font-semibold">{t(`letter.layouts.${layout}`)}</b>
+            <b className="mt-1 block truncate text-[11.5px] font-semibold">{t(`letter.layouts.${layout}`)}</b>
           </button>
         )
       })}
@@ -224,6 +247,8 @@ export function CoverLetterView() {
   const [highlight, setHighlight] = useState<string | null>(null)
   const [lastFile, setLastFile] = useState<string | null>(null)
   const [customEncl, setCustomEncl] = useState('')
+  /** Loading a saved letter failed: shown in place of the editor with a Retry, never an endless spinner. */
+  const [loadError, setLoadError] = useState<unknown>(null)
   const loaded = useRef<Set<string>>(new Set())
   const dirty = useRef<Set<string>>(new Set())
   const editor = useRef<HTMLTextAreaElement>(null)
@@ -235,6 +260,7 @@ export function CoverLetterView() {
     setSelected([match.id])
     setActive(match.id)
     setDrafts({})
+    setLoadError(null)
     loaded.current = new Set()
     dirty.current = new Set()
     setLastFile(null)
@@ -249,7 +275,11 @@ export function CoverLetterView() {
       loaded.current.add(id)
       invoke('letter:get', app.id, id)
         .then((s) => setDrafts((d) => ({ ...d, [id]: d[id] ?? s })))
-        .catch(onError)
+        .catch((err: unknown) => {
+          loaded.current.delete(id)
+          if (!errorCode(err)) console.error(err)
+          setLoadError(err)
+        })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [app?.id, selected])
@@ -425,14 +455,15 @@ export function CoverLetterView() {
 
   return (
     <>
-      <PageHeader page="coverLetter" actions={<span className="label-mono me-4 self-end pb-2">{t('docs.savedOnDevice')}</span>} />
-      <div className="grid grid-cols-[minmax(0,340px)_minmax(0,1fr)] items-start gap-6">
-        <div className="flex flex-col gap-5">
+      <PageHeader page="coverLetter" />
+      <div className="grid grid-cols-[minmax(0,310px)_minmax(0,1fr)] items-start gap-3">
+        {/* The settings column stays in view while the letter scrolls; Write sits at its foot. */}
+        <div className="sticky top-3 flex max-h-[calc(100vh-4.5rem)] min-w-0 flex-col gap-3 overflow-y-auto">
           <Panel kicker={t('letter.kicker1')}>
             <FieldLabel>{t('docs.application')}</FieldLabel>
             <AppPicker value={app.id} apps={apps} onChange={setApp} />
             <FieldLabel>{t('letter.languages')}</FieldLabel>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {languages.map((l) => {
                 const on = selected.includes(l.id)
                 return (
@@ -441,8 +472,8 @@ export function CoverLetterView() {
                     type="button"
                     aria-pressed={on}
                     onClick={() => toggleLanguage(l.id)}
-                    className={clsx(
-                      'flex h-9 cursor-pointer items-center gap-1.5 rounded-card border-ui px-3 text-[12.5px]',
+                    className={cn(
+                      'flex h-8 cursor-pointer items-center gap-1.5 rounded-card border-ui px-2.5 text-[12.5px]',
                       on ? 'border-strong bg-yellow font-semibold text-on-accent' : 'border-soft bg-field font-medium'
                     )}
                   >
@@ -452,9 +483,9 @@ export function CoverLetterView() {
                 )
               })}
             </div>
-            <p className="mt-2 text-[11.5px] text-muted">{t('letter.languagesHint')}</p>
+            <p className="mt-1.5 text-[11.5px] text-muted">{t('letter.languagesHint')}</p>
             <Button
-              className="mt-4 w-full justify-between"
+              className="mt-2.5 w-full justify-between"
               disabled={!!busy || !hasMaster}
               onClick={() => void runForSelected('prepare')}
             >
@@ -467,63 +498,56 @@ export function CoverLetterView() {
                 </span>
               )}
             </Button>
-            {busy === 'prepare' && progress && <p className="label-mono mt-2">{progress}</p>}
+            {busy === 'prepare' && progress && <p className="label-mono mt-1.5">{progress}</p>}
           </Panel>
 
-          {hasMaster ? (
-            <section className="rounded-card border-ui border-paper-ink bg-green px-5 py-4 text-paper-ink">
-              <div className="flex items-center gap-2 font-head text-[16px] font-bold">
-                <ShieldCheck size={18} />
-                {t('letter.grounded')}
-              </div>
-              <p className="mt-1.5 text-[12.5px]">{t('letter.groundedSub')}</p>
-            </section>
-          ) : (
-            <section className="rounded-card border-ui border-paper-ink bg-yellow px-5 py-4 text-paper-ink">
-              <div className="flex items-center gap-2 font-head text-[16px] font-bold">
-                <TriangleAlert size={18} />
-                {t('letter.noMaster')}
-              </div>
-              <p className="mt-1.5 text-[12.5px]">{t('letter.noMasterSub')}</p>
-              <Link to="/cv/master" className="mt-2 inline-block text-[12.5px] font-semibold text-paper-ink underline">
+          {/* Without a master CV nothing can be written: one actionable line instead of a card. */}
+          {!hasMaster && master !== undefined && (
+            <div
+              className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-card border-ui border-paper-ink bg-yellow px-3 py-2 text-[12px] text-paper-ink"
+              title={t('letter.noMasterSub')}
+            >
+              <TriangleAlert size={14} className="shrink-0" />
+              <b className="font-semibold">{t('letter.noMaster')}</b>
+              <Link to="/cv/master" className="ms-auto font-semibold text-paper-ink underline">
                 {t('profile.openMaster')}
               </Link>
-            </section>
+            </div>
           )}
 
           <Panel kicker={t('letter.kicker2')}>
-            <div className="mt-3 flex items-center justify-between gap-2">
-              <b className="text-[14px]">{t('letter.why')}</b>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <b className="text-[12.5px] font-semibold">{t('letter.why')}</b>
               <MicButton
-                className="h-9"
+                className="h-7"
                 onText={(spoken) => {
                   const next = motivation.trim() ? `${motivation.trimEnd()} ${spoken}` : spoken
                   for (const id of selected) edit(id, { motivation: next })
                 }}
               />
             </div>
-            <p className="mt-1 text-[11.5px] text-muted">{t('letter.whyHint')}</p>
+            <p className="mt-0.5 text-[11.5px] text-muted">{t('letter.whyHint')}</p>
             <textarea
               dir="auto"
-              rows={4}
+              rows={3}
               value={motivation}
               placeholder={t('letter.whyPlaceholder')}
               onChange={(e) => {
                 for (const id of selected) edit(id, { motivation: e.target.value })
               }}
-              className={clsx(areaClass, 'mt-3')}
+              className={cn(areaClass, 'mt-2')}
             />
             {draft && draft.questions.length > 0 && (
-              <div className="mt-4 flex flex-col gap-3">
+              <div className="mt-3 flex flex-col gap-2">
                 <div className="label-mono">{t('letter.questions', { lang: langName(active) })}</div>
                 {draft.questions.map((q, i) => (
                   <div key={q}>
-                    <div className="mb-1.5 flex items-start justify-between gap-2">
-                      <label className="text-[12px] font-semibold" dir="auto">
+                    <div className="mb-1 flex items-start justify-between gap-2">
+                      <label className="min-w-0 text-[12px] font-semibold" dir="auto">
                         {q}
                       </label>
                       <MicButton
-                        className="h-8"
+                        className="h-7"
                         onText={(spoken) => {
                           const answers = [...draft.answers]
                           answers[i] = answers[i]?.trim() ? `${answers[i]!.trimEnd()} ${spoken}` : spoken
@@ -549,15 +573,20 @@ export function CoverLetterView() {
             )}
           </Panel>
 
-          <section className="rounded-card border-ui border-strong bg-purple px-5 py-5 text-paper-ink">
-            <div className="text-[12px] font-semibold">{t('letter.model')}</div>
-            <div className="mt-2 rounded-card border-ui border-paper-ink bg-[#fffdf9] px-3 py-2.5 text-[12.5px]">
-              {providerName(provider, settings?.ai)}
-              {model ? ` · ${model}` : ''}
+          <section className="sticky bottom-0 rounded-card border-ui border-strong bg-purple p-3 text-paper-ink">
+            <div
+              className="flex min-w-0 items-center gap-1.5 text-[11.5px]"
+              title={hasMaster ? `${t('letter.grounded')}: ${t('letter.groundedSub')}` : undefined}
+            >
+              {hasMaster && <ShieldCheck size={13} className="shrink-0" aria-hidden />}
+              <span className="truncate">
+                <span className="font-semibold">{t('letter.model')}:</span> {providerName(provider, settings?.ai)}
+                {model ? ` · ${model}` : ''}
+              </span>
             </div>
             <Button
               variant="primary"
-              className="mt-4 w-full justify-between"
+              className="mt-2 w-full justify-between"
               disabled={!!busy || !hasMaster}
               onClick={() => void runForSelected('write')}
             >
@@ -570,19 +599,19 @@ export function CoverLetterView() {
                 </span>
               )}
             </Button>
-            {busy === 'write' && progress && <p className="label-mono mt-2 !text-[#4a4560]">{progress}</p>}
+            {busy === 'write' && progress && <p className="label-mono mt-1.5 !text-[#4a4560]">{progress}</p>}
           </section>
         </div>
 
-        <section className="rounded-card border-ui border-strong bg-surface px-5 py-5">
-          <div className="flex flex-wrap items-center gap-2.5">
+        <section className="min-w-0 rounded-card border-ui border-strong bg-surface p-3">
+          <div className="flex flex-wrap items-center gap-1.5">
             {selected.map((id) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setActive(id)}
-                className={clsx(
-                  'h-9 min-w-[96px] cursor-pointer rounded-card border-ui px-3 text-[12.5px]',
+                className={cn(
+                  'h-8 min-w-[80px] cursor-pointer rounded-card border-ui px-2.5 text-[12.5px]',
                   active === id ? 'border-strong bg-yellow font-semibold text-on-accent' : 'border-soft bg-field font-medium'
                 )}
               >
@@ -598,8 +627,8 @@ export function CoverLetterView() {
                     setMode(m)
                     setHighlight(null)
                   }}
-                  className={clsx(
-                    'h-8 cursor-pointer rounded-[5px] px-3 text-[12px] font-medium',
+                  className={cn(
+                    'h-7 cursor-pointer rounded-[5px] px-2.5 text-[12px] font-medium',
                     mode === m ? 'bg-ink text-surface' : 'text-muted hover:text-ink'
                   )}
                 >
@@ -609,7 +638,24 @@ export function CoverLetterView() {
             </div>
           </div>
 
-          {!draft ? (
+          {!draft && loadError ? (
+            <div role="alert" className="flex flex-col items-center justify-center gap-2.5 py-12 text-center">
+              <TriangleAlert size={18} className="text-muted" />
+              <p className="max-w-[360px] text-[12.5px] text-muted">
+                {errorCode(loadError) ? t(`errors.${errorCode(loadError)!}`) : t('errors.generic')}
+              </p>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setLoadError(null)
+                  setSelected((cur) => [...cur])
+                }}
+              >
+                <RotateCcw />
+                {t('common.retry')}
+              </Button>
+            </div>
+          ) : !draft ? (
             <div className="flex h-60 items-center justify-center text-muted">
               <LoaderCircle className="animate-spin" />
             </div>
@@ -620,8 +666,8 @@ export function CoverLetterView() {
 
               <SenderFields profile={profile} />
 
-              <div className="grid grid-cols-2 gap-x-5">
-                <div>
+              <div className="grid grid-cols-2 gap-x-3">
+                <div className="min-w-0">
                   <FieldLabel htmlFor="l-subject">{t('letter.subject')}</FieldLabel>
                   <div className="flex gap-2">
                     <TextInput
@@ -648,12 +694,12 @@ export function CoverLetterView() {
                     )}
                   </div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <FieldLabel htmlFor="l-recipient">{t('letter.recipient')}</FieldLabel>
                   <textarea
                     id="l-recipient"
                     dir="auto"
-                    rows={4}
+                    rows={3}
                     value={draft.recipient}
                     onChange={(e) => editActive({ recipient: e.target.value })}
                     className={areaClass}
@@ -661,7 +707,7 @@ export function CoverLetterView() {
                 </div>
               </div>
 
-              <div className="mt-4 mb-2 flex items-center justify-between">
+              <div className="mt-3 mb-1.5 flex items-center justify-between">
                 <span className="label-mono">{t('letter.editKicker')}</span>
                 <span className="label-mono">{t('letter.words', { count: words })}</span>
               </div>
@@ -673,7 +719,7 @@ export function CoverLetterView() {
                   value={draft.body}
                   placeholder={hasMaster ? t('letter.bodyPlaceholder') : t('letter.noMasterSub')}
                   onChange={(e) => editActive({ body: e.target.value })}
-                  className={clsx(areaClass, 'min-h-[360px] !text-[13.5px] !leading-[1.7]')}
+                  className={cn(areaClass, 'min-h-[360px] !text-[13.5px] !leading-[1.7]')}
                 />
               ) : (
                 <div className="max-h-[70vh] overflow-auto border-ui border-strong bg-white">
@@ -682,7 +728,7 @@ export function CoverLetterView() {
               )}
 
               {draft.generatedAt && (
-                <div className="mt-4">
+                <div className="mt-3">
                   <FactWarnings
                     warnings={warnings}
                     busyItem={fixing}
@@ -697,7 +743,7 @@ export function CoverLetterView() {
               )}
 
               <FieldLabel>{t('letter.enclosures')}</FieldLabel>
-              <div className="flex flex-wrap items-center gap-2 rounded-card border-ui border-soft bg-field px-3 py-2.5">
+              <div className="flex flex-wrap items-center gap-1.5 rounded-card border-ui border-soft bg-field px-2.5 py-1.5">
                 {[...new Set([...options.map((o) => o.label), ...draft.enclosures])].map((label) => {
                   const on = draft.enclosures.includes(label)
                   return (
@@ -710,7 +756,7 @@ export function CoverLetterView() {
                           enclosures: on ? draft.enclosures.filter((e) => e !== label) : [...draft.enclosures, label]
                         })
                       }
-                      className={clsx(
+                      className={cn(
                         'flex h-7 cursor-pointer items-center gap-1.5 rounded-[6px] border-ui px-2 text-[12px]',
                         on ? 'border-strong bg-surface font-semibold' : 'border-transparent text-muted hover:text-ink'
                       )}
@@ -735,13 +781,13 @@ export function CoverLetterView() {
                     value={customEncl}
                     onChange={(e) => setCustomEncl(e.target.value)}
                     placeholder={t('letter.addEnclosure')}
-                    className="h-7 w-[150px] bg-transparent px-1 text-[12px] outline-none placeholder:text-muted"
+                    className="h-7 w-[140px] min-w-0 bg-transparent px-1 text-[12px] outline-none placeholder:text-muted"
                     dir="auto"
                   />
                 </form>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
                 <span className="label-mono">
                   {t(`letter.layouts.${draft.layout}`)} · {t('letter.savesToApp')}
                 </span>
@@ -755,7 +801,8 @@ export function CoverLetterView() {
                   {profile.signature ? t('letter.signature') : t('letter.noSignature')}
                 </label>
               </div>
-              <div className="mt-4 flex flex-wrap items-center gap-3">
+              {/* Sticks to the bottom of the window while the card is taller than it, so Save as PDF stays in reach. */}
+              <div className="sticky bottom-0 -mx-3 mt-3 -mb-3 flex flex-wrap items-center gap-2 rounded-b-card border-t-[1.5px] border-soft bg-surface px-3 py-2">
                 <Button
                   variant="ghost"
                   onClick={() => {
@@ -765,7 +812,7 @@ export function CoverLetterView() {
                 >
                   {t('letter.clear')}
                 </Button>
-                <div className="ms-auto flex flex-wrap gap-3">
+                <div className="ms-auto flex flex-wrap gap-2">
                   <Button disabled={!hasMaster} onClick={() => void copyPrompt()}>
                     <ClipboardCopy />
                     {t('letter.copyPrompt')}

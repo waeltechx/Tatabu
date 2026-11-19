@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown } from 'lucide-react'
 import { clsx } from 'clsx'
+import { cn } from '@/lib/cn'
 import type { Application } from '@shared/applications'
 import { useApps } from '@/lib/apps'
 import { inputClass } from '@/components/ui'
@@ -42,7 +43,7 @@ export function AppPicker({
         value={value}
         aria-label={t('docs.application')}
         onChange={(e) => onChange(e.target.value)}
-        className={clsx(inputClass, 'cursor-pointer appearance-none pe-9')}
+        className={cn(inputClass, 'cursor-pointer appearance-none pe-8')}
       >
         {apps.map((a) => (
           <option key={a.id} value={a.id}>
@@ -50,7 +51,7 @@ export function AppPicker({
           </option>
         ))}
       </select>
-      <ChevronDown size={16} className="pointer-events-none absolute end-[11px] top-1/2 -translate-y-1/2 text-muted" />
+      <ChevronDown size={14} className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-muted" />
     </div>
   )
 }
@@ -74,11 +75,11 @@ export function SelectField({
         value={value}
         aria-label={label}
         onChange={(e) => onChange(e.target.value)}
-        className={clsx(inputClass, 'cursor-pointer appearance-none pe-9')}
+        className={cn(inputClass, 'cursor-pointer appearance-none pe-8')}
       >
         {children}
       </select>
-      <ChevronDown size={16} className="pointer-events-none absolute end-[11px] top-1/2 -translate-y-1/2 text-muted" />
+      <ChevronDown size={14} className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-muted" />
     </div>
   )
 }
@@ -87,10 +88,10 @@ export function SelectField({
 export function NoApplications() {
   const { t } = useTranslation()
   return (
-    <section className="flex min-h-[280px] flex-col items-center justify-center rounded-card border-ui border-dashed border-soft px-6 text-center">
-      <b className="font-head text-[18px] font-bold">{t('docs.noApps')}</b>
-      <p className="mt-1.5 max-w-[420px] text-[13px] text-muted">{t('docs.noAppsSub')}</p>
-      <a href="#/applications/new" className="mt-4 text-[13px] font-semibold text-ink underline">
+    <section className="flex min-h-[200px] flex-col items-center justify-center rounded-card border-ui border-dashed border-soft p-5 text-center">
+      <b className="font-head text-[15px] font-bold">{t('docs.noApps')}</b>
+      <p className="mt-1 max-w-[420px] text-[12.5px] text-muted">{t('docs.noAppsSub')}</p>
+      <a href="#/applications/new" className="mt-2.5 text-[12.5px] font-semibold text-ink underline">
         {t('apps.add')}
       </a>
     </section>

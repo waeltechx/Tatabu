@@ -32,7 +32,7 @@ export function AppShell() {
   return (
     <div className="flex min-h-full">
       <Sidebar />
-      <main className="min-w-0 flex-1 px-10 pt-[30px] pb-10">
+      <main className="min-w-0 flex-1 px-5 pt-4 pb-6">
         <UpdateBanner />
         <Outlet />
       </main>

@@ -23,13 +23,18 @@ export function LanguagesCard() {
   }
 
   return (
-    <Card number="04" label={t('settings.langs.label')} title={t('settings.langs.title')} description={t('settings.langs.desc')}>
-      <div className="flex flex-wrap gap-2">
+    <Card
+      number="04"
+      label={t('settings.langs.label')}
+      title={t('settings.langs.title')}
+      description={t('settings.langs.desc')}
+    >
+      <div className="flex flex-wrap gap-1.5">
         {languages.map((l) => (
           <span
             key={l.id}
             dir={l.dir}
-            className="flex h-9 items-center gap-2 rounded-card border-ui border-strong bg-surface px-3 text-[12.5px] font-medium"
+            className="flex h-8 items-center gap-2 rounded-card border-ui border-strong bg-surface px-2.5 text-[12.5px] font-medium"
           >
             {l.name}
             {l.builtin ? (
@@ -69,14 +74,14 @@ export function LanguagesCard() {
               }}
               placeholder={t('settings.langs.placeholder')}
               aria-label={t('settings.langs.add')}
-              className="h-9 w-44 rounded-card border-ui border-strong bg-field px-3 text-[12.5px] outline-none placeholder:text-muted"
+              className="h-8 w-44 rounded-card border-ui border-strong bg-field px-2.5 text-[12.5px] outline-none placeholder:text-muted"
             />
           </form>
         ) : (
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="flex h-9 cursor-pointer items-center gap-2 rounded-card border-ui border-dashed border-muted px-3 text-[12.5px] font-medium text-muted hover:text-ink"
+            className="flex h-8 cursor-pointer items-center gap-2 rounded-card border-ui border-dashed border-muted px-3 text-[12.5px] font-medium text-muted hover:text-ink"
           >
             <Plus size={14} />
             {t('settings.langs.add')}

@@ -2,9 +2,19 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Download, ExternalLink, FolderOpen, LoaderCircle, Plus, ShieldCheck, TriangleAlert } from 'lucide-react'
+import {
+  Check,
+  Download,
+  ExternalLink,
+  FolderOpen,
+  LoaderCircle,
+  Plus,
+  RotateCcw,
+  ShieldCheck,
+  TriangleAlert
+} from 'lucide-react'
 import { toast } from 'sonner'
-import { clsx } from 'clsx'
+import { cn } from '@/lib/cn'
 import { providerName, textProvider, type ProviderId } from '@shared/ai'
 import { languageCode } from '@shared/docs/common'
 import { atsCvDoc } from '@shared/docs/cv'
@@ -23,7 +33,7 @@ import {
 } from '@shared/tailor'
 import { EMPTY_PROFILE } from '@shared/profile'
 import type { DocLanguage } from '@shared/settings'
-import { invoke, useAiErrorToast, useErrorToast, useLanguages, useSettings } from '@/lib/api'
+import { errorCode, invoke, useAiErrorToast, useErrorToast, useLanguages, useSettings } from '@/lib/api'
 import { appKeys } from '@/lib/apps'
 import { docKeys, useProfile } from '@/lib/docs'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -35,12 +45,28 @@ import { FactWarnings, showField, type WarningGroup } from '@/components/docs/Fa
 import { designKey } from './TeachDesignView'
 
 const areaClass =
-  'w-full resize-y rounded-card border-ui border-soft bg-field px-[11px] py-2 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
+  'w-full resize-y rounded-card border-ui border-soft bg-field px-2.5 py-1.5 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
+
+/** "01 / Pick the job" → the step number and the title, so the title can be a real heading. */
+function splitKicker(kicker: string): [string, string] {
+  const m = /^\s*(\d+)\s*\/\s*(.+)$/.exec(kicker)
+  return m ? [m[1]!, m[2]!] : ['', kicker]
+}
 
 function Panel({ kicker, children, className }: { kicker?: string; children: React.ReactNode; className?: string }) {
+  const [num, title] = splitKicker(kicker ?? '')
   return (
-    <section className={clsx('rounded-card border-ui border-strong bg-surface px-5 py-5', className)}>
-      {kicker && <div className="label-mono">{kicker}</div>}
+    <section className={cn('rounded-card border-ui border-strong bg-surface p-3', className)}>
+      {kicker && (
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="font-head text-[15px] leading-snug font-bold">{title}</h2>
+          {num && (
+            <span className="label-mono shrink-0" aria-hidden>
+              {num}
+            </span>
+          )}
+        </div>
+      )}
       {children}
     </section>
   )
@@ -53,11 +79,11 @@ function langMeta(l: DocLanguage | undefined): { code: string; dir: 'ltr' | 'rtl
 /** Small drawing of each look, as in the mockup. */
 function LookThumb({ side }: { side?: boolean }) {
   return (
-    <div className="flex h-[74px] gap-1.5 overflow-hidden rounded-[4px] border border-[#cfccc3] bg-white p-2">
+    <div className="flex h-12 gap-1 overflow-hidden rounded-[4px] border border-[#cfccc3] bg-white p-1.5">
       {side && <div className="w-[26%] rounded-[2px] bg-[#28406b]" />}
-      <div className="flex flex-1 flex-col gap-1.5">
-        <i className={clsx('block h-[5px] w-[60%] rounded-full', side ? 'bg-[#28406b]' : 'bg-[#202329]')} />
-        {[100, 80, 100, 70, 100].map((w, i) => (
+      <div className="flex flex-1 flex-col gap-1">
+        <i className={cn('block h-1 w-[60%] rounded-full', side ? 'bg-[#28406b]' : 'bg-[#202329]')} />
+        {[100, 80, 100, 70].map((w, i) => (
           <i key={i} className="block h-[3px] rounded-full bg-[#d9d6cd]" style={{ width: `${w}%` }} />
         ))}
       </div>
@@ -84,7 +110,7 @@ function ChangeCard({
   const leftOut = change.kind === 'left_out'
   return (
     <div
-      className={clsx('rounded-card border-ui px-3.5 py-3', on ? 'border-strong bg-field' : 'border-soft bg-surface opacity-75')}
+      className={cn('rounded-card border-ui px-3 py-2', on ? 'border-strong bg-field' : 'border-soft bg-surface opacity-75')}
     >
       <div className="flex items-start justify-between gap-2">
         <b className="text-[12.5px] font-semibold">{t(`cvStudio.chg.${change.kind}.${change.target}`)}</b>
@@ -96,7 +122,7 @@ function ChangeCard({
           title={change.revertible ? (on ? t('cvStudio.reject') : t('cvStudio.accept')) : t('cvStudio.cantUndo')}
           aria-label={on ? t('cvStudio.reject') : t('cvStudio.accept')}
           onClick={onToggle}
-          className={clsx(
+          className={cn(
             'flex size-6 shrink-0 items-center justify-center rounded-[6px] border-ui',
             on ? 'border-strong bg-green text-paper-ink' : 'border-soft bg-surface',
             change.revertible ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
@@ -106,13 +132,13 @@ function ChangeCard({
         </button>
       </div>
       {leftOut ? (
-        <p className="mt-1.5 text-[12px] text-muted" dir="auto">
+        <p className="mt-1 text-[12px] text-muted" dir="auto">
           {change.old}
         </p>
       ) : (
         <>
           {change.old && (
-            <p className="mt-1.5 text-[12px] text-muted line-through decoration-1" dir="auto">
+            <p className="mt-1 text-[12px] text-muted line-through decoration-1" dir="auto">
               {change.old}
             </p>
           )}
@@ -121,7 +147,9 @@ function ChangeCard({
           </p>
         </>
       )}
-      {src && !leftOut && change.kind !== 'reordered' && <div className="label-mono mt-2">{t('cvStudio.from', { src })}</div>}
+      {src && !leftOut && change.kind !== 'reordered' && (
+        <div className="label-mono mt-1.5">{t('cvStudio.from', { src })}</div>
+      )}
       {leftOut && <div className="label-mono mt-2">{on ? t('cvStudio.leftOutOn') : t('cvStudio.leftOutOff')}</div>}
     </div>
   )
@@ -150,12 +178,12 @@ function CvEditor({
       rows={rows}
       value={edits[it.id] ?? it.text}
       onChange={(e) => onEdit(it.id, e.target.value === original.get(it.id) ? null : e.target.value)}
-      className={clsx(areaClass, typeof edits[it.id] === 'string' && '!border-strong')}
+      className={cn(areaClass, typeof edits[it.id] === 'string' && '!border-strong')}
     />
   )
   const group = (title: string, children: React.ReactNode) => (
     <div className="flex flex-col gap-2">
-      <div className="label-mono mt-3">{title}</div>
+      <div className="label-mono mt-2">{title}</div>
       {children}
     </div>
   )
@@ -172,7 +200,10 @@ function CvEditor({
           cv.education.flatMap((e) => [field(e.degree, 1), ...e.details.map((d) => field(d))])
         )}
       {cv.skills.length > 0 &&
-        group(t('cvStudio.fields.skills'), <div className="grid grid-cols-2 gap-2">{cv.skills.map((s) => field(s, 1))}</div>)}
+        group(
+          t('cvStudio.fields.skills'),
+          <div className="grid grid-cols-2 gap-2">{cv.skills.map((s) => field(s, 1))}</div>
+        )}
       {cv.languages.length > 0 &&
         group(
           t('cvStudio.fields.languages'),
@@ -181,7 +212,10 @@ function CvEditor({
       {[...cv.certificates, ...cv.projects].length > 0 &&
         group(
           t('cvStudio.fields.entries'),
-          [...cv.certificates, ...cv.projects].flatMap((c) => [field(c.name, 1), ...(c.detail.text ? [field(c.detail)] : [])])
+          [...cv.certificates, ...cv.projects].flatMap((c) => [
+            field(c.name, 1),
+            ...(c.detail.text ? [field(c.detail)] : [])
+          ])
         )}
       {cv.other.map((s) => group(s.title.text, [field(s.title, 1), ...s.lines.map((l) => field(l))]))}
     </div>
@@ -197,7 +231,11 @@ export function CvStudioView() {
   const { data: languages = [] } = useLanguages()
   const { data: settings } = useSettings()
   const { data: profile = EMPTY_PROFILE } = useProfile()
-  const { data: masterState } = useQuery({ queryKey: docKeys.master, queryFn: () => invoke('cv:get'), staleTime: 0 })
+  const {
+    data: masterState,
+    error: masterError,
+    refetch: refetchMaster
+  } = useQuery({ queryKey: docKeys.master, queryFn: () => invoke('cv:get'), staleTime: 0 })
   const { data: designState } = useQuery({ queryKey: designKey, queryFn: () => invoke('design:get'), staleTime: 0 })
   const design = designState?.saved ?? null
   const navigate = useNavigate()
@@ -211,6 +249,9 @@ export function CvStudioView() {
   const [highlight, setHighlight] = useState<string | null>(null)
   const [lastFile, setLastFile] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  /** Loading the saved draft failed: shown in place of the preview with a Retry, never an endless spinner. */
+  const [draftError, setDraftError] = useState<unknown>(null)
+  const [reload, setReload] = useState(0)
   const dirty = useRef<Set<string>>(new Set())
 
   // A new application: start from the language of its posting.
@@ -219,6 +260,7 @@ export function CvStudioView() {
     const match = languages.find((l) => languageCode(l) === app.language) ?? languages[0]!
     setActive(match.id)
     setDrafts({})
+    setDraftError(null)
     dirty.current = new Set()
     setLastFile(null)
     setTab('preview')
@@ -227,11 +269,15 @@ export function CvStudioView() {
 
   useEffect(() => {
     if (!app || !active || drafts[active]) return
+    setDraftError(null)
     invoke('cvs:get', app.id, active)
       .then((s) => setDrafts((d) => ({ ...d, [active]: d[active] ?? s })))
-      .catch(onError)
+      .catch((err: unknown) => {
+        if (!errorCode(err)) console.error(err)
+        setDraftError(err)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [app?.id, active])
+  }, [app?.id, active, reload])
 
   // Save choices and edits a moment after they stop; the answer carries fresh warnings.
   useEffect(() => {
@@ -262,7 +308,8 @@ export function CvStudioView() {
 
   // What the page shows: the AI's CV with the user's choices and edits.
   const shown = useMemo(
-    () => (master && draft?.tailored ? applyChoices(master, draft.tailored, draft.changes, draft.rejected, draft.edits) : null),
+    () =>
+      master && draft?.tailored ? applyChoices(master, draft.tailored, draft.changes, draft.rejected, draft.edits) : null,
     [master, draft?.tailored, draft?.changes, draft?.rejected, draft?.edits]
   )
   const original = useMemo(() => {
@@ -297,7 +344,16 @@ export function CvStudioView() {
     }
     const { cv, keys } = resolveCv(master, shown, labels, meta.code)
     if (mine)
-      return myDesignDoc({ design, master, tailored: shown, resolved: cv, labels, lang: meta.code, dir: meta.dir, paper: settings?.paper })
+      return myDesignDoc({
+        design,
+        master,
+        tailored: shown,
+        resolved: cv,
+        labels,
+        lang: meta.code,
+        dir: meta.dir,
+        paper: settings?.paper
+      })
     // Highlight lines whose change is on: rewritten and reworded text.
     const marks = new Set<string>()
     for (const c of draft.changes) {
@@ -406,16 +462,27 @@ export function CvStudioView() {
   )
   const onCount = changes.filter((c) => !draft?.rejected.includes(c.id)).length
 
+  const loadError = masterError ?? draftError
+  const loadCode = loadError ? errorCode(loadError) : null
+  function retryLoad(): void {
+    if (masterError) void refetchMaster()
+    if (draftError) {
+      setDraftError(null)
+      setReload((n) => n + 1)
+    }
+  }
+
   return (
     <>
-      <PageHeader page="cvStudio" actions={<span className="label-mono me-4 self-end pb-2">{t('docs.savedOnDevice')}</span>} />
-      <div className="grid grid-cols-[minmax(0,330px)_minmax(0,1fr)] items-start gap-6">
-        <div className="flex flex-col gap-5">
+      <PageHeader page="cvStudio" />
+      <div className="grid grid-cols-[minmax(0,300px)_minmax(0,1fr)] items-start gap-3">
+        {/* The settings column stays in view while the preview scrolls; Tailor sits at its foot. */}
+        <div className="sticky top-3 flex max-h-[calc(100vh-4.5rem)] min-w-0 flex-col gap-3 overflow-y-auto">
           <Panel kicker={t('cvStudio.kicker1')}>
             <FieldLabel>{t('docs.application')}</FieldLabel>
             <AppPicker value={app.id} apps={apps} onChange={setApp} />
             <FieldLabel>{t('cvStudio.language')}</FieldLabel>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {languages.map((l) => (
                 <button
                   key={l.id}
@@ -425,9 +492,11 @@ export function CvStudioView() {
                     setActive(l.id)
                     setHighlight(null)
                   }}
-                  className={clsx(
-                    'h-9 cursor-pointer rounded-card border-ui px-3 text-[12.5px]',
-                    active === l.id ? 'border-strong bg-yellow font-semibold text-on-accent' : 'border-soft bg-field font-medium'
+                  className={cn(
+                    'h-8 cursor-pointer rounded-card border-ui px-2.5 text-[12.5px]',
+                    active === l.id
+                      ? 'border-strong bg-yellow font-semibold text-on-accent'
+                      : 'border-soft bg-field font-medium'
                   )}
                 >
                   {l.name}
@@ -437,79 +506,71 @@ export function CvStudioView() {
                 to="/settings"
                 title={t('cvStudio.addLanguage')}
                 aria-label={t('cvStudio.addLanguage')}
-                className="flex h-9 w-9 items-center justify-center rounded-card border-ui border-soft bg-field text-muted hover:text-ink"
+                className="flex size-8 items-center justify-center rounded-card border-ui border-soft bg-field text-muted hover:text-ink"
               >
-                <Plus size={15} />
+                <Plus size={14} />
               </Link>
             </div>
           </Panel>
 
           <Panel kicker={t('cvStudio.kicker2')}>
-            <div className="mt-3.5 grid grid-cols-2 gap-3">
+            <div className="mt-2 grid grid-cols-2 gap-2">
               <button
                 type="button"
                 aria-pressed={draft?.look !== 'mine'}
                 onClick={() => edit({ look: 'ats' })}
-                className={clsx(
-                  'cursor-pointer rounded-card border-ui p-2.5 text-start',
+                className={cn(
+                  'min-w-0 cursor-pointer rounded-card border-ui p-2 text-start',
                   draft?.look !== 'mine' ? 'border-strong bg-yellow text-on-accent shadow-hard' : 'border-soft bg-field'
                 )}
               >
                 <LookThumb />
-                <b className="mt-2 block text-[12.5px] font-semibold">{t('cvStudio.ats')}</b>
-                <span className="mt-0.5 block text-[11px] leading-snug opacity-80">{t('cvStudio.atsSub')}</span>
+                <b className="mt-1.5 block text-[12px] font-semibold">{t('cvStudio.ats')}</b>
+                <span className="mt-0.5 line-clamp-2 block text-[11px] leading-snug opacity-80">{t('cvStudio.atsSub')}</span>
               </button>
               <button
                 type="button"
                 aria-pressed={draft?.look === 'mine' && !!design}
                 onClick={() => (design ? edit({ look: 'mine' }) : navigate('/cv/design'))}
-                className={clsx(
-                  'cursor-pointer rounded-card border-ui p-2.5 text-start',
-                  draft?.look === 'mine' && design ? 'border-strong bg-yellow text-on-accent shadow-hard' : 'border-soft bg-field'
+                className={cn(
+                  'min-w-0 cursor-pointer rounded-card border-ui p-2 text-start',
+                  draft?.look === 'mine' && design
+                    ? 'border-strong bg-yellow text-on-accent shadow-hard'
+                    : 'border-soft bg-field'
                 )}
               >
                 <LookThumb side />
-                <b className="mt-2 block text-[12.5px] font-semibold">{t('cvStudio.mine')}</b>
-                <span className="mt-0.5 block text-[11px] leading-snug opacity-80">
+                <b className="mt-1.5 block text-[12px] font-semibold">{t('cvStudio.mine')}</b>
+                <span className="mt-0.5 line-clamp-2 block text-[11px] leading-snug opacity-80">
                   {design ? t('cvStudio.mineSub') : t('cvStudio.mineSoon')}
                 </span>
               </button>
             </div>
-            <div className="mt-2.5 text-end">
+            <div className="mt-2 text-end">
               <Link to="/cv/design" className="text-[11.5px] font-semibold text-ink underline">
                 {design ? t('cvStudio.recheck') : t('cvStudio.teach')}
               </Link>
             </div>
           </Panel>
 
-          {hasMaster ? (
-            <section className="rounded-card border-ui border-paper-ink bg-green px-5 py-4 text-paper-ink">
-              <div className="flex items-center gap-2 font-head text-[16px] font-bold">
-                <ShieldCheck size={18} />
-                {t('letter.grounded')}
-              </div>
-              <p className="mt-1.5 text-[12.5px]">{t('cvStudio.groundedSub')}</p>
-            </section>
-          ) : (
-            <section className="rounded-card border-ui border-paper-ink bg-yellow px-5 py-4 text-paper-ink">
-              <div className="flex items-center gap-2 font-head text-[16px] font-bold">
-                <TriangleAlert size={18} />
-                {t('letter.noMaster')}
-              </div>
-              <p className="mt-1.5 text-[12.5px]">{t('cvStudio.noMasterSub')}</p>
-              <Link to="/cv/master" className="mt-2 inline-block text-[12.5px] font-semibold text-paper-ink underline">
+          {/* Without a master CV nothing can be tailored: one actionable line instead of a card. */}
+          {!hasMaster && masterState && (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-card border-ui border-paper-ink bg-yellow px-3 py-2 text-[12px] text-paper-ink">
+              <TriangleAlert size={14} className="shrink-0" />
+              <b className="font-semibold">{t('letter.noMaster')}</b>
+              <Link to="/cv/master" className="ms-auto font-semibold text-paper-ink underline">
                 {t('profile.openMaster')}
               </Link>
-            </section>
+            </div>
           )}
 
-          <section className="rounded-card border-ui border-strong bg-purple px-5 py-5 text-paper-ink">
+          <section className="sticky bottom-0 rounded-card border-ui border-strong bg-purple p-3 text-paper-ink">
             <div className="flex items-center justify-between gap-2">
               <label htmlFor="cv-focus" className="text-[12px] font-semibold">
                 {t('cvStudio.focus')} <span className="font-normal opacity-70">{t('cvStudio.optional')}</span>
               </label>
               <MicButton
-                className="h-9 !border-paper-ink !bg-[#fffdf9] !text-paper-ink"
+                className="h-7 !border-paper-ink !bg-[#fffdf9] !text-paper-ink"
                 onText={(spoken) => {
                   const cur = draft?.highlight ?? ''
                   edit({ highlight: cur.trim() ? `${cur.trimEnd()} ${spoken}` : spoken })
@@ -523,16 +584,22 @@ export function CvStudioView() {
               value={draft?.highlight ?? ''}
               placeholder={t('cvStudio.focusPlaceholder')}
               onChange={(e) => edit({ highlight: e.target.value })}
-              className="mt-2.5 w-full resize-y rounded-card border-ui border-paper-ink bg-[#fffdf9] px-3 py-2 text-[12.5px] text-paper-ink outline-none placeholder:text-[#6b6680]"
+              className="mt-2 w-full resize-y rounded-card border-ui border-paper-ink bg-[#fffdf9] px-2.5 py-1.5 text-[12.5px] text-paper-ink outline-none placeholder:text-[#6b6680]"
             />
-            <p className="mt-1.5 text-[11px] opacity-75">{t('cvStudio.focusHint')}</p>
-            <div className="mt-3 text-[11.5px] opacity-80">
-              {t('letter.model')}: {providerName(provider, settings?.ai)}
-              {model ? ` · ${model}` : ''}
+            <p className="mt-1 text-[11px] opacity-75">{t('cvStudio.focusHint')}</p>
+            <div
+              className="mt-2 flex min-w-0 items-center gap-1.5 text-[11px] opacity-80"
+              title={hasMaster ? `${t('letter.grounded')}: ${t('cvStudio.groundedSub')}` : undefined}
+            >
+              {hasMaster && <ShieldCheck size={13} className="shrink-0" aria-hidden />}
+              <span className="truncate">
+                {t('letter.model')}: {providerName(provider, settings?.ai)}
+                {model ? ` · ${model}` : ''}
+              </span>
             </div>
             <Button
               variant="primary"
-              className="mt-3 w-full justify-between"
+              className="mt-2 w-full justify-between"
               disabled={!!busy || !hasMaster || !draft}
               onClick={() => void tailor()}
             >
@@ -548,8 +615,8 @@ export function CvStudioView() {
           </section>
         </div>
 
-        <section className="rounded-card border-ui border-strong bg-surface">
-          <div className="flex flex-wrap items-center gap-2 border-b-[1.5px] border-soft px-5 py-3.5">
+        <section className="min-w-0 rounded-card border-ui border-strong bg-surface">
+          <div className="flex flex-wrap items-center gap-1.5 border-b-[1.5px] border-soft px-3 py-2">
             {(['preview', 'changes', 'edit'] as const).map((k) => (
               <button
                 key={k}
@@ -559,15 +626,15 @@ export function CvStudioView() {
                   setTab(k)
                   setHighlight(null)
                 }}
-                className={clsx(
-                  'flex h-8 items-center gap-2 rounded-[6px] px-3 text-[12.5px] disabled:cursor-not-allowed disabled:opacity-50',
+                className={cn(
+                  'flex h-7 items-center gap-1.5 rounded-[6px] px-2.5 text-[12.5px] disabled:cursor-not-allowed disabled:opacity-50',
                   tab === k ? 'bg-ink font-semibold text-surface' : 'cursor-pointer font-medium text-muted hover:text-ink'
                 )}
               >
                 {t(`cvStudio.tabs.${k}`)}
                 {k === 'changes' && changes.length > 0 && (
                   <span
-                    className={clsx(
+                    className={cn(
                       'rounded-full px-1.5 text-[10.5px] font-bold',
                       tab === k ? 'bg-yellow text-on-accent' : 'bg-field'
                     )}
@@ -582,18 +649,29 @@ export function CvStudioView() {
             </span>
           </div>
 
-          <div className="px-5 py-5">
-            {!draft || !masterState ? (
+          <div className="p-3">
+            {loadError ? (
+              <div role="alert" className="flex flex-col items-center justify-center gap-2.5 py-12 text-center">
+                <TriangleAlert size={18} className="text-muted" />
+                <p className="max-w-[360px] text-[12.5px] text-muted">
+                  {loadCode ? t(`errors.${loadCode}`) : t('errors.generic')}
+                </p>
+                <Button size="sm" onClick={retryLoad}>
+                  <RotateCcw />
+                  {t('common.retry')}
+                </Button>
+              </div>
+            ) : !draft || !masterState ? (
               <div className="flex h-60 items-center justify-center text-muted">
                 <LoaderCircle className="animate-spin" />
               </div>
             ) : !master ? (
-              <p className="py-16 text-center text-[13px] text-muted">{t('cvStudio.noMasterSub')}</p>
+              <p className="py-12 text-center text-[12.5px] text-muted">{t('cvStudio.noMasterSub')}</p>
             ) : tab === 'preview' ? (
               <>
-                {!shown && <p className="mb-3 text-[12.5px] text-muted">{t('cvStudio.previewHint')}</p>}
+                {!shown && <p className="mb-2 text-[12px] text-muted">{t('cvStudio.previewHint')}</p>}
                 {unplaced.length > 0 && (
-                  <p className="mb-3 rounded-card border-ui border-paper-ink bg-yellow px-3 py-2 text-[12px] text-paper-ink">
+                  <p className="mb-2 rounded-card border-ui border-paper-ink bg-yellow px-3 py-1.5 text-[12px] text-paper-ink">
                     {t('cvStudio.unplaced', { count: unplaced.length })}
                   </p>
                 )}
@@ -602,7 +680,7 @@ export function CvStudioView() {
                 </div>
               </>
             ) : tab === 'changes' ? (
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 {changes.length === 0 && <p className="text-[12.5px] text-muted">{t('cvStudio.noChanges')}</p>}
                 {draft.sourceLanguage && draft.sourceLanguage !== meta.code && (
                   <p className="text-[12px] text-muted">{t('cvStudio.translatedNote')}</p>
@@ -617,12 +695,12 @@ export function CvStudioView() {
                   />
                 ))}
                 {draft.missing.length > 0 && (
-                  <div className="rounded-card border-ui border-paper-ink bg-pink px-3.5 py-3 text-paper-ink">
+                  <div className="rounded-card border-ui border-paper-ink bg-pink px-3 py-2.5 text-paper-ink">
                     <b className="text-[12.5px] font-semibold">{t('cvStudio.missing')}</b>
-                    <p className="mt-1.5 text-[12px]" dir="auto">
+                    <p className="mt-1 text-[12px]" dir="auto">
                       {draft.missing.join(meta.dir === 'rtl' ? '، ' : ', ')}
                     </p>
-                    <p className="mt-1.5 text-[11.5px]">{t('cvStudio.missingSub')}</p>
+                    <p className="mt-1 text-[11.5px]">{t('cvStudio.missingSub')}</p>
                   </div>
                 )}
               </div>
@@ -643,8 +721,8 @@ export function CvStudioView() {
               )
             )}
 
-            {draft?.generatedAt && master && (
-              <div className="mt-4">
+            {draft?.generatedAt && master && !loadError && (
+              <div className="mt-3">
                 <FactWarnings
                   warnings={warnings}
                   busyItem={fixing}
@@ -659,7 +737,8 @@ export function CvStudioView() {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 border-t-[1.5px] border-soft px-5 py-3.5">
+          {/* Sticks to the bottom of the window while the card is taller than it, so Save as PDF stays in reach. */}
+          <div className="sticky bottom-0 flex flex-wrap items-center gap-2 rounded-b-card border-t-[1.5px] border-soft bg-surface px-3 py-2">
             <Button
               variant="ghost"
               disabled={!changes.some((c) => c.revertible) && !Object.keys(draft?.edits ?? {}).length}
@@ -670,7 +749,7 @@ export function CvStudioView() {
             >
               {t('cvStudio.undoAll')}
             </Button>
-            <div className="ms-auto flex flex-wrap gap-3">
+            <div className="ms-auto flex flex-wrap gap-2">
               <Button onClick={() => invoke('apps:openFolder', app.id).catch(onError)}>
                 <FolderOpen />
                 {t('cvStudio.openFolder')}

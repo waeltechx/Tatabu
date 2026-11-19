@@ -22,7 +22,7 @@ import { Button, FieldLabel, TextInput } from '@/components/ui'
 import { FactWarnings, problemNotes, showField, type WarningGroup } from '@/components/docs/FactWarnings'
 
 const areaClass =
-  'w-full resize-y rounded-card border-ui border-soft bg-field px-[11px] py-2.5 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
+  'block w-full resize-y rounded-card border-ui border-soft bg-field px-2.5 py-2 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
 
 /** The form field that holds a fact key (list items live in one textarea per list). */
 function selectorFor(key: string): string {
@@ -40,9 +40,9 @@ const fromLines = (v: string[]): string => v.join('\n')
 
 function Section({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
   return (
-    <section className="rounded-card border-ui border-strong bg-surface px-5 py-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-head text-[20px] font-bold">{title}</h2>
+    <section className="min-w-0 rounded-card border-ui border-strong bg-surface px-3.5 py-3">
+      <div className="flex min-h-7 items-center justify-between gap-3">
+        <h2 className="font-head text-[15px] leading-snug font-bold">{title}</h2>
         {action}
       </div>
       {children}
@@ -102,9 +102,9 @@ function RemoveButton({ onClick, label }: { onClick: () => void; label: string }
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded text-muted hover:bg-field hover:text-ink"
+      className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded text-muted hover:bg-field hover:text-ink"
     >
-      <Trash2 size={15} />
+      <Trash2 size={14} />
     </button>
   )
 }
@@ -123,16 +123,18 @@ function StartCard({
 }) {
   const { t } = useTranslation()
   return (
-    <section className="mx-auto mt-4 max-w-[640px] rounded-card border-ui border-strong bg-surface px-8 py-9 text-center">
-      <div className="mx-auto flex size-14 items-center justify-center rounded-card border-ui border-strong bg-yellow text-on-accent shadow-hard">
-        {busy ? <LoaderCircle className="animate-spin" /> : <FileText />}
+    <section className="mx-auto mt-2 max-w-[560px] rounded-card border-ui border-strong bg-surface p-5 text-center">
+      <div className="mx-auto flex size-10 items-center justify-center rounded-card border-ui border-strong bg-yellow text-on-accent shadow-hard">
+        {busy ? <LoaderCircle size={18} className="animate-spin" /> : <FileText size={18} />}
       </div>
-      <h2 className="mt-5 font-head text-[24px] font-bold">{busy ? t('master.reading') : t('master.startTitle')}</h2>
-      <p className="mx-auto mt-2 max-w-[460px] text-[13px] leading-relaxed text-muted">
+      <h2 className="mt-3 font-head text-[20px] leading-tight font-bold">
+        {busy ? t('master.reading') : t('master.startTitle')}
+      </h2>
+      <p className="mx-auto mt-1.5 max-w-[460px] text-[12.5px] leading-relaxed text-muted">
         {busy ? t('master.readingSub') : t('master.startSub')}
       </p>
       {!busy && (
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           {sourceName && (
             <Button variant="primary" onClick={onRead}>
               <Sparkles />
@@ -145,7 +147,7 @@ function StartCard({
           </Button>
         </div>
       )}
-      <p className="label-mono mt-6">{t('master.formats')}</p>
+      <p className="label-mono mt-4">{t('master.formats')}</p>
     </section>
   )
 }
@@ -253,32 +255,47 @@ export function MasterCvView() {
     }
   }
 
-  const saveButton = (
-    <Button variant="primary" disabled={!dirty || save.isPending} onClick={() => save.mutate()}>
-      {save.isPending ? <LoaderCircle className="animate-spin" /> : dirty ? null : <Check />}
-      {dirty ? t('master.save') : t('profile.allSaved')}
+  // The primary button only appears when there is something to save; otherwise a quiet status.
+  const saveButton = dirty ? (
+    <Button variant="primary" disabled={save.isPending} onClick={() => save.mutate()}>
+      {save.isPending ? <LoaderCircle className="animate-spin" /> : null}
+      {t('master.save')}
     </Button>
+  ) : (
+    <span role="status" className="me-1.5 inline-flex items-center gap-1 text-[12px] text-muted">
+      <Check size={14} aria-hidden />
+      {t('profile.allSaved')}
+    </span>
   )
 
   return (
     <>
       <PageHeader page="master" back="/profile" actions={saveButton} />
       {state.unread && state.source && (
-        <div className="mb-5 flex items-center gap-3 rounded-card border-ui border-paper-ink bg-yellow px-4 py-3 text-[12.5px] text-paper-ink">
-          <FileText size={16} />
-          <span className="flex-1">{t('master.newFile', { name: state.source.filename })}</span>
-          <Button size="sm" variant="paper" onClick={() => window.confirm(t('master.replaceConfirm')) && read.mutate(undefined)}>
+        <div className="mb-3 flex items-center gap-2.5 rounded-card border-ui border-paper-ink bg-yellow px-3 py-1.5 text-[12.5px] text-paper-ink">
+          <FileText size={15} className="shrink-0" />
+          <span className="min-w-0 flex-1">{t('master.newFile', { name: state.source.filename })}</span>
+          <Button
+            size="sm"
+            variant="paper"
+            onClick={() => window.confirm(t('master.replaceConfirm')) && read.mutate(undefined)}
+          >
             <Sparkles />
             {t('master.readNow')}
           </Button>
         </div>
       )}
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,360px)] items-start gap-6">
-        <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(260px,340px)] items-start gap-3">
+        <div className="flex min-w-0 flex-col gap-3">
           <Section title={t('master.basics')}>
-            <div className="grid grid-cols-2 gap-x-5">
+            <div className="grid grid-cols-2 gap-x-3">
               <Field label={t('profile.fullName')} fact="name" value={form.name} onChange={(v) => set('name', v)} />
-              <Field label={t('profile.headline')} fact="headline" value={form.headline} onChange={(v) => set('headline', v)} />
+              <Field
+                label={t('profile.headline')}
+                fact="headline"
+                value={form.headline}
+                onChange={(v) => set('headline', v)}
+              />
               <Field
                 label={t('profile.email')}
                 dir="ltr"
@@ -340,10 +357,10 @@ export function MasterCvView() {
               </Button>
             }
           >
-            {form.experience.length === 0 && <p className="mt-3 text-[12.5px] text-muted">{t('master.empty')}</p>}
+            {form.experience.length === 0 && <p className="mt-1.5 text-[12.5px] text-muted">{t('master.empty')}</p>}
             {form.experience.map((e, i) => (
-              <div key={e.id} className={clsx('mt-4 pt-1', i > 0 && 'border-t border-soft pt-4')}>
-                <div className="flex items-center justify-between">
+              <div key={e.id} className={clsx('mt-2', i > 0 && 'border-t border-soft pt-2')}>
+                <div className="flex items-center justify-between gap-2">
                   <span className="label-mono">
                     {String(i + 1).padStart(2, '0')} · {e.organization || e.title || t('master.newEntry')}
                   </span>
@@ -357,7 +374,7 @@ export function MasterCvView() {
                     }
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-x-5">
+                <div className="grid grid-cols-2 gap-x-3">
                   <Field
                     label={t('master.jobTitle')}
                     fact={`${e.id}.title`}
@@ -371,7 +388,7 @@ export function MasterCvView() {
                     onChange={(v) => setExp(i, { organization: v })}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-x-5">
+                <div className="grid grid-cols-3 gap-x-3">
                   <Field
                     label={t('master.location')}
                     fact={`${e.id}.location`}
@@ -423,10 +440,10 @@ export function MasterCvView() {
               </Button>
             }
           >
-            {form.education.length === 0 && <p className="mt-3 text-[12.5px] text-muted">{t('master.empty')}</p>}
+            {form.education.length === 0 && <p className="mt-1.5 text-[12.5px] text-muted">{t('master.empty')}</p>}
             {form.education.map((e, i) => (
-              <div key={e.id} className={clsx('mt-4 pt-1', i > 0 && 'border-t border-soft pt-4')}>
-                <div className="flex items-center justify-between">
+              <div key={e.id} className={clsx('mt-2', i > 0 && 'border-t border-soft pt-2')}>
+                <div className="flex items-center justify-between gap-2">
                   <span className="label-mono">
                     {String(i + 1).padStart(2, '0')} · {e.institution || e.degree || t('master.newEntry')}
                   </span>
@@ -440,7 +457,7 @@ export function MasterCvView() {
                     }
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-x-5">
+                <div className="grid grid-cols-2 gap-x-3">
                   <Field
                     label={t('master.degree')}
                     fact={`${e.id}.degree`}
@@ -454,7 +471,7 @@ export function MasterCvView() {
                     onChange={(v) => setEdu(i, { institution: v })}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-x-5">
+                <div className="grid grid-cols-3 gap-x-3">
                   <Field
                     label={t('master.location')}
                     fact={`${e.id}.location`}
@@ -482,7 +499,7 @@ export function MasterCvView() {
           </Section>
 
           <Section title={t('master.skillsAndLanguages')}>
-            <div className="grid grid-cols-2 gap-x-5">
+            <div className="grid grid-cols-2 gap-x-3">
               <Field
                 label={`${t('master.skills')} · ${t('master.onePerLine')}`}
                 fact="skills"
@@ -491,11 +508,11 @@ export function MasterCvView() {
                 value={fromLines(form.skills)}
                 onChange={(v) => set('skills', toLines(v))}
               />
-              <div>
+              <div className="min-w-0">
                 <FieldLabel>{t('master.languages')}</FieldLabel>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1.5">
                   {form.languages.map((l, i) => (
-                    <div key={i} className="flex items-center gap-2">
+                    <div key={i} className="flex items-center gap-1.5">
                       <TextInput
                         data-fact={`languages.${i}`}
                         dir="auto"
@@ -557,9 +574,12 @@ export function MasterCvView() {
                 </Button>
               }
             >
-              {form[k].length === 0 && <p className="mt-3 text-[12.5px] text-muted">{t('master.empty')}</p>}
+              {form[k].length === 0 && <p className="mt-1.5 text-[12.5px] text-muted">{t('master.empty')}</p>}
               {form[k].map((c, i) => (
-                <div key={c.id} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_120px_auto] items-end gap-x-3">
+                <div
+                  key={c.id}
+                  className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,0.6fr)_auto] items-end gap-x-2.5"
+                >
                   <Field
                     label={t('master.name')}
                     fact={`${c.id}.name`}
@@ -578,7 +598,7 @@ export function MasterCvView() {
                     value={c.date}
                     onChange={(v) => setEntry(k, i, { date: v })}
                   />
-                  <div className="pb-1.5">
+                  <div className="pb-0.5">
                     <RemoveButton
                       label={t('master.remove')}
                       onClick={() =>
@@ -606,11 +626,11 @@ export function MasterCvView() {
               </Button>
             }
           >
-            {form.other.length === 0 && <p className="mt-3 text-[12.5px] text-muted">{t('master.otherEmpty')}</p>}
+            {form.other.length === 0 && <p className="mt-1.5 text-[12.5px] text-muted">{t('master.otherEmpty')}</p>}
             {form.other.map((o, i) => (
               <div key={o.id} className={clsx('mt-2', i > 0 && 'border-t border-soft pt-2')}>
-                <div className="flex items-end gap-3">
-                  <div className="flex-1">
+                <div className="flex items-end gap-2.5">
+                  <div className="min-w-0 flex-1">
                     <Field
                       label={t('master.sectionTitle')}
                       fact={`${o.id}.title`}
@@ -623,7 +643,7 @@ export function MasterCvView() {
                       }
                     />
                   </div>
-                  <div className="pb-1.5">
+                  <div className="pb-0.5">
                     <RemoveButton
                       label={t('master.remove')}
                       onClick={() =>
@@ -653,20 +673,23 @@ export function MasterCvView() {
           </Section>
         </div>
 
-        <aside className="sticky top-6 flex flex-col gap-5">
-          <section className="rounded-card border-ui border-strong bg-purple px-5 py-5 text-paper-ink">
+        <aside className="sticky top-4 flex min-w-0 flex-col gap-3">
+          <section className="rounded-card border-ui border-strong bg-purple px-3.5 py-3 text-paper-ink">
             <div className="label-mono !text-[#4a4560]">{t('master.sourceKicker')}</div>
-            <h2 className="mt-2 font-head text-[18px] font-bold">{t('master.onlySource')}</h2>
-            <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#4a4560]">{t('master.onlySourceSub')}</p>
+            {/* The explainer folds into one line; open it to read the rule. */}
+            <details className="mt-1">
+              <summary className="cursor-pointer text-[13px] font-semibold">{t('master.onlySource')}</summary>
+              <p className="mt-1 text-[12px] leading-relaxed text-[#4a4560]">{t('master.onlySourceSub')}</p>
+            </details>
             {state.source && (
-              <div className="mt-4 flex items-center gap-2 rounded-card border-ui border-paper-ink bg-[#fffdf9] px-3 py-2 text-[12px]">
-                <FileText size={15} className="shrink-0" />
+              <div className="mt-2.5 flex h-8 items-center gap-2 rounded-card border-ui border-paper-ink bg-[#fffdf9] px-2.5 text-[12px]">
+                <FileText size={14} className="shrink-0" />
                 <span className="min-w-0 flex-1 truncate" dir="auto">
                   {state.source.filename}
                 </span>
               </div>
             )}
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-2 flex flex-wrap gap-1.5">
               <Button size="sm" variant="paper" onClick={() => upload.mutate()}>
                 <Upload />
                 {t('master.uploadNew')}
@@ -683,8 +706,9 @@ export function MasterCvView() {
               )}
             </div>
           </section>
-          <section className="rounded-card border-ui border-strong bg-surface px-5 py-5">
-            <h2 className="mb-3 font-head text-[18px] font-bold">{t('master.checkTitle')}</h2>
+          <section className="rounded-card border-ui border-strong bg-surface px-3.5 py-3">
+            <h2 className="mb-2 font-head text-[15px] leading-snug font-bold">{t('master.checkTitle')}</h2>
+
             <FactWarnings
               source="file"
               warnings={warnings}

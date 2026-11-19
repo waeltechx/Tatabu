@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowUpRight, Check, FileText, LoaderCircle, Pencil, Trash2, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { clsx } from 'clsx'
+import { cn } from '@/lib/cn'
 import { EMPTY_PROFILE, type Profile } from '@shared/profile'
 import type { LibraryItem } from '@shared/applications'
 import { invoke, useErrorToast } from '@/lib/api'
@@ -15,7 +15,7 @@ import { Button, FieldLabel, TextInput } from '@/components/ui'
 import { SignaturePad } from '@/components/docs/SignaturePad'
 
 const areaClass =
-  'w-full resize-y rounded-card border-ui border-soft bg-field px-[11px] py-2.5 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
+  'block w-full resize-y rounded-card border-ui border-soft bg-field px-2.5 py-2 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
 
 function Panel({
   title,
@@ -29,9 +29,9 @@ function Panel({
   className?: string
 }) {
   return (
-    <section className={clsx('rounded-card border-ui border-strong bg-surface px-5 py-5', className)}>
-      <h2 className="font-head text-[22px] font-bold">{title}</h2>
-      {sub && <p className="mt-1 text-[12.5px] text-muted">{sub}</p>}
+    <section className={cn('min-w-0 rounded-card border-ui border-strong bg-surface px-3.5 py-3', className)}>
+      <h2 className="font-head text-[15px] leading-snug font-bold">{title}</h2>
+      {sub && <p className="mt-0.5 text-[12px] leading-[1.45] text-muted">{sub}</p>}
       {children}
     </section>
   )
@@ -46,9 +46,9 @@ function LibraryRow({ item }: { item: LibraryItem }) {
   const set = (items: LibraryItem[]): void => void client.setQueryData(appKeys.library, items)
 
   return (
-    <li className="flex items-center gap-3 rounded-card border-ui border-soft bg-surface px-3 py-2.5">
-      <FileText size={18} strokeWidth={1.8} className="shrink-0" />
-      <div className="min-w-0 flex-1">
+    <li className="flex min-h-9 items-center gap-2 rounded-card border-ui border-soft bg-surface py-0.5 ps-2.5 pe-0.5">
+      <FileText size={15} strokeWidth={1.8} className="shrink-0" />
+      <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
         {editing ? (
           <input
             autoFocus
@@ -66,32 +66,34 @@ function LibraryRow({ item }: { item: LibraryItem }) {
               setEditing(false)
               if (label.trim() && label !== item.label) invoke('library:rename', item.id, label).then(set).catch(onError)
             }}
-            className="w-full rounded border-ui border-soft bg-field px-2 py-1 text-[13px] outline-none focus:border-strong"
+            className="h-7 w-full rounded border-ui border-soft bg-field px-2 text-[12.5px] outline-none focus:border-strong"
           />
         ) : (
           <button
             type="button"
             onClick={() => invoke('library:open', item.id).catch(onError)}
-            className="block max-w-full cursor-pointer truncate text-start text-[13.5px] font-medium hover:underline"
+            className="block min-w-0 cursor-pointer truncate text-start text-[13px] font-medium hover:underline"
             dir="auto"
             title={item.filename}
           >
             {item.label || item.filename}
           </button>
         )}
-        <div className="mt-0.5 text-[11px] text-muted">
-          {[kindLabel(item.filename), item.missing ? t('files.missing') : item.size ? formatSize(item.size) : '']
-            .filter(Boolean)
-            .join(' · ')}
-        </div>
+        {!editing && (
+          <span className="shrink-0 text-[11px] text-muted">
+            {[kindLabel(item.filename), item.missing ? t('files.missing') : item.size ? formatSize(item.size) : '']
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
+        )}
       </div>
       <button
         type="button"
         onClick={() => setEditing(true)}
         aria-label={t('profile.renameDoc', { name: item.label })}
-        className="flex size-8 cursor-pointer items-center justify-center rounded hover:bg-field"
+        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded hover:bg-field"
       >
-        <Pencil size={16} />
+        <Pencil size={14} />
       </button>
       <button
         type="button"
@@ -104,9 +106,9 @@ function LibraryRow({ item }: { item: LibraryItem }) {
             .catch(onError)
         }
         aria-label={t('files.delete', { name: item.label })}
-        className="flex size-8 cursor-pointer items-center justify-center rounded hover:bg-field"
+        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded hover:bg-field"
       >
-        <Trash2 size={16} />
+        <Trash2 size={14} />
       </button>
     </li>
   )
@@ -162,20 +164,26 @@ export function ProfileView() {
   const set = <K extends keyof Profile>(k: K, v: Profile[K]): void => setForm((f) => ({ ...f, [k]: v }))
   const docs = library.filter((l) => l.label !== 'CV' || !cvName || l.filename !== cvName)
 
-  const saveButton = (
-    <Button variant="primary" disabled={!dirty || save.isPending} onClick={() => save.mutate()}>
-      {save.isPending ? <LoaderCircle className="animate-spin" /> : dirty ? null : <Check />}
-      {dirty ? t('profile.save') : t('profile.allSaved')}
+  // The primary button only appears when there is something to save; otherwise a quiet status.
+  const saveButton = dirty ? (
+    <Button variant="primary" disabled={save.isPending} onClick={() => save.mutate()}>
+      {save.isPending ? <LoaderCircle className="animate-spin" /> : null}
+      {t('profile.save')}
     </Button>
+  ) : (
+    <span role="status" className="me-1.5 inline-flex items-center gap-1 text-[12px] text-muted">
+      <Check size={14} aria-hidden />
+      {t('profile.allSaved')}
+    </span>
   )
 
   return (
     <>
       <PageHeader page="profile" actions={saveButton} />
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,420px)] items-start gap-6">
-        <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(280px,380px)] items-start gap-3">
+        <div className="flex min-w-0 flex-col gap-3">
           <Panel title={t('profile.detailsTitle')}>
-            <div className="grid grid-cols-2 gap-x-6">
+            <div className="grid grid-cols-2 gap-x-3">
               <div>
                 <FieldLabel htmlFor="p-name">{t('profile.fullName')}</FieldLabel>
                 <TextInput id="p-name" dir="auto" value={form.fullName} onChange={(e) => set('fullName', e.target.value)} />
@@ -205,7 +213,7 @@ export function ProfileView() {
                 <TextInput id="p-phone" dir="ltr" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-x-6">
+            <div className="grid grid-cols-2 gap-x-3">
               <div>
                 <FieldLabel htmlFor="p-address">{t('profile.address')}</FieldLabel>
                 <textarea
@@ -234,65 +242,65 @@ export function ProfileView() {
             </div>
           </Panel>
 
+          {/* One row: status + link. The "only source of facts" banner and "stored on this device" line repeated the sidebar. */}
           <Panel title={t('profile.cvTitle')} sub={t('profile.cvSub')}>
-            <div className="mt-5 flex items-center gap-2 rounded-card border-ui border-strong bg-green px-4 py-3 text-[13px] text-paper-ink">
-              <Check size={15} />
-              {t('profile.cvOnlySource')}
-            </div>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <span className="text-[13px] text-muted" dir="auto">
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="min-w-0 flex-1 truncate text-[12.5px] text-muted" dir="auto">
                 {cvName ? t('profile.cvImported', { name: cvName }) : t('profile.cvNone')}
               </span>
               <Link
                 to="/cv/master"
-                className="ms-auto inline-flex h-[40px] items-center gap-1.5 rounded-card border-ui border-strong bg-surface px-3.5 text-[12.5px] font-semibold text-ink no-underline hover:bg-field"
+                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-card border-ui border-strong bg-surface px-3 text-[12.5px] font-semibold text-ink no-underline hover:bg-field"
               >
                 {t('profile.openMaster')}
-                <ArrowUpRight size={15} className="rtl:-scale-x-100" />
+                <ArrowUpRight size={14} className="rtl:-scale-x-100" />
               </Link>
             </div>
-            <p className="label-mono mt-4">{t('profile.storedHere')}</p>
           </Panel>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-3">
           <Panel title={t('profile.signatureTitle')} sub={t('profile.signatureSub')}>
-            <div className="mt-5">
+            <div className="mt-2">
               <SignaturePad value={form.signature} onChange={(v) => set('signature', v)} />
             </div>
           </Panel>
 
           <Panel title={t('profile.libraryTitle')} sub={t('profile.librarySub')}>
-            <FieldLabel htmlFor="p-docname" className="!mt-5">
+            <FieldLabel htmlFor="p-docname" className="mt-2">
               {t('profile.docName')}
             </FieldLabel>
-            <TextInput
-              id="p-docname"
-              dir="auto"
-              value={docName}
-              placeholder={t('profile.docNamePlaceholder')}
-              onChange={(e) => setDocName(e.target.value)}
-            />
-            <Button variant="primary" className="mt-3 w-full" disabled={upload.isPending} onClick={() => upload.mutate()}>
-              {upload.isPending ? <LoaderCircle className="animate-spin" /> : <Upload />}
-              {t('profile.upload')}
-            </Button>
-            <div className="label-mono mt-6 mb-3">{t('profile.libraryCount', { count: docs.length })}</div>
+            <div className="flex gap-2">
+              <TextInput
+                id="p-docname"
+                dir="auto"
+                value={docName}
+                placeholder={t('profile.docNamePlaceholder')}
+                onChange={(e) => setDocName(e.target.value)}
+              />
+              <Button variant="primary" className="shrink-0" disabled={upload.isPending} onClick={() => upload.mutate()}>
+                {upload.isPending ? <LoaderCircle className="animate-spin" /> : <Upload />}
+                {t('profile.upload')}
+              </Button>
+            </div>
+            <div className="label-mono mt-3 mb-1.5">{t('profile.libraryCount', { count: docs.length })}</div>
             {docs.length === 0 ? (
-              <p className="text-[12.5px] text-muted">{t('files.libraryEmpty')}</p>
+              <p className="rounded-card border-ui border-dashed border-soft px-3 py-3 text-center text-[12.5px] text-muted">
+                {t('files.libraryEmpty')}
+              </p>
             ) : (
-              <ul className="flex flex-col gap-2.5">
+              <ul className="flex flex-col gap-1.5">
                 {docs.map((item) => (
                   <LibraryRow key={item.id} item={item} />
                 ))}
               </ul>
             )}
-            <p className="mt-5 text-[12px] text-muted">{t('profile.trashNote')}</p>
+            <p className="mt-2 text-[11.5px] text-muted">{t('profile.trashNote')}</p>
           </Panel>
         </div>
       </div>
       {dirty && (
-        <div className="sticky bottom-4 mt-6 flex items-center justify-end gap-3">
+        <div className="sticky bottom-4 mt-3 flex items-center justify-end gap-2">
           <Button
             variant="ghost"
             onClick={() => {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LoaderCircle, Mic, Square } from 'lucide-react'
 import { toast } from 'sonner'
-import { clsx } from 'clsx'
+import { cn } from '@/lib/cn'
 import { invoke, useAiErrorToast, useErrorToast } from '@/lib/api'
 
 /** Recordings stop on their own after this long (well under Groq's 25 MB limit). */
@@ -132,8 +132,8 @@ export function MicButton({
       aria-label={label}
       title={label}
       aria-pressed={state === 'recording'}
-      className={clsx(
-        'inline-flex h-[42px] shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-card border-ui border-strong px-3 text-[12px] font-semibold',
+      className={cn(
+        'inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-card border-ui border-strong px-2.5 text-[12px] font-semibold',
         'transition-colors disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:size-4',
         state === 'recording' ? 'bg-pink text-paper-ink' : 'bg-surface text-ink hover:bg-field',
         className

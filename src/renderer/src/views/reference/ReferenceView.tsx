@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronDown, ChevronUp, Download, ExternalLink, LoaderCircle, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { clsx } from 'clsx'
 import { referenceDocFor } from '@shared/docs/reference'
 import type { ReferenceState } from '@shared/documents'
 import { EMPTY_PROFILE } from '@shared/profile'
@@ -42,32 +41,40 @@ function RefereeCard({
   const set = <K extends keyof Referee>(k: K, v: Referee[K]): void => onChange({ ...referee, [k]: v })
   const num = String(index + 1).padStart(2, '0')
   if (!open) {
+    const secondary = [referee.affiliation, referee.relationship].filter(Boolean).join(' · ')
     return (
-      <div className="flex items-center gap-3 rounded-card border-ui border-soft bg-field px-4 py-3">
-        <div className="min-w-0 flex-1">
-          <div className="label-mono">{t('refs.reference', { n: num })}</div>
-          <b className="mt-1 block truncate font-head text-[16px] font-bold" dir="auto">
+      <div className="flex min-h-9 items-center gap-2.5 rounded-card border-ui border-soft bg-field py-1 ps-3 pe-1">
+        <span className="label-mono shrink-0">{t('refs.reference', { n: num })}</span>
+        <div className="min-w-0 flex-1 truncate text-[13px]">
+          <b className="font-semibold" dir="auto">
             {referee.name || t('refs.unnamed')}
           </b>
-          <span className="block truncate text-[12px] text-muted" dir="auto">
-            {[referee.affiliation, referee.relationship].filter(Boolean).join(' · ')}
-          </span>
+          {secondary && (
+            <span className="text-muted" dir="auto">
+              {' · '}
+              {secondary}
+            </span>
+          )}
         </div>
-        <button type="button" onClick={onToggle} className="flex cursor-pointer items-center gap-1 text-[12.5px] font-medium">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex h-7 shrink-0 cursor-pointer items-center gap-1 rounded-card px-2 text-[12px] font-medium hover:bg-surface"
+        >
           {t('common.edit')} <ChevronDown size={14} />
         </button>
       </div>
     )
   }
   return (
-    <div className="rounded-card border-ui border-strong bg-surface px-4 pt-3 pb-4">
+    <div className="rounded-card border-ui border-strong bg-surface px-3 pt-1.5 pb-3">
       <div className="flex items-center justify-between">
         <span className="label-mono">{t('refs.reference', { n: num })}</span>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={onRemove}
-            className="cursor-pointer text-[12.5px] font-medium text-[#a3352a] dark:text-[#f19a8c]"
+            className="h-7 cursor-pointer rounded-card px-2 text-[12px] font-medium text-[#a3352a] hover:bg-field dark:text-[#f19a8c]"
           >
             {t('refs.remove')}
           </button>
@@ -75,13 +82,13 @@ function RefereeCard({
             type="button"
             onClick={onToggle}
             aria-label={t('refs.collapse')}
-            className="cursor-pointer text-muted hover:text-ink"
+            className="flex size-7 cursor-pointer items-center justify-center rounded-card text-muted hover:bg-field hover:text-ink"
           >
             <ChevronUp size={16} />
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-x-5">
+      <div className="grid grid-cols-2 gap-x-3">
         <div>
           <FieldLabel>{t('settings.refs.name')}</FieldLabel>
           <TextInput dir="auto" value={referee.name} onChange={(e) => set('name', e.target.value)} />
@@ -93,7 +100,7 @@ function RefereeCard({
       </div>
       <FieldLabel>{t('settings.refs.affiliation')}</FieldLabel>
       <TextInput dir="auto" value={referee.affiliation} onChange={(e) => set('affiliation', e.target.value)} />
-      <div className="grid grid-cols-2 gap-x-5">
+      <div className="grid grid-cols-2 gap-x-3">
         <div>
           <FieldLabel>{t('settings.refs.email')}</FieldLabel>
           <TextInput dir="ltr" value={referee.email} onChange={(e) => set('email', e.target.value)} />
@@ -103,12 +110,12 @@ function RefereeCard({
           <TextInput dir="ltr" value={referee.phone} onChange={(e) => set('phone', e.target.value)} />
         </div>
       </div>
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-5">
-        <div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3">
+        <div className="min-w-0">
           <FieldLabel>{t('settings.refs.address')}</FieldLabel>
           <TextInput dir="auto" value={referee.address} onChange={(e) => set('address', e.target.value)} />
         </div>
-        <label className="mb-2.5 flex max-w-[150px] cursor-pointer items-center gap-2 text-[11.5px] font-medium">
+        <label className="flex min-h-8 max-w-[150px] cursor-pointer items-center gap-2 text-[11.5px] leading-tight font-medium">
           <input
             type="checkbox"
             checked={referee.includeRelationship}
@@ -167,7 +174,14 @@ export function ReferenceView() {
   const doc = useMemo(
     () =>
       app && state && language
-        ? referenceDocFor({ job: app, title: state.title, referees: state.referees, profile, language, paper: settings?.paper })
+        ? referenceDocFor({
+            job: app,
+            title: state.title,
+            referees: state.referees,
+            profile,
+            language,
+            paper: settings?.paper
+          })
         : null,
     [app, state, language, profile, settings?.paper]
   )
@@ -204,11 +218,12 @@ export function ReferenceView() {
 
   return (
     <>
-      <PageHeader page="reference" actions={<span className="label-mono me-4 self-end pb-2">{t('docs.savedOnDevice')}</span>} />
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,500px)] items-start gap-6">
-        <section className="rounded-card border-ui border-strong bg-surface px-5 py-5">
+      <PageHeader page="reference" actions={<span className="label-mono me-2">{t('docs.savedOnDevice')}</span>} />
+      {/* Both tracks can shrink, so the form keeps room for its fields at the 1180px minimum window. */}
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(300px,460px)] items-start gap-3">
+        <section className="min-w-0 rounded-card border-ui border-strong bg-surface px-3.5 py-3">
           <div className="label-mono">{t('refs.kicker')}</div>
-          <div className="grid grid-cols-[minmax(0,1fr)_180px] gap-x-4">
+          <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-x-2.5">
             <div>
               <FieldLabel>{t('docs.application')}</FieldLabel>
               <AppPicker value={app.id} apps={apps} onChange={setApp} />
@@ -229,7 +244,7 @@ export function ReferenceView() {
             </div>
           </div>
           <FieldLabel htmlFor="ref-title">{t('refs.docTitle')}</FieldLabel>
-          <div className="flex gap-3">
+          <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-x-2.5">
             <TextInput
               id="ref-title"
               dir="auto"
@@ -241,7 +256,7 @@ export function ReferenceView() {
               label={t('refs.suggest')}
               value=""
               onChange={(v) => v && setState({ ...state, title: v })}
-              className="w-[210px] shrink-0"
+              className="min-w-0"
             >
               <option value="">{t('refs.suggest')}</option>
               {titles.map((x) => (
@@ -252,7 +267,7 @@ export function ReferenceView() {
             </SelectField>
           </div>
 
-          <div className="mt-6 flex flex-col gap-3">
+          <div className="mt-3 flex flex-col gap-2">
             {state.referees.map((r, i) => (
               <RefereeCard
                 key={r.id + i}
@@ -265,7 +280,7 @@ export function ReferenceView() {
               />
             ))}
             {state.referees.length === 0 && (
-              <p className="rounded-card border-ui border-dashed border-soft px-4 py-5 text-center text-[12.5px] text-muted">
+              <p className="rounded-card border-ui border-dashed border-soft px-3 py-3 text-center text-[12.5px] text-muted">
                 {t('refs.none')}{' '}
                 <Link to="/settings" className="font-semibold text-ink underline">
                   {t('refs.toSettings')}
@@ -273,7 +288,7 @@ export function ReferenceView() {
               </p>
             )}
           </div>
-          <div className="mt-5 flex items-center gap-3">
+          <div className="mt-2.5 flex items-center gap-2">
             <Button
               onClick={() => {
                 editReferees((list) => [...list, { ...EMPTY_REFEREE, id: `custom-${Date.now()}` }])
@@ -289,19 +304,19 @@ export function ReferenceView() {
               </Button>
             )}
           </div>
-          <p className="label-mono mt-6">{state.custom ? t('refs.customNote') : t('refs.defaultsNote')}</p>
+          <p className="mt-3 text-[11.5px] text-muted">{state.custom ? t('refs.customNote') : t('refs.defaultsNote')}</p>
         </section>
 
-        <section className="sticky top-6 rounded-card border-ui border-strong bg-purple px-5 py-5 text-paper-ink">
+        <section className="sticky top-4 min-w-0 rounded-card border-ui border-strong bg-purple px-3.5 py-3 text-paper-ink">
           <div className="flex items-center justify-between">
             <span className="label-mono !text-[#4a4560]">{t('docs.preview')}</span>
             <span className="label-mono !text-[#4a4560]">{settings?.paper ?? 'A4'}</span>
           </div>
-          <div className="mt-4 max-h-[62vh] overflow-auto border-ui border-paper-ink bg-white">
+          <div className="mt-2 max-h-[66vh] overflow-auto border-ui border-paper-ink bg-white">
             {doc && <DocPreview doc={doc} paper={settings?.paper} />}
           </div>
-          <p className="mt-4 text-[12.5px]">{t('docs.savedToFiles')}</p>
-          <div className="mt-3 flex gap-3">
+          <p className="mt-2 text-[12px]">{t('docs.savedToFiles')}</p>
+          <div className="mt-2 flex gap-2">
             <Button variant="primary" className="flex-1" disabled={printing} onClick={() => void print()}>
               {printing ? <LoaderCircle className="animate-spin" /> : <Download />}
               {t('docs.printPdf')}
@@ -314,7 +329,7 @@ export function ReferenceView() {
             )}
           </div>
           {!profile.fullName && (
-            <p className={clsx('mt-3 text-[12px]')}>
+            <p className="mt-2 text-[12px]">
               {t('docs.noProfile')}{' '}
               <Link to="/profile" className="font-semibold text-paper-ink underline">
                 {t('nav.profile')}

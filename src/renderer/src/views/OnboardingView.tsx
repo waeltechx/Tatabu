@@ -1,26 +1,38 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, ArrowRight, Check, FileCheck2, Upload } from 'lucide-react'
+import { ArrowRight, Check, FileCheck2, Upload } from 'lucide-react'
 import { clsx } from 'clsx'
 import { usePrefs } from '@/lib/prefs'
 import { invoke, keys, useLatestCv, useSettings, useWrite } from '@/lib/api'
 import { Button, Chip, Segmented } from '@/components/ui'
 import { KeyField } from '@/components/KeyField'
 
-function StepCard({ n, title, desc, current, children }: { n: string; title: string; desc: string; current?: boolean; children: ReactNode }) {
+function StepCard({
+  n,
+  title,
+  desc,
+  current,
+  children
+}: {
+  n: string
+  title: string
+  desc: string
+  current?: boolean
+  children: ReactNode
+}) {
   return (
     <section
       className={clsx(
-        'flex min-h-[330px] flex-col rounded-card border-ui border-strong bg-surface px-[19px] py-5',
+        'flex min-w-0 flex-col rounded-card border-ui border-strong bg-surface p-4',
         current && 'shadow-[var(--sx)_4px_0_0_var(--shadow)]'
       )}
     >
-      <div className="font-head text-[34px] leading-none font-bold" dir="ltr">
+      <div className="font-head text-[22px] leading-none font-bold tabular-nums" dir="ltr">
         {n}
       </div>
-      <h2 className="mt-2.5 mb-1 font-head text-[19px] font-bold">{title}</h2>
-      <p className="mb-[18px] text-[12.5px] leading-[1.45] text-muted">{desc}</p>
+      <h2 className="mt-2 mb-0.5 font-head text-[15px] leading-snug font-bold">{title}</h2>
+      <p className="mb-3 text-[12px] leading-[1.45] text-muted">{desc}</p>
       {children}
     </section>
   )
@@ -29,7 +41,7 @@ function StepCard({ n, title, desc, current, children }: { n: string; title: str
 function DoneBadge() {
   const { t } = useTranslation()
   return (
-    <div className="mt-auto pt-3.5">
+    <div className="mt-auto pt-3">
       <Chip tone="green" icon={<Check />}>
         {t('common.done')}
       </Chip>
@@ -49,24 +61,23 @@ export function OnboardingView() {
 
   if (!settings) return null
   const groqDone = settings.keys.groq.set
-  const Arrow = prefs.language === 'ar' ? ArrowLeft : ArrowRight
 
   return (
-    <div className="flex min-h-full flex-col items-center px-6 pt-[34px] pb-16">
-      <div className="mb-[34px] flex w-full max-w-[1040px] items-center justify-between">
+    <div className="flex min-h-full flex-col items-center p-5 pb-8">
+      <div className="mb-5 flex w-full max-w-[980px] items-center justify-between">
         <div>
-          <div className="font-logo text-[27px] leading-tight font-bold">منصة تتبع</div>
-          <div className="label-mono mt-1.5 !text-[12px] normal-case">{t('brand.tagline')}</div>
+          <div className="font-logo text-[22px] leading-tight font-bold">منصة تتبع</div>
+          <div className="label-mono mt-1 !text-[11.5px] normal-case">{t('brand.tagline')}</div>
         </div>
       </div>
 
-      <div className="mb-7 text-center">
+      <div className="mb-5 text-center">
         <div className="label-mono !text-[11px]">{t('onboarding.crumb')}</div>
-        <h1 className="mt-3 mb-2.5 font-head text-[40px] leading-tight font-bold">{t('onboarding.title')}</h1>
-        <p className="text-[15px] text-muted">{t('onboarding.sub')}</p>
+        <h1 className="mt-1.5 mb-1 font-head text-[22px] leading-tight font-bold">{t('onboarding.title')}</h1>
+        <p className="text-[13px] text-muted">{t('onboarding.sub')}</p>
       </div>
 
-      <div className="grid w-full max-w-[1040px] grid-cols-3 gap-5">
+      <div className="grid w-full max-w-[980px] grid-cols-3 gap-3">
         <StepCard n="01" title={t('onboarding.step1')} desc={t('onboarding.step1Desc')}>
           <Segmented
             label={t('settings.look.appLanguage')}
@@ -77,7 +88,7 @@ export function OnboardingView() {
               { value: 'ar', label: 'العربية' }
             ]}
           />
-          <label className="mt-4 mb-2 block text-[12px] font-semibold">{t('settings.look.theme')}</label>
+          <label className="mt-3 mb-1.5 block text-[12px] font-semibold">{t('settings.look.theme')}</label>
           <Segmented
             label={t('settings.look.theme')}
             value={resolvedTheme}
@@ -101,9 +112,15 @@ export function OnboardingView() {
             disabled={!settings.secureStorage}
             className="[&>label]:!mt-0"
           />
-          <p className="mt-3 text-[11.5px] leading-normal text-muted">
+          <p className="mt-2.5 text-[11.5px] leading-normal text-muted">
             {t('onboarding.howToGetKey')}{' '}
-            <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="font-semibold text-ink" dir="ltr">
+            <a
+              href="https://console.groq.com/keys"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-ink"
+              dir="ltr"
+            >
               console.groq.com
             </a>{' '}
             <span dir="ltr">{t('onboarding.howToGetKeyTail')}</span>
@@ -116,16 +133,16 @@ export function OnboardingView() {
             type="button"
             onClick={() => importCv.mutate([])}
             disabled={importCv.isPending}
-            className="mt-1.5 flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-card border-ui border-dashed border-muted bg-field p-4 text-center hover:border-strong"
+            className="flex min-h-[112px] flex-1 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-card border-ui border-dashed border-muted bg-field p-3 text-center hover:border-strong"
           >
-            {cv ? <FileCheck2 size={28} className="text-ink" /> : <Upload size={28} className="text-muted" />}
-            <b className="text-[13px] break-all">{cv ? cv.filename : t('onboarding.chooseCv')}</b>
+            {cv ? <FileCheck2 size={22} className="text-ink" /> : <Upload size={22} className="text-muted" />}
+            <b className="text-[12.5px] break-all">{cv ? cv.filename : t('onboarding.chooseCv')}</b>
             <span className="text-[11.5px] text-muted">{cv ? t('onboarding.cvKept') : t('onboarding.cvTypes')}</span>
           </button>
           {cv ? (
             <DoneBadge />
           ) : cvSkipped ? (
-            <p className="mt-3 text-center text-[11.5px] text-muted">{t('onboarding.skippedNote')}</p>
+            <p className="mt-2.5 text-center text-[11.5px] text-muted">{t('onboarding.skippedNote')}</p>
           ) : (
             <Button variant="ghost" className="mt-2 self-center" onClick={() => setCvSkipped(true)}>
               {t('onboarding.skip')}
@@ -134,7 +151,7 @@ export function OnboardingView() {
         </StepCard>
       </div>
 
-      <div className="mt-[26px] flex w-full max-w-[1040px] items-center justify-between gap-6">
+      <div className="mt-4 flex w-full max-w-[980px] items-center justify-between gap-4">
         <span className="label-mono">{t('onboarding.privacy')}</span>
         <Button
           variant="primary"
@@ -142,7 +159,7 @@ export function OnboardingView() {
           onClick={() => finish.mutate([], { onSuccess: () => navigate('/', { replace: true }) })}
         >
           {t('onboarding.start')}
-          <Arrow />
+          <ArrowRight className="rtl:rotate-180" />
         </Button>
       </div>
     </div>

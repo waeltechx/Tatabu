@@ -62,20 +62,22 @@ export function FactWarnings({
 
   if (!groups.length) {
     return (
-      <div className="flex items-center gap-2.5 rounded-card border-ui border-paper-ink bg-green px-3.5 py-3 text-[12.5px] font-medium text-paper-ink">
-        <CircleCheck size={16} className="shrink-0" />
+      <div className="flex items-center gap-2 rounded-card border-ui border-paper-ink bg-green px-3 py-2 text-[12.5px] font-medium text-paper-ink">
+        <CircleCheck size={15} className="shrink-0" />
         {source === 'file' ? t('facts.allGoodFile') : t('facts.allGood')}
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2 text-[12.5px] font-semibold">
-        <TriangleAlert size={16} className="text-[#a3352a] dark:text-[#f19a8c]" />
+        <TriangleAlert size={15} className="shrink-0 text-[#a3352a] dark:text-[#f19a8c]" />
         {t('facts.count', { count: groups.length })}
       </div>
-      <p className="text-[12px] leading-relaxed text-muted">{source === 'file' ? t('facts.introFile') : t('facts.intro')}</p>
+      <p className="-mt-1 text-[12px] leading-snug text-muted">
+        {source === 'file' ? t('facts.introFile') : t('facts.intro')}
+      </p>
       {groups.map((g) => {
         const missing = g.warnings.filter(
           (w) => w.reason !== 'no_source' && w.reason !== 'translation' && w.reason !== 'unknown_source'
@@ -88,7 +90,7 @@ export function FactWarnings({
           ws.map((w) => `${open}⁨${describeToken(w, i18n.language)}⁩${close}`).join(i18n.language === 'ar' ? '، ' : ', ')
         const busy = busyItem === g.itemId
         return (
-          <div key={g.itemId} className="rounded-card border-ui border-paper-ink bg-pink px-3 py-2.5 text-paper-ink">
+          <div key={g.itemId} className="rounded-card border-ui border-paper-ink bg-pink px-3 py-2 text-paper-ink">
             {missing.length > 0 && (
               <div className="text-[12px] font-semibold">
                 {t(source === 'file' ? 'facts.notInFile' : 'facts.notInCv', { list: list(missing) })}
@@ -100,10 +102,10 @@ export function FactWarnings({
             {translated.length > 0 && (
               <div className="text-[12px] font-semibold">{t('facts.badTranslation', { list: list(translated) })}</div>
             )}
-            <p className="mt-1.5 line-clamp-3 text-[11.5px] leading-snug opacity-80" dir="auto">
+            <p className="mt-1 line-clamp-3 text-[11.5px] leading-snug opacity-80" dir="auto">
               {g.text}
             </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
               <Button size="sm" variant="paper" onClick={() => onShow(g)}>
                 <Crosshair />
                 {t('facts.showMe')}

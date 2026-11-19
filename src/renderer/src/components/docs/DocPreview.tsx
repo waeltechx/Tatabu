@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { clsx } from 'clsx'
+import { cn } from '@/lib/cn'
 import type { DocHtml } from '@shared/docs/common'
 
 const MM = 96 / 25.4
@@ -75,7 +75,7 @@ export function DocPreview({
   }, [doc, size.w, size.h, highlight])
 
   return (
-    <div ref={frame} className={clsx('relative w-full overflow-hidden', className)}>
+    <div ref={frame} className={cn('relative w-full overflow-hidden', className)}>
       {/* Left-to-right box: the full-size page is scaled from its top-left corner, also in an Arabic UI. */}
       <div dir="ltr" style={{ height: `${Math.max(size.h * MM, contentH) * scale}px` }} className="min-h-full">
         <div

@@ -42,10 +42,10 @@ export function AboutCard() {
 
   return (
     <Card number="06" label={t('settings.about.label')} title={t('settings.about.title')}>
-      <div className="flex items-center justify-between gap-3 rounded-card border-ui border-soft px-3.5 py-3">
+      <div className="flex items-center justify-between gap-3 rounded-card border-ui border-soft px-2.5 py-2">
         <div>
           <div className="label-mono !text-[10px]">{t('settings.about.version')}</div>
-          <div className="mt-1 font-mono text-[14px] font-semibold" dir="ltr">
+          <div className="mt-0.5 font-mono text-[13px] font-semibold" dir="ltr">
             {info?.version ?? '—'}
           </div>
         </div>
@@ -54,7 +54,7 @@ export function AboutCard() {
           {t('update.check')}
         </Button>
       </div>
-      <p className="mt-2.5 text-[12.5px] text-muted">{line}</p>
+      <p className="mt-2 text-[12px] text-muted">{line}</p>
     </Card>
   )
 }

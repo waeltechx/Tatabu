@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Plus } from 'lucide-react'
 import { EMPTY_REFEREE, type Referee, type RefereeInput } from '@shared/settings'
 import { invoke, keys, useReferees, useWrite } from '@/lib/api'
 import { Button, Card, FieldLabel, TextInput, inputClass } from '@/components/ui'
+import { cn } from '@/lib/cn'
 
 function summary(r: Referee): string {
   return [r.affiliation, r.relationship, r.email].filter(Boolean).join(' · ')
@@ -16,9 +17,14 @@ export function ReferencesCard() {
   const move = useWrite(keys.referees, (id: string, delta: -1 | 1) => invoke('referees:move', id, delta))
 
   return (
-    <Card number="02" label={t('settings.refs.label')} title={t('settings.refs.title')} description={t('settings.refs.desc')}>
+    <Card
+      number="02"
+      label={t('settings.refs.label')}
+      title={t('settings.refs.title')}
+      description={t('settings.refs.desc')}
+    >
       {referees.length === 0 && editing !== 'new' && (
-        <p className="mb-3 rounded-card border-ui border-dashed border-soft px-3 py-4 text-[12.5px] text-muted">
+        <p className="mb-2 rounded-card border-ui border-dashed border-soft px-3 py-2.5 text-[12px] text-muted">
           {t('settings.refs.empty')}
         </p>
       )}
@@ -29,13 +35,13 @@ export function ReferencesCard() {
         ) : (
           <div
             key={r.id}
-            className="mb-2.5 grid grid-cols-[28px_1fr_auto] items-center gap-3 rounded-card border-ui border-soft bg-field p-3"
+            className="mb-1.5 grid grid-cols-[24px_1fr_auto] items-center gap-2.5 rounded-card border-ui border-soft bg-field px-2.5 py-1.5"
           >
             <span className="font-mono text-[11px] text-muted" dir="ltr">
               {String(i + 1).padStart(2, '0')}
             </span>
             <div className="min-w-0">
-              <b className="block truncate text-[13px] font-semibold">{r.name}</b>
+              <b className="block truncate text-[12.5px] font-semibold">{r.name}</b>
               <span className="block truncate text-[11.5px] text-muted">{summary(r)}</span>
             </div>
             <div className="flex items-center gap-1">
@@ -125,7 +131,7 @@ function RefereeForm({ initial, onClose }: { initial: RefereeInput; onClose: () 
 
   return (
     <form
-      className="mb-2.5 rounded-card border-ui border-strong bg-field p-3.5"
+      className="mb-1.5 rounded-card border-ui border-strong bg-field p-3"
       onSubmit={(e) => {
         e.preventDefault()
         save.mutate([draft], { onSuccess: onClose })
@@ -146,7 +152,7 @@ function RefereeForm({ initial, onClose }: { initial: RefereeInput; onClose: () 
             rows={1}
             value={draft.address}
             onChange={(e) => set('address', e.target.value)}
-            className={`${inputClass} h-[42px] resize-y py-2.5`}
+            className={cn(inputClass, 'h-auto min-h-8 resize-y py-1.5')}
           />
         </div>
       </div>
@@ -159,7 +165,7 @@ function RefereeForm({ initial, onClose }: { initial: RefereeInput; onClose: () 
         />
         {t('settings.refs.includeRelationship')}
       </label>
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-2">
         <Button type="submit" variant="primary" disabled={!draft.name.trim() || save.isPending}>
           {t('common.save')}
         </Button>

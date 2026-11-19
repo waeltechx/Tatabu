@@ -5,6 +5,7 @@
   "nav": {
     "workspace": "Workspace",
     "dashboard": "Dashboard",
+    "applications": "Applications",
     "cvStudio": "CV Studio",
     "coverLetter": "Cover Letter",
     "reference": "Reference",
@@ -208,7 +209,6 @@
       "restoreBackup": "Restore…",
       "backupSaved": "Backup saved ({{count}} files)."
     },
-    "savedBar": "All changes saved on this device",
     "about": {
       "label": "About",
       "title": "Version and updates",
@@ -534,11 +534,9 @@
     "onePerLine": "One per line",
     "cvTitle": "Master CV",
     "cvSub": "Your CV, turned into facts every tailored CV and letter is built from.",
-    "cvOnlySource": "The only source of facts for your CVs and cover letters.",
     "cvImported": "Imported: {{name}}",
     "cvNone": "No CV imported yet.",
     "openMaster": "Open master CV",
-    "storedHere": "Stored on this device",
     "signatureTitle": "Your signature",
     "signatureSub": "Placed above your name on exported cover letters.",
     "signaturePad": "Signature pad",
@@ -884,9 +882,6 @@
     "discard": "Discard",
     "confirm": "Confirm & update",
     "updated": "{{name}} is now {{status}}.",
-    "callKicker": "Always your call",
-    "callTitle": "Nothing changes until you confirm.",
-    "callSub": "Check the matched application and status first. If confidence is low, verify the details or choose them yourself.",
     "modelLine": "Read by {{provider}}"
   },
   "update": {

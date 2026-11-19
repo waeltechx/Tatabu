@@ -42,8 +42,8 @@ function defaultPdfName(company: string): string {
 function FileIcon({ file }: { file: AppFile }) {
   const Icon = file.kind === 'image' ? Image : FileText
   return (
-    <span className="flex size-9 shrink-0 items-center justify-center rounded-[6px] border-ui border-soft bg-field">
-      <Icon size={17} strokeWidth={1.8} />
+    <span className="flex size-7 shrink-0 items-center justify-center rounded-[6px] border-ui border-soft bg-field">
+      <Icon size={15} strokeWidth={1.8} />
     </span>
   )
 }
@@ -54,25 +54,30 @@ function LibraryPicker({ appId, onClose }: { appId: string; onClose: () => void 
   const [picked, setPicked] = useState<string[]>([])
   const attach = useFileWrite(appId, (ids: string[]) => invoke('files:attachLibrary', appId, ids))
   return (
-    <div className="mt-4 rounded-card border-ui border-strong bg-surface px-4 py-4">
+    <div className="mt-2.5 rounded-card border-ui border-strong bg-surface px-3 py-2.5">
       <div className="flex items-center justify-between">
-        <b className="text-[13.5px] font-semibold">{t('files.fromLibrary')}</b>
+        <b className="text-[13px] font-semibold">{t('files.fromLibrary')}</b>
         <button
           type="button"
           onClick={onClose}
           aria-label={t('common.close')}
-          className="cursor-pointer text-muted hover:text-ink"
+          className="-me-1 flex size-7 cursor-pointer items-center justify-center rounded-card text-muted hover:bg-field hover:text-ink"
         >
-          <X size={16} />
+          <X size={15} />
         </button>
       </div>
-      {isPending ? null : items.length === 0 ? (
-        <p className="mt-2 text-[12.5px] text-muted">{t('files.libraryEmpty')}</p>
+      {isPending ? (
+        <p className="mt-1 flex items-center gap-2 text-[12.5px] text-muted">
+          <LoaderCircle size={14} className="animate-spin" />
+          {t('common.loading')}
+        </p>
+      ) : items.length === 0 ? (
+        <p className="mt-1 text-[12.5px] text-muted">{t('files.libraryEmpty')}</p>
       ) : (
-        <ul className="mt-3 flex max-h-[220px] flex-col gap-1.5 overflow-auto">
+        <ul className="mt-1.5 flex max-h-[220px] flex-col gap-0.5 overflow-auto">
           {items.map((item) => (
             <li key={item.id}>
-              <label className="flex cursor-pointer items-center gap-2.5 rounded-[6px] px-2 py-1.5 text-[12.5px] hover:bg-field">
+              <label className="flex min-w-0 cursor-pointer items-center gap-2 rounded-[6px] px-2 py-1.5 text-[12.5px] hover:bg-field">
                 <input
                   type="checkbox"
                   checked={picked.includes(item.id)}
@@ -81,7 +86,7 @@ function LibraryPicker({ appId, onClose }: { appId: string; onClose: () => void 
                 <span className="flex-1 truncate" dir="auto">
                   {item.label || item.filename}
                 </span>
-                <span className="text-[11px] text-muted" dir="auto">
+                <span className="max-w-[45%] truncate text-[11px] text-muted" dir="auto">
                   {item.label ? item.filename : ''}
                 </span>
               </label>
@@ -89,7 +94,7 @@ function LibraryPicker({ appId, onClose }: { appId: string; onClose: () => void 
           ))}
         </ul>
       )}
-      <div className="mt-3 flex justify-end">
+      <div className="mt-2 flex justify-end">
         <Button
           size="sm"
           variant="primary"
@@ -107,7 +112,7 @@ export function FilesTab({ app }: { app: Application }) {
   const { t } = useTranslation()
   const client = useQueryClient()
   const onError = useErrorToast()
-  const { data: files = [], isPending } = useFiles(app.id)
+  const { data: files = [], isPending, isError, refetch } = useFiles(app.id)
   const [selected, setSelected] = useState<string[]>([])
   const [showLibrary, setShowLibrary] = useState(false)
   const [pdfName, setPdfName] = useState(defaultPdfName(app.company))
@@ -174,12 +179,12 @@ export function FilesTab({ app }: { app: Application }) {
 
   return (
     <div>
-      <div className="flex items-center gap-3">
-        <Button onClick={() => void upload()} disabled={uploading}>
+      <div className="flex items-center gap-2">
+        <Button size="sm" onClick={() => void upload()} disabled={uploading}>
           {uploading ? <LoaderCircle className="animate-spin" /> : <Upload />}
           {t('files.upload')}
         </Button>
-        <Button onClick={() => setShowLibrary((v) => !v)}>
+        <Button size="sm" onClick={() => setShowLibrary((v) => !v)}>
           <Library />
           {t('files.fromLibrary')}
         </Button>
@@ -188,18 +193,34 @@ export function FilesTab({ app }: { app: Application }) {
 
       {showLibrary && <LibraryPicker appId={app.id} onClose={() => setShowLibrary(false)} />}
 
-      {!isPending && files.length === 0 && (
-        <p className="mt-6 rounded-card border-ui border-dashed border-soft px-5 py-8 text-center text-[13px] text-muted">
-          {t('files.empty')}
-        </p>
+      {isPending ? (
+        // Fixed-height placeholder rows while the folder is read.
+        <ul className="mt-3 flex flex-col gap-1.5" aria-busy="true" aria-label={t('common.loading')}>
+          {[0, 1].map((n) => (
+            <li key={n} className="h-[42px] animate-pulse rounded-card border-ui border-soft bg-field" />
+          ))}
+        </ul>
+      ) : isError ? (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-card border-ui border-soft px-3 py-2 text-[12.5px] text-muted">
+          {t('errors.generic')}
+          <Button size="sm" onClick={() => void refetch()}>
+            {t('common.retry')}
+          </Button>
+        </div>
+      ) : (
+        files.length === 0 && (
+          <p className="mt-3 rounded-card border-ui border-dashed border-soft px-4 py-5 text-center text-[12.5px] text-muted">
+            {t('files.empty')}
+          </p>
+        )
       )}
 
-      <ul className="mt-5 flex flex-col gap-2.5">
+      <ul className="mt-3 flex flex-col gap-1.5">
         {files.map((f) => (
           <li
             key={f.id}
             className={clsx(
-              'flex items-center gap-3 rounded-card border-ui px-3 py-2.5',
+              'flex items-center gap-2.5 rounded-card border-ui px-2.5 py-1.5',
               selected.includes(f.id) ? 'border-strong bg-field' : 'border-soft bg-surface'
             )}
           >
@@ -212,15 +233,16 @@ export function FilesTab({ app }: { app: Application }) {
               className="size-4 cursor-pointer"
             />
             <FileIcon file={f} />
-            <div className="min-w-0 flex-1">
+            {/* Name, then type and size on the same line. */}
+            <div className="flex min-w-0 flex-1 items-center gap-2">
               <div
-                className={clsx('truncate text-[13px] font-medium', f.missing && 'text-muted line-through')}
+                className={clsx('min-w-0 truncate text-[12.5px] font-medium', f.missing && 'text-muted line-through')}
                 dir="auto"
                 title={f.filename}
               >
                 {f.filename}
               </div>
-              <div className="mt-0.5 flex items-center gap-2 text-[11.5px] text-muted">
+              <div className="flex shrink-0 items-center gap-1.5 text-[11.5px] text-muted">
                 <span className="relative">
                   <select
                     value={f.type}
@@ -245,36 +267,36 @@ export function FilesTab({ app }: { app: Application }) {
               onClick={() => invoke('files:open', f.id).catch(onError)}
               aria-label={t('files.open', { name: f.filename })}
               title={t('files.openShort')}
-              className="flex size-8 cursor-pointer items-center justify-center rounded hover:bg-field disabled:opacity-40"
+              className="flex size-7 cursor-pointer items-center justify-center rounded hover:bg-field disabled:opacity-40"
             >
-              <ExternalLink size={16} />
+              <ExternalLink size={15} />
             </button>
             <button
               type="button"
               onClick={() => remove.mutate([f.id], { onSuccess: () => toast.success(t('files.trashed')) })}
               aria-label={t('files.delete', { name: f.filename })}
               title={t('files.deleteShort')}
-              className="flex size-8 cursor-pointer items-center justify-center rounded text-muted hover:bg-field hover:text-ink"
+              className="flex size-7 cursor-pointer items-center justify-center rounded text-muted hover:bg-field hover:text-ink"
             >
-              <Trash2 size={16} />
+              <Trash2 size={15} />
             </button>
           </li>
         ))}
       </ul>
 
       {files.length > 0 && (
-        <section className="mt-6 rounded-card border-ui border-strong bg-blue px-5 py-5 text-paper-ink">
-          <b className="flex items-center gap-2 font-head text-[16px] font-bold">
-            <Merge size={17} />
+        <section className="mt-3 rounded-card border-ui border-strong bg-blue px-3.5 py-3 text-paper-ink">
+          <b className="flex items-center gap-2 font-head text-[14px] font-bold">
+            <Merge size={15} />
             {t('files.combineTitle')}
           </b>
-          <p className="mt-1 text-[12.5px]">{order.length ? t('files.combineOrder') : t('files.combineHint')}</p>
+          <p className="mt-0.5 text-[12px]">{order.length ? t('files.combineOrder') : t('files.combineHint')}</p>
           {order.length > 0 && (
-            <ol className="mt-3 flex flex-col gap-1.5">
+            <ol className="mt-2 flex flex-col gap-1">
               {order.map((f, i) => (
                 <li
                   key={f.id}
-                  className="flex items-center gap-2 rounded-[6px] border-ui border-paper-ink bg-[#fffdf9] px-2.5 py-1.5 text-[12.5px]"
+                  className="flex items-center gap-2 rounded-[6px] border-ui border-paper-ink bg-[#fffdf9] px-2.5 py-0.5 text-[12.5px]"
                 >
                   <span className="w-5 font-mono text-[11px]" dir="ltr">
                     {i + 1}
@@ -307,7 +329,7 @@ export function FilesTab({ app }: { app: Application }) {
               ))}
             </ol>
           )}
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-2.5 flex items-center gap-2">
             <TextInput
               value={pdfName}
               onChange={(e) => setPdfName(e.target.value)}
@@ -315,7 +337,11 @@ export function FilesTab({ app }: { app: Application }) {
               dir="auto"
               className="!border-paper-ink !bg-[#fffdf9] !text-paper-ink"
             />
-            <Button variant="paper" disabled={order.length === 0 || !pdfName.trim() || combining} onClick={() => void combine()}>
+            <Button
+              variant="paper"
+              disabled={order.length === 0 || !pdfName.trim() || combining}
+              onClick={() => void combine()}
+            >
               {combining && <LoaderCircle className="animate-spin" />}
               {t('files.combine', { count: order.length })}
             </Button>

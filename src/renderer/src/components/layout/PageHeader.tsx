@@ -22,30 +22,30 @@ export function PageHeader({ page, actions, back }: PageHeaderProps) {
   }
 
   return (
-    <header className="mb-7 flex items-start justify-between gap-6">
+    <header className="mb-3.5 flex items-start justify-between gap-4">
       <div>
         {back !== undefined && (
           <button
             type="button"
             onClick={goBack}
-            className="mb-3 -ms-1 flex cursor-pointer items-center gap-1.5 rounded-card px-1 py-0.5 text-[13px] font-semibold text-muted hover:text-ink"
+            className="mb-1 -ms-1 flex cursor-pointer items-center gap-1 rounded-card px-1 py-0.5 text-[12px] font-semibold text-muted hover:text-ink"
           >
-            <ArrowLeft size={16} className="rtl:rotate-180" aria-hidden />
+            <ArrowLeft size={14} className="rtl:rotate-180" aria-hidden />
             {t('common.back')}
           </button>
         )}
-        <div className="label-mono !text-[11px]">{t(`pages.${page}.crumb`)}</div>
-        <h1 className="mt-3 mb-2.5 font-head text-[38px] leading-tight font-bold">{t(`pages.${page}.title`)}</h1>
-        <p className="text-[15px] text-muted">{t(`pages.${page}.sub`)}</p>
+        <div className="label-mono">{t(`pages.${page}.crumb`)}</div>
+        <h1 className="mt-0.5 font-head text-[20px] leading-tight font-bold">{t(`pages.${page}.title`)}</h1>
+        <p className="mt-0.5 text-[12.5px] text-muted">{t(`pages.${page}.sub`)}</p>
       </div>
-      <div className="flex items-start gap-2.5">
+      <div className="flex items-center gap-1.5">
         {actions}
         <button
           type="button"
           onClick={() => setLanguage(prefs.language === 'ar' ? 'en' : 'ar')}
           title={t('header.toggleLanguage')}
           aria-label={t('header.toggleLanguage')}
-          className="flex h-11 min-w-11 items-center justify-center rounded-card border-ui border-strong bg-surface px-3 text-[13px] font-semibold"
+          className="flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-card border-ui border-strong bg-surface px-2 text-[12px] font-semibold hover:bg-field"
         >
           {prefs.language === 'ar' ? 'EN' : 'ع'}
         </button>
@@ -54,9 +54,9 @@ export function PageHeader({ page, actions, back }: PageHeaderProps) {
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
           title={t('header.toggleTheme')}
           aria-label={t('header.toggleTheme')}
-          className="flex size-11 items-center justify-center rounded-card border-ui border-strong bg-surface"
+          className="flex size-8 cursor-pointer items-center justify-center rounded-card border-ui border-strong bg-surface hover:bg-field"
         >
-          {resolvedTheme === 'dark' ? <Sun size={20} strokeWidth={1.8} /> : <Moon size={20} strokeWidth={1.8} />}
+          {resolvedTheme === 'dark' ? <Sun size={16} strokeWidth={1.9} /> : <Moon size={16} strokeWidth={1.9} />}
         </button>
       </div>
     </header>

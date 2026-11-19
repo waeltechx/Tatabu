@@ -31,7 +31,7 @@ export function StatusSelect({
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-default',
           size === 'sm'
             ? 'h-[26px] min-w-[128px] ps-2.5 pe-7 text-[11.5px]'
-            : 'h-[40px] min-w-[150px] ps-3.5 pe-9 text-[13px] font-semibold shadow-hard',
+            : 'h-8 min-w-[132px] ps-3 pe-8 text-[12.5px] font-semibold shadow-hard',
           STATUS_TONE[value]
         )}
       >
@@ -42,10 +42,10 @@ export function StatusSelect({
         ))}
       </select>
       <ChevronDown
-        size={size === 'sm' ? 13 : 15}
+        size={size === 'sm' ? 13 : 14}
         className={clsx(
           'pointer-events-none absolute top-1/2 -translate-y-1/2 text-paper-ink',
-          size === 'sm' ? 'end-2' : 'end-3'
+          size === 'sm' ? 'end-2' : 'end-2.5'
         )}
       />
     </span>

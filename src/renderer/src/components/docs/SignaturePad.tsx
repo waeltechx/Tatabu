@@ -71,11 +71,15 @@ export function SignaturePad({ value, onChange }: { value: string; onChange: (da
           className="block w-full touch-none"
           style={{ aspectRatio: `${W} / ${H}`, cursor: 'crosshair' }}
         />
-        <span className="pointer-events-none absolute inset-x-5 bottom-5 h-px bg-[#d9d7d0]" />
+        <span className="pointer-events-none absolute inset-x-4 bottom-4 h-px bg-[#d9d7d0]" />
       </div>
-      <div className="mt-3 flex items-center justify-between">
+      <div className="mt-1.5 flex items-center justify-between gap-2">
         <span className="label-mono">{t('profile.drawHint')}</span>
-        <button type="button" onClick={clear} className="cursor-pointer text-[12.5px] font-medium text-ink hover:underline">
+        <button
+          type="button"
+          onClick={clear}
+          className="shrink-0 cursor-pointer px-1 py-0.5 text-[12px] font-medium text-ink hover:underline"
+        >
           {t('profile.clear')}
         </button>
       </div>

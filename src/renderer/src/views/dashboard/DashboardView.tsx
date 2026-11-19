@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Check, ChevronDown, Plus, Search } from 'lucide-react'
 import { clsx } from 'clsx'
+import { cn } from '@/lib/cn'
 import { STATUSES, type Application, type Status } from '@shared/applications'
 import { daysUntil, formatDate, STATUS_TONE, useApps, useSetup, useUpdateApp } from '@/lib/apps'
 import { usePrefs } from '@/lib/prefs'
@@ -33,12 +34,17 @@ function AddButton() {
 
 function StatCard({ label, value, note, tone }: { label: string; value: number; note: string; tone: string }) {
   return (
-    <div className={clsx('rounded-card border-ui border-strong px-5 py-4 text-paper-ink', tone)}>
-      <div className="label-mono !text-[#4a4a4a]">{label}</div>
-      <div className="mt-3 font-head text-[40px] leading-none font-bold" dir="ltr">
-        {value}
+    <div className={clsx('min-w-0 rounded-card border-ui border-strong px-3 py-2.5 text-paper-ink', tone)}>
+      <div className="label-mono truncate !text-[#4a4a4a]">{label}</div>
+      {/* Number and its note share one line, so a tile stays about 60px tall. */}
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className="font-head text-[22px] leading-none font-bold tabular-nums" dir="ltr">
+          {value}
+        </span>
+        <span className="min-w-0 truncate text-[11.5px]" title={note}>
+          {note}
+        </span>
       </div>
-      <div className="mt-2 text-[12px]">{note}</div>
     </div>
   )
 }
@@ -46,16 +52,19 @@ function StatCard({ label, value, note, tone }: { label: string; value: number; 
 /** A donut of applications by status, drawn with stroke dashes. */
 function StatusDonut({ apps }: { apps: Application[] }) {
   const { t } = useTranslation()
-  const counts = STATUSES.map((s) => ({ status: s, count: apps.filter((a) => a.status === s).length }))
+  const counts = STATUSES.map((s) => ({
+    status: s,
+    count: apps.filter((a) => a.status === s).length
+  }))
   const total = apps.length
   const r = 54
   const c = 2 * Math.PI * r
   let offset = 0
   return (
-    <section className="rounded-card border-ui border-strong bg-surface px-6 py-5">
-      <h2 className="font-head text-[18px] font-bold">{t('dash.byStatus')}</h2>
-      <div className="mt-4 flex items-center gap-7">
-        <svg width="148" height="148" viewBox="0 0 148 148" role="img" aria-label={t('dash.byStatus')} className="shrink-0">
+    <section className="min-w-0 rounded-card border-ui border-strong bg-surface p-3">
+      <h2 className="font-head text-[15px] font-bold">{t('dash.byStatus')}</h2>
+      <div className="mt-2 flex items-center gap-4">
+        <svg width="112" height="112" viewBox="0 0 148 148" role="img" aria-label={t('dash.byStatus')} className="shrink-0">
           <circle cx="74" cy="74" r={r} fill="none" stroke="var(--soft)" strokeWidth="22" />
           {counts
             .filter((x) => x.count)
@@ -87,12 +96,12 @@ function StatusDonut({ apps }: { apps: Application[] }) {
             {t('dash.total')}
           </text>
         </svg>
-        <ul className="flex flex-1 flex-col gap-2">
+        <ul className="flex min-w-0 flex-1 flex-col gap-1">
           {counts.map(({ status, count }) => (
-            <li key={status} className="flex items-center gap-2.5 text-[12.5px]">
-              <span className={clsx('size-3 rounded-[3px] border border-paper-ink', STATUS_TONE[status])} />
-              <span className="flex-1">{t(`status.${status}`)}</span>
-              <b className="font-mono font-medium" dir="ltr">
+            <li key={status} className="flex items-center gap-2 text-[12px]">
+              <span className={clsx('size-2.5 shrink-0 rounded-[2px] border border-paper-ink', STATUS_TONE[status])} />
+              <span className="min-w-0 flex-1 truncate">{t(`status.${status}`)}</span>
+              <b className="font-mono font-medium tabular-nums" dir="ltr">
                 {count}
               </b>
             </li>
@@ -131,23 +140,24 @@ function ApplicationsTable({ apps }: { apps: Application[] }) {
     const q = query.trim().toLowerCase()
     return apps.filter(
       (a) =>
-        (!status || a.status === status) && (!q || [a.company, a.jobTitle, a.location].some((v) => v.toLowerCase().includes(q)))
+        (!status || a.status === status) &&
+        (!q || [a.company, a.jobTitle, a.location].some((v) => v.toLowerCase().includes(q)))
     )
   }, [apps, query, status])
 
   return (
     <section className="rounded-card border-ui border-strong bg-surface">
-      <div className="flex items-center gap-3 border-b border-soft px-5 py-4">
-        <h2 className="me-auto font-head text-[18px] font-bold">{t('dash.applications')}</h2>
-        <div className="relative w-[260px]">
-          <Search size={15} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted" />
+      <div className="flex items-center gap-2 border-b border-soft px-3 py-2">
+        <h2 className="me-auto font-head text-[15px] font-bold">{t('dash.applications')}</h2>
+        <div className="relative w-[220px] min-w-0">
+          <Search size={14} className="pointer-events-none absolute start-2.5 top-1/2 -translate-y-1/2 text-muted" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('dash.search')}
             aria-label={t('dash.search')}
-            className={clsx(inputClass, 'h-[38px] ps-9')}
+            className={cn(inputClass, 'h-7 ps-8 text-[12px]')}
           />
         </div>
         <div className="relative">
@@ -155,7 +165,7 @@ function ApplicationsTable({ apps }: { apps: Application[] }) {
             value={status}
             onChange={(e) => setStatus(e.target.value as Status | '')}
             aria-label={t('dash.filterStatus')}
-            className={clsx(inputClass, 'h-[38px] w-[170px] cursor-pointer appearance-none pe-9')}
+            className={cn(inputClass, 'h-7 w-[150px] cursor-pointer appearance-none pe-8 text-[12px]')}
           >
             <option value="">{t('dash.allStatuses')}</option>
             {STATUSES.map((s) => (
@@ -164,58 +174,65 @@ function ApplicationsTable({ apps }: { apps: Application[] }) {
               </option>
             ))}
           </select>
-          <ChevronDown size={15} className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted" />
+          <ChevronDown size={14} className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-muted" />
         </div>
       </div>
-      <table className="w-full border-collapse text-[12.5px]">
-        <thead>
-          <tr className="label-mono text-start">
-            <th className="w-14 px-5 py-3 text-start font-normal">#</th>
-            <th className="px-3 py-3 text-start font-normal">{t('dash.colRole')}</th>
-            <th className="px-3 py-3 text-start font-normal">{t('apps.location')}</th>
-            <th className="px-3 py-3 text-start font-normal">{t('apps.status')}</th>
-            <th className="px-3 py-3 text-start font-normal">{t('apps.deadline')}</th>
-            <th className="px-5 py-3 text-start font-normal">{t('dash.colAdded')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {shown.map((a) => (
-            <tr
-              key={a.id}
-              onClick={() => navigate(`/applications/${a.id}`)}
-              className="cursor-pointer border-t border-soft hover:bg-field"
-            >
-              <td className="px-5 py-3 font-mono text-muted" dir="ltr">
-                {String(a.number).padStart(3, '0')}
-              </td>
-              <td className="px-3 py-3">
-                <Link
-                  to={`/applications/${a.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="block font-semibold text-ink no-underline"
-                  dir="auto"
-                >
-                  {a.company || t('apps.noCompany')}
-                </Link>
-                <span className="text-muted" dir="auto">
-                  {a.jobTitle}
-                </span>
-              </td>
-              <td className="px-3 py-3 text-muted" dir="auto">
-                {a.location || '—'}
-              </td>
-              <td className="px-3 py-3">
-                <StatusSelect value={a.status} onChange={(s) => update.mutate({ id: a.id, patch: { status: s } })} />
-              </td>
-              <td className="px-3 py-3">
-                <Deadline iso={a.deadline} />
-              </td>
-              <td className="px-5 py-3 text-muted">{formatDate(a.dateAdded, prefs.language)}</td>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[12.5px]">
+          <thead>
+            <tr className="label-mono text-start">
+              <th className="w-12 px-3 py-1.5 text-start font-normal">#</th>
+              <th className="px-2 py-1.5 text-start font-normal">{t('dash.colRole')}</th>
+              <th className="px-2 py-1.5 text-start font-normal">{t('apps.location')}</th>
+              <th className="px-2 py-1.5 text-start font-normal">{t('apps.status')}</th>
+              <th className="px-2 py-1.5 text-start font-normal">{t('apps.deadline')}</th>
+              <th className="px-3 py-1.5 text-start font-normal">{t('dash.colAdded')}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {shown.length === 0 && <p className="px-5 py-10 text-center text-[13px] text-muted">{t('dash.noMatch')}</p>}
+          </thead>
+          <tbody>
+            {shown.map((a) => (
+              <tr
+                key={a.id}
+                onClick={() => navigate(`/applications/${a.id}`)}
+                className="cursor-pointer border-t border-soft hover:bg-field"
+              >
+                <td className="px-3 py-1 font-mono text-[11.5px] text-muted tabular-nums" dir="ltr">
+                  {String(a.number).padStart(3, '0')}
+                </td>
+                {/* Company and role on one line: the row stays one line tall. */}
+                <td className="max-w-0 px-2 py-1">
+                  <div className="flex min-w-0 items-baseline gap-1.5">
+                    <Link
+                      to={`/applications/${a.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="shrink-0 truncate font-semibold text-ink no-underline"
+                      dir="auto"
+                    >
+                      {a.company || t('apps.noCompany')}
+                    </Link>
+                    {a.jobTitle && (
+                      <span className="min-w-0 truncate text-muted" dir="auto" title={a.jobTitle}>
+                        · {a.jobTitle}
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-muted" dir="auto">
+                  {a.location || '—'}
+                </td>
+                <td className="px-2 py-1">
+                  <StatusSelect value={a.status} onChange={(s) => update.mutate({ id: a.id, patch: { status: s } })} />
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap">
+                  <Deadline iso={a.deadline} />
+                </td>
+                <td className="px-3 py-1 whitespace-nowrap text-muted">{formatDate(a.dateAdded, prefs.language)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {shown.length === 0 && <p className="px-3 py-6 text-center text-[12.5px] text-muted">{t('dash.noMatch')}</p>}
     </section>
   )
 }
@@ -231,35 +248,37 @@ function SetupChecklist() {
   ] as const
   const doneCount = items.filter((i) => i.done).length
   return (
-    <section className="rounded-card border-ui border-strong bg-surface px-6 py-6">
+    <section className="rounded-card border-ui border-strong bg-surface p-3.5">
       <div className="flex items-baseline justify-between">
-        <h2 className="font-head text-[20px] font-bold">{t('setup.title')}</h2>
+        <h2 className="font-head text-[15px] font-bold">{t('setup.title')}</h2>
         <span className="label-mono" dir="ltr">
           {doneCount} / {items.length}
         </span>
       </div>
-      <p className="mt-1 text-[13px] text-muted">{t('setup.sub')}</p>
-      <ul className="mt-5 flex flex-col gap-3">
+      <p className="mt-0.5 text-[12px] text-muted">{t('setup.sub')}</p>
+      <ul className="mt-2.5 flex flex-col gap-1.5">
         {items.map((item, i) => (
           <li key={item.key}>
             <Link
               to={item.to}
-              className="flex items-center gap-3.5 rounded-card border-ui border-soft px-4 py-3 text-ink no-underline hover:border-strong"
+              className="flex items-center gap-2.5 rounded-card border-ui border-soft px-2.5 py-1.5 text-ink no-underline hover:border-strong"
             >
               <span
                 className={clsx(
-                  'flex size-7 shrink-0 items-center justify-center rounded-[6px] border-ui border-strong font-mono text-[11px]',
+                  'flex size-6 shrink-0 items-center justify-center rounded-[5px] border-ui border-strong font-mono text-[10.5px]',
                   item.done ? 'bg-green text-paper-ink' : 'bg-surface'
                 )}
                 dir="ltr"
               >
-                {item.done ? <Check size={14} /> : `0${i + 1}`}
+                {item.done ? <Check size={13} /> : `0${i + 1}`}
               </span>
               <div className="min-w-0 flex-1">
-                <b className={clsx('block text-[13.5px] font-semibold', item.done && 'text-muted line-through')}>
+                <b
+                  className={clsx('block text-[12.5px] leading-snug font-semibold', item.done && 'text-muted line-through')}
+                >
                   {t(`setup.${item.key}`)}
                 </b>
-                <span className="text-[12px] text-muted">{t(`setup.${item.key}Desc`)}</span>
+                <span className="block truncate text-[11.5px] leading-snug text-muted">{t(`setup.${item.key}Desc`)}</span>
               </div>
             </Link>
           </li>
@@ -272,25 +291,47 @@ function SetupChecklist() {
 function EmptyDashboard() {
   const { t } = useTranslation()
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,400px)] items-start gap-6">
-      <section className="rounded-card border-ui border-strong bg-yellow px-9 py-10 text-paper-ink">
+    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,340px)] items-start gap-3">
+      <section className="rounded-card border-ui border-strong bg-yellow p-5 text-paper-ink">
         <div className="label-mono !text-[#4a4a4a]">{t('dash.emptyKicker')}</div>
-        <h2 className="mt-5 max-w-[520px] font-head text-[40px] leading-[1.1] font-bold whitespace-pre-line">
+        <h2 className="mt-2 max-w-[460px] font-head text-[22px] leading-tight font-bold whitespace-pre-line">
           {t('dash.emptyTitle')}
         </h2>
-        <p className="mt-4 max-w-[480px] text-[14px] leading-relaxed">{t('dash.emptySub')}</p>
-        <div className="mt-8">
+        <p className="mt-2 max-w-[460px] text-[12.5px] leading-relaxed">{t('dash.emptySub')}</p>
+        <div className="mt-4">
           <Link
             to="/applications/new"
-            className="inline-flex h-[44px] items-center gap-2 rounded-card border-ui border-paper-ink bg-[#fffdf9] px-4 text-[13px] font-semibold text-paper-ink no-underline shadow-hard"
+            className="inline-flex h-8 items-center gap-1.5 rounded-card border-ui border-paper-ink bg-[#fffdf9] px-3 text-[12.5px] font-semibold text-paper-ink no-underline shadow-hard"
           >
-            <Plus size={16} />
+            <Plus size={14} />
             {t('dash.emptyCta')}
           </Link>
         </div>
       </section>
       <SetupChecklist />
     </div>
+  )
+}
+
+/** The dashboard's shape while applications load, so the page doesn't jump when they arrive. */
+function DashboardSkeleton() {
+  const block = 'animate-pulse rounded-card border-ui border-soft bg-surface motion-reduce:animate-none'
+  return (
+    <>
+      <PageHeader page="dashboard" />
+      <div className="flex flex-col gap-3" aria-busy="true">
+        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className={cn(block, 'h-[58px]')} />
+          ))}
+        </div>
+        <div className="grid grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-3">
+          <div className={cn(block, 'h-[160px]')} />
+          <div className={cn(block, 'h-[160px]')} />
+        </div>
+        <div className={cn(block, 'h-[240px]')} />
+      </div>
+    </>
   )
 }
 
@@ -313,7 +354,7 @@ export function DashboardView() {
     }
   }, [apps])
 
-  if (isPending) return <PageHeader page="dashboard" />
+  if (isPending) return <DashboardSkeleton />
 
   return (
     <>
@@ -321,8 +362,8 @@ export function DashboardView() {
       {apps.length === 0 ? (
         <EmptyDashboard />
       ) : (
-        <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-4 gap-5">
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
             <StatCard
               label={t('dash.statTotal')}
               value={stats.total}
@@ -338,7 +379,7 @@ export function DashboardView() {
             />
             <StatCard label={t('dash.statSoon')} value={stats.soon} note={t('dash.statSoonNote')} tone="bg-green" />
           </div>
-          <div className="grid grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-6">
+          <div className="grid grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-3">
             <StatusDonut apps={apps} />
             <ActivityChart apps={apps} />
           </div>

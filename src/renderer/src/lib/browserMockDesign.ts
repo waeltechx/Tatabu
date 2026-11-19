@@ -8,6 +8,7 @@ import { buildClone } from '@shared/clone/build'
 import type { DesignDraft, DesignSource, DesignState } from '@shared/design'
 import { EMPTY_LETTER, layoutFor, type LetterState } from '@shared/letter'
 import { cleanRawPages } from '@shared/pdf/clean'
+import { EMPTY_TAILOR, type CvTailorState } from '@shared/tailor'
 
 type Handlers = { [C in IpcChannel]?: (...args: IpcArgs<C>) => IpcResult<C> | Promise<IpcResult<C>> }
 
@@ -33,6 +34,7 @@ export function createDesignMocks(): Handlers {
   let saved: DesignDraft | null = null
   const state = (): DesignState => ({ draft, saved })
   const letters = new Map<string, LetterState>()
+  const cvs = new Map<string, CvTailorState>()
 
   return {
     'cv:get': () => ({ cv: null, source: null, unread: false, updatedAt: '', warnings: [] }),
@@ -77,6 +79,13 @@ export function createDesignMocks(): Handlers {
     'design:remove': () => {
       saved = null
       return state()
+    },
+    // Tailoring needs the AI, so the browser only keeps the user's choices.
+    'cvs:get': (id, language) => cvs.get(`${id}:${language}`) ?? { ...EMPTY_TAILOR, language },
+    'cvs:save': (id, s) => {
+      const next = { ...EMPTY_TAILOR, ...cvs.get(`${id}:${s.language}`), ...s } as CvTailorState
+      cvs.set(`${id}:${next.language}`, next)
+      return next
     },
     'letter:options': () => [],
     'letter:get': (id, language) =>

@@ -79,14 +79,14 @@ export function KeyField({
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       {showInput ? (
         <form
-          className="flex items-center gap-2.5"
+          className="flex items-center gap-2"
           onSubmit={(e) => {
             e.preventDefault()
             save()
           }}
         >
           <div className="relative min-w-0 flex-1">
-            <KeyRound size={16} className="pointer-events-none absolute start-[11px] top-1/2 -translate-y-1/2 text-muted" />
+            <KeyRound size={14} className="pointer-events-none absolute start-2.5 top-1/2 -translate-y-1/2 text-muted" />
             <TextInput
               id={id}
               type="password"
@@ -97,7 +97,7 @@ export function KeyField({
               disabled={disabled || write.isPending}
               onChange={(e) => setDraft(e.target.value)}
               placeholder={placeholder}
-              className="ps-9 font-mono text-[12px]"
+              className="ps-8 font-mono text-[12px]"
             />
           </div>
           <Button type="submit" variant="primary" disabled={disabled || !draft.trim() || write.isPending}>
@@ -111,13 +111,13 @@ export function KeyField({
         </form>
       ) : (
         <>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <div
               id={id}
               dir="ltr"
-              className="flex h-[42px] min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-card border-ui border-soft bg-field px-[11px] font-mono text-[12px] whitespace-nowrap"
+              className="flex h-8 min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-card border-ui border-soft bg-field px-2.5 font-mono text-[12px] whitespace-nowrap"
             >
-              <KeyRound size={16} className="shrink-0 text-muted" />
+              <KeyRound size={14} className="shrink-0 text-muted" />
               <span className="truncate select-all">{revealed ?? status.masked}</span>
             </div>
             {!compact && (
@@ -128,7 +128,7 @@ export function KeyField({
             )}
             {actions}
           </div>
-          <div className="mt-2 flex gap-3.5">
+          <div className="mt-1.5 flex gap-3">
             {!compact && (
               <button type="button" onClick={() => setEditing(true)} className={linkClass}>
                 {t('settings.ai.change')}

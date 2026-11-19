@@ -36,11 +36,11 @@ export function StorageCard({ settings }: { settings: SettingsView }) {
       <div
         dir="ltr"
         title={settings.dataFolder}
-        className="flex h-[42px] items-center overflow-hidden rounded-card border-ui border-paper-ink bg-[#fffdf9] px-[11px] font-mono text-[12px] whitespace-nowrap text-paper-ink"
+        className="flex h-8 items-center overflow-hidden rounded-card border-ui border-paper-ink bg-[#fffdf9] px-[11px] font-mono text-[12px] whitespace-nowrap text-paper-ink"
       >
         <span className="truncate">{settings.dataFolder}</span>
       </div>
-      <div className="mt-2.5 flex gap-2.5">
+      <div className="mt-2 flex gap-2">
         <Button variant="primary" className="flex-1" onClick={() => invoke('storage:open').catch(onError)}>
           <FolderOpen />
           {t('settings.storage.open')}
@@ -60,15 +60,15 @@ export function StorageCard({ settings }: { settings: SettingsView }) {
         </Button>
       </div>
       <FieldLabel>{t('settings.storage.naming')}</FieldLabel>
-      <div className="flex items-center gap-2.5 rounded-card border-ui border-dashed border-paper-ink p-3 text-[12.5px]">
-        <Folder size={20} strokeWidth={1.8} className="shrink-0" />
+      <div className="flex items-center gap-2 rounded-card border-ui border-dashed border-paper-ink px-2.5 py-2 text-[12px]">
+        <Folder size={16} strokeWidth={1.9} className="shrink-0" />
         <code className="font-mono text-[12px] [unicode-bidi:isolate]">{example}</code>
       </div>
       <FieldLabel>{t('settings.storage.backup')}</FieldLabel>
-      <div className="rounded-card border-ui border-dashed border-paper-ink p-3 text-[12.5px]">
+      <div className="rounded-card border-ui border-dashed border-paper-ink px-2.5 py-2 text-[12px]">
         {t('settings.storage.backupNote')}
       </div>
-      <div className="mt-2.5 flex gap-2.5">
+      <div className="mt-2 flex gap-2">
         <Button variant="paper" className="flex-1" disabled={!!busy} onClick={exportBackup}>
           {busy === 'export' ? <LoaderCircle className="animate-spin" /> : <Download />}
           {t('settings.storage.exportBackup')}

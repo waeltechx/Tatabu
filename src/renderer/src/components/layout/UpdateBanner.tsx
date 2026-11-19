@@ -30,15 +30,17 @@ export function UpdateBanner() {
   const manual = data.status === 'available'
 
   return (
-    <div className="mb-6 flex items-center gap-3 rounded-card border-ui border-paper-ink bg-yellow px-4 py-2.5 text-[13px] text-paper-ink shadow-hard">
-      <Sparkles size={17} className="shrink-0" />
-      <span className="font-semibold">{t(manual ? 'update.available' : 'update.ready', { version: data.version })}</span>
+    <div className="mb-3 flex min-h-10 items-center gap-2.5 rounded-card border-ui border-paper-ink bg-yellow py-1 ps-3 pe-1.5 text-[12.5px] text-paper-ink shadow-hard">
+      <Sparkles size={15} className="shrink-0" />
+      <span className="min-w-0 truncate font-semibold">
+        {t(manual ? 'update.available' : 'update.ready', { version: data.version })}
+      </span>
       {data.notesUrl && (
-        <a href={data.notesUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+        <a href={data.notesUrl} target="_blank" rel="noreferrer" className="shrink-0 underline underline-offset-2">
           {t('update.whatsNew')}
         </a>
       )}
-      <div className="ms-auto flex items-center gap-2">
+      <div className="ms-auto flex shrink-0 items-center gap-1">
         <Button size="sm" variant="paper" onClick={() => invoke('update:install').catch(onError)}>
           {t(manual ? 'update.download' : 'update.restart')}
         </Button>
@@ -47,9 +49,9 @@ export function UpdateBanner() {
           aria-label={t('update.later')}
           title={t('update.later')}
           onClick={() => setHidden(data.version)}
-          className="flex size-8 items-center justify-center rounded-[6px] hover:bg-black/10"
+          className="flex size-7 cursor-pointer items-center justify-center rounded-[6px] hover:bg-black/10"
         >
-          <X size={16} />
+          <X size={15} />
         </button>
       </div>
     </div>

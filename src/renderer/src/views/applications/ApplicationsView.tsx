@@ -2,9 +2,23 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
-import { Check, ChevronDown, Copy, ExternalLink, FileText, FileUser, FolderOpen, IdCard, Plus, Search, Trash2, X } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  ExternalLink,
+  FileText,
+  FileUser,
+  FolderOpen,
+  IdCard,
+  Plus,
+  Search,
+  Trash2,
+  X
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { clsx } from 'clsx'
+import { cn } from '@/lib/cn'
 import { WORK_MODES, type Application, type ApplicationPatch, type JobFields } from '@shared/applications'
 import { invoke, useErrorToast, useLanguages } from '@/lib/api'
 import { appKeys, formatDate, hostOf, useApps, useUpdateApp } from '@/lib/apps'
@@ -33,9 +47,14 @@ function CopyButton({ value, label }: { value: string; label: string }) {
           window.setTimeout(() => setDone(false), 1200)
         })
       }}
-      className="flex size-[34px] shrink-0 cursor-pointer items-center justify-center rounded-card border-ui border-soft bg-surface text-muted hover:border-strong hover:text-ink disabled:cursor-default disabled:opacity-40"
+      // Hidden until the field row is hovered or focused (the button itself can take focus, so Tab still reaches it).
+      className={cn(
+        'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-card border-ui border-soft bg-surface text-muted hover:border-strong hover:text-ink disabled:cursor-default',
+        'opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 disabled:!opacity-0',
+        done && 'opacity-100'
+      )}
     >
-      {done ? <Check size={15} /> : <Copy size={15} />}
+      {done ? <Check size={14} /> : <Copy size={14} />}
     </button>
   )
 }
@@ -64,9 +83,9 @@ function InlineField({
     if (draft.trim() !== value) onSave(draft.trim())
   }
   return (
-    <div>
-      <div className="mt-4 mb-1.5 text-[11.5px] font-semibold text-muted">{label}</div>
-      <div className="flex items-center gap-2">
+    <div className="group min-w-0">
+      <div className="mt-2.5 mb-1 text-[11.5px] font-semibold text-muted">{label}</div>
+      <div className="flex items-center gap-1.5">
         {children ?? (
           <input
             type={type}
@@ -82,7 +101,7 @@ function InlineField({
                 e.currentTarget.blur()
               }
             }}
-            className={clsx(inputClass, 'h-[38px]')}
+            className={inputClass}
           />
         )}
         {copy && <CopyButton value={value} label={label} />}
@@ -107,7 +126,7 @@ function JobInfo({ app, save }: { app: Application; save: (patch: ApplicationPat
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-x-6">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-x-3">
         {text('company', 'apps.company')}
         {text('jobTitle', 'apps.role')}
         {text('location', 'apps.location')}
@@ -117,7 +136,7 @@ function JobInfo({ app, save }: { app: Application; save: (patch: ApplicationPat
               value={app.workMode}
               aria-label={t('apps.workMode')}
               onChange={(e) => save({ workMode: e.target.value as JobFields['workMode'] })}
-              className={clsx(inputClass, 'h-[38px] cursor-pointer appearance-none pe-9')}
+              className={cn(inputClass, 'cursor-pointer appearance-none pe-8')}
             >
               {WORK_MODES.map((m) => (
                 <option key={m} value={m}>
@@ -125,7 +144,7 @@ function JobInfo({ app, save }: { app: Application; save: (patch: ApplicationPat
                 </option>
               ))}
             </select>
-            <ChevronDown size={15} className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted" />
+            <ChevronDown size={14} className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-muted" />
           </div>
         </InlineField>
         {text('deadline', 'apps.deadline', { type: 'date' })}
@@ -139,7 +158,7 @@ function JobInfo({ app, save }: { app: Application; save: (patch: ApplicationPat
               value={app.language}
               aria-label={t('apps.language')}
               onChange={(e) => save({ language: e.target.value })}
-              className={clsx(inputClass, 'h-[38px] cursor-pointer appearance-none pe-9')}
+              className={cn(inputClass, 'cursor-pointer appearance-none pe-8')}
             >
               {!app.language && <option value="">—</option>}
               {langs.map((l) => (
@@ -148,7 +167,7 @@ function JobInfo({ app, save }: { app: Application; save: (patch: ApplicationPat
                 </option>
               ))}
             </select>
-            <ChevronDown size={15} className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted" />
+            <ChevronDown size={14} className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-muted" />
           </div>
         </InlineField>
       </div>
@@ -160,22 +179,24 @@ function JobInfo({ app, save }: { app: Application; save: (patch: ApplicationPat
         dir="ltr"
       />
 
-      <div className="mt-6 mb-2 text-[11.5px] font-semibold text-muted">{t('apps.requirements')}</div>
+      <div className="mt-3.5 mb-1.5 text-[11.5px] font-semibold text-muted">{t('apps.requirements')}</div>
       <RequirementsEditor value={app.requirements} onChange={(v) => save({ requirements: v })} />
 
-      <div className="mt-6 mb-1.5 flex items-center justify-between">
-        <span className="text-[11.5px] font-semibold text-muted">{t('apps.description')}</span>
-        <CopyButton value={app.jobDescription} label={t('apps.description')} />
+      <div className="group">
+        <div className="mt-3 mb-1 flex items-center justify-between">
+          <span className="text-[11.5px] font-semibold text-muted">{t('apps.description')}</span>
+          <CopyButton value={app.jobDescription} label={t('apps.description')} />
+        </div>
+        <textarea
+          dir="auto"
+          rows={6}
+          value={desc}
+          aria-label={t('apps.description')}
+          onChange={(e) => setDesc(e.target.value)}
+          onBlur={() => desc !== app.jobDescription && save({ jobDescription: desc })}
+          className="w-full resize-y rounded-card border-ui border-soft bg-field px-2.5 py-2 text-[12.5px] leading-relaxed outline-none focus:border-strong"
+        />
       </div>
-      <textarea
-        dir="auto"
-        rows={9}
-        value={desc}
-        aria-label={t('apps.description')}
-        onChange={(e) => setDesc(e.target.value)}
-        onBlur={() => desc !== app.jobDescription && save({ jobDescription: desc })}
-        className="w-full resize-y rounded-card border-ui border-soft bg-field px-4 py-3 text-[13px] leading-relaxed outline-none focus:border-strong"
-      />
     </div>
   )
 }
@@ -201,24 +222,24 @@ function Notes({ app, save }: { app: Application; save: (patch: ApplicationPatch
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mt-1 mb-1.5 flex items-center justify-between">
         <span className="text-[11.5px] font-semibold text-muted">{t('apps.notes')}</span>
-        <span className="flex items-center gap-3">
+        <span className="flex items-center gap-2">
           <span className="label-mono">{notes === saved.current ? t('apps.saved') : t('apps.saving')}</span>
           <MicButton
             onText={(spoken) => setNotes((cur) => (cur.trim() ? `${cur.trimEnd()}\n${spoken}` : spoken))}
-            className="h-9"
+            className="h-7"
           />
         </span>
       </div>
       <textarea
         dir="auto"
-        rows={14}
+        rows={10}
         value={notes}
         aria-label={t('apps.notes')}
         onChange={(e) => setNotes(e.target.value)}
         placeholder={t('apps.notesPlaceholder')}
-        className="w-full resize-y rounded-card border-ui border-soft bg-field px-4 py-3 text-[13px] leading-relaxed outline-none placeholder:text-muted focus:border-strong"
+        className="w-full resize-y rounded-card border-ui border-soft bg-field px-2.5 py-2 text-[12.5px] leading-relaxed outline-none placeholder:text-muted focus:border-strong"
       />
     </div>
   )
@@ -249,15 +270,15 @@ function DeleteBar({ app }: { app: Application }) {
   }
 
   return (
-    <div className="mt-8 border-t border-soft pt-4">
+    <div className="mt-4 border-t border-soft pt-2.5">
       {asking ? (
-        <div className="rounded-card border-ui border-strong bg-[color-mix(in_srgb,var(--pink)_45%,var(--surface))] px-4 py-4">
-          <b className="block text-[13.5px] font-semibold">{t('apps.deleteConfirm')}</b>
-          <label className="mt-2.5 flex cursor-pointer items-center gap-2 text-[12.5px]">
+        <div className="rounded-card border-ui border-strong bg-[color-mix(in_srgb,var(--pink)_45%,var(--surface))] px-3 py-2.5">
+          <b className="block text-[13px] font-semibold">{t('apps.deleteConfirm')}</b>
+          <label className="mt-1.5 flex cursor-pointer items-center gap-2 text-[12.5px]">
             <input type="checkbox" checked={trash} onChange={(e) => setTrash(e.target.checked)} />
             {t('apps.trashFolder')}
           </label>
-          <div className="mt-3.5 flex gap-3">
+          <div className="mt-2.5 flex gap-2">
             <Button size="sm" onClick={() => setAsking(false)}>
               {t('common.cancel')}
             </Button>
@@ -272,7 +293,7 @@ function DeleteBar({ app }: { app: Application }) {
           <button
             type="button"
             onClick={() => setAsking(true)}
-            className="flex cursor-pointer items-center gap-1.5 text-[12.5px] font-semibold text-muted hover:text-ink"
+            className="-ms-1 flex h-7 cursor-pointer items-center gap-1.5 rounded-card px-1 text-[12px] font-semibold text-muted hover:text-ink"
           >
             <Trash2 size={14} />
             {t('apps.delete')}
@@ -283,6 +304,10 @@ function DeleteBar({ app }: { app: Application }) {
     </div>
   )
 }
+
+/** A link styled like a small (28px) default button. */
+const linkButton =
+  'inline-flex h-7 min-w-0 items-center gap-1.5 rounded-card border-ui border-strong bg-surface px-2.5 text-[12px] font-semibold whitespace-nowrap text-ink no-underline hover:bg-field'
 
 function Detail({ app }: { app: Application }) {
   const { t } = useTranslation()
@@ -299,43 +324,46 @@ function Detail({ app }: { app: Application }) {
   const host = hostOf(app.applicationLink)
 
   return (
-    <section className="rounded-card border-ui border-strong bg-surface px-7 py-6">
-      <div className="flex items-center justify-between">
-        <span className="label-mono" dir="ltr">
-          #{String(app.number).padStart(3, '0')}
-        </span>
-        <Link to="/applications" replace aria-label={t('common.close')} className="text-muted hover:text-ink">
-          <X size={18} />
-        </Link>
-      </div>
-      <div className="mt-3 flex items-start gap-5">
+    <section className="rounded-card border-ui border-strong bg-surface px-4 py-3.5">
+      <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-[14px] text-muted" dir="auto">
-            {app.company || t('apps.noCompany')}
+          <div className="flex min-w-0 items-baseline gap-2 text-[12.5px] text-muted">
+            <span className="label-mono shrink-0" dir="ltr">
+              #{String(app.number).padStart(3, '0')}
+            </span>
+            <span className="truncate" dir="auto">
+              {app.company || t('apps.noCompany')}
+            </span>
           </div>
-          <h2 className="mt-1 font-head text-[28px] leading-tight font-bold" dir="auto">
+          <h2 className="mt-0.5 font-head text-[17px] leading-tight font-bold" dir="auto">
             {app.jobTitle || t('apps.noTitle')}
           </h2>
-          <div className="mt-1.5 text-[13px] text-muted" dir="auto">
-            {[app.location, app.workMode !== 'unknown' && t(`workMode.${app.workMode}`)].filter(Boolean).join(' · ')}
-          </div>
+          {(app.location || app.workMode !== 'unknown') && (
+            <div className="mt-0.5 text-[12px] text-muted" dir="auto">
+              {[app.location, app.workMode !== 'unknown' && t(`workMode.${app.workMode}`)].filter(Boolean).join(' · ')}
+            </div>
+          )}
         </div>
         <StatusSelect size="lg" value={app.status} onChange={(status) => save({ status })} />
+        <Link
+          to="/applications"
+          replace
+          aria-label={t('common.close')}
+          title={t('common.close')}
+          className="-me-1.5 flex size-8 shrink-0 items-center justify-center rounded-card text-muted hover:bg-field hover:text-ink"
+        >
+          <X size={16} />
+        </Link>
       </div>
-      <div className="mt-5 flex flex-wrap items-center gap-3">
+      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
         {app.applicationLink && (
-          <a
-            href={app.applicationLink}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex h-[38px] items-center gap-2 rounded-card border-ui border-strong bg-surface px-3.5 text-[12.5px] font-semibold text-ink no-underline hover:bg-field"
-          >
-            <ExternalLink size={15} />
+          <a href={app.applicationLink} target="_blank" rel="noreferrer" className={linkButton}>
+            <ExternalLink size={14} />
             {t('apps.openPosting')}
-            {host && <span className="font-normal text-muted">{host}</span>}
+            {host && <span className="max-w-[160px] truncate font-normal text-muted">{host}</span>}
           </a>
         )}
-        <Button size="sm" className="!h-[38px]" onClick={() => invoke('apps:openFolder', app.id).catch(onError)}>
+        <Button size="sm" onClick={() => invoke('apps:openFolder', app.id).catch(onError)}>
           <FolderOpen />
           {t('apps.openFolder')}
         </Button>
@@ -347,12 +375,8 @@ function Detail({ app }: { app: Application }) {
             ['/reference', 'reference', IdCard]
           ] as const
         ).map(([to, key, Icon]) => (
-          <Link
-            key={to}
-            to={`${to}?app=${app.id}`}
-            className="inline-flex h-[38px] items-center gap-2 rounded-card border-ui border-strong bg-surface px-3.5 text-[12.5px] font-semibold text-ink no-underline hover:bg-field"
-          >
-            <Icon size={15} />
+          <Link key={to} to={`${to}?app=${app.id}`} className={linkButton}>
+            <Icon size={14} />
             {t(`nav.${key}`)}
           </Link>
         ))}
@@ -364,7 +388,7 @@ function Detail({ app }: { app: Application }) {
         )}
       </div>
 
-      <div role="tablist" className="mt-6 flex gap-1 border-b border-soft">
+      <div role="tablist" className="mt-3 flex gap-1 border-b border-soft">
         {(['job', 'notes', 'files'] as const).map((id) => (
           <button
             key={id}
@@ -373,7 +397,7 @@ function Detail({ app }: { app: Application }) {
             aria-selected={tab === id}
             onClick={() => setTab(id)}
             className={clsx(
-              '-mb-px cursor-pointer border-b-2 px-3.5 py-2.5 text-[13px]',
+              '-mb-px cursor-pointer border-b-2 px-3 py-1.5 text-[12.5px]',
               tab === id ? 'border-strong font-semibold text-ink' : 'border-transparent text-muted hover:text-ink'
             )}
           >
@@ -381,11 +405,11 @@ function Detail({ app }: { app: Application }) {
           </button>
         ))}
       </div>
-      <div className="pt-2">
+      <div className="pt-1">
         {tab === 'job' && <JobInfo app={app} save={save} />}
         {tab === 'notes' && <Notes app={app} save={save} />}
         {tab === 'files' && (
-          <div className="pt-4">
+          <div className="pt-2.5">
             <FilesTab app={app} />
           </div>
         )}
@@ -399,7 +423,7 @@ export function ApplicationsView() {
   const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
-  const { data: apps = [], isPending } = useApps()
+  const { data: apps = [], isPending, isError, refetch } = useApps()
   const [query, setQuery] = useState('')
   const current = apps.find((a) => a.id === id)
 
@@ -420,60 +444,86 @@ export function ApplicationsView() {
           </Button>
         }
       />
-      <div className="grid grid-cols-[minmax(0,320px)_minmax(0,1fr)] items-start gap-6">
-        <aside className="flex flex-col gap-3">
+      <div className="grid grid-cols-[minmax(0,300px)_minmax(0,1fr)] items-start gap-3">
+        <aside className="flex min-w-0 flex-col gap-2">
           <div className="relative">
-            <Search size={15} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted" />
+            <Search size={14} className="pointer-events-none absolute start-2.5 top-1/2 -translate-y-1/2 text-muted" />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('dash.search')}
               aria-label={t('dash.search')}
-              className={clsx(inputClass, 'ps-9')}
+              className={cn(inputClass, 'ps-8')}
             />
           </div>
-          <ul className="flex flex-col gap-2.5">
-            {shown.map((a) => (
-              <li key={a.id}>
-                <NavLink
-                  to={`/applications/${a.id}`}
-                  replace
-                  className={({ isActive }) =>
-                    clsx(
-                      'block rounded-card border-ui px-4 py-3 text-ink no-underline',
-                      isActive ? 'border-strong bg-surface shadow-hard' : 'border-soft bg-surface hover:border-strong'
-                    )
-                  }
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <b className="truncate text-[13.5px] font-semibold" dir="auto">
-                      {a.company || t('apps.noCompany')}
-                    </b>
-                    <span className="font-mono text-[10.5px] text-muted" dir="ltr">
-                      #{String(a.number).padStart(3, '0')}
-                    </span>
-                  </div>
-                  <div className="mt-0.5 truncate text-[12.5px] text-muted" dir="auto">
-                    {a.jobTitle}
-                  </div>
-                  <div className="mt-2.5">
+          {isPending ? (
+            // Fixed-height placeholders, so the list doesn't jump in.
+            <ul className="flex flex-col gap-1.5" aria-busy="true" aria-label={t('common.loading')}>
+              {[0, 1, 2, 3, 4].map((n) => (
+                <li key={n} className="h-[52px] animate-pulse rounded-card border-ui border-soft bg-field" />
+              ))}
+            </ul>
+          ) : isError ? (
+            <div className="flex items-center justify-between gap-2 rounded-card border-ui border-soft px-2.5 py-2 text-[12.5px] text-muted">
+              {t('errors.generic')}
+              <Button size="sm" onClick={() => void refetch()}>
+                {t('common.retry')}
+              </Button>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-1.5">
+              {shown.map((a) => (
+                <li key={a.id}>
+                  <NavLink
+                    to={`/applications/${a.id}`}
+                    replace
+                    className={({ isActive }) =>
+                      clsx(
+                        'flex items-center gap-2 rounded-card border-ui px-2.5 py-2 text-ink no-underline',
+                        isActive ? 'border-strong bg-surface shadow-hard' : 'border-soft bg-surface hover:border-strong'
+                      )
+                    }
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 items-baseline gap-1 text-[13px] leading-snug">
+                        <b className="max-w-[70%] shrink-0 truncate font-semibold" dir="auto">
+                          {a.company || t('apps.noCompany')}
+                        </b>
+                        {a.jobTitle && (
+                          <span className="min-w-0 truncate text-[12.5px] text-muted" dir="auto">
+                            · {a.jobTitle}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-0.5 truncate text-[11px] text-muted">
+                        <span className="font-mono" dir="ltr">
+                          #{String(a.number).padStart(3, '0')}
+                        </span>
+                        {a.location && (
+                          <span dir="auto">
+                            {' · '}
+                            {a.location}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     <StatusPill status={a.status} />
-                  </div>
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-          {!isPending && shown.length === 0 && (
-            <p className="px-1 py-4 text-[12.5px] text-muted">{apps.length ? t('dash.noMatch') : t('apps.empty')}</p>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          )}
+          {!isPending && !isError && shown.length === 0 && (
+            <p className="px-1 py-3 text-[12.5px] text-muted">{apps.length ? t('dash.noMatch') : t('apps.empty')}</p>
           )}
         </aside>
         {current ? (
           <Detail app={current} />
         ) : (
-          <section className="flex min-h-[320px] flex-col items-center justify-center rounded-card border-ui border-dashed border-soft px-6 text-center">
-            <b className="font-head text-[18px] font-bold">{id && !isPending ? t('apps.gone') : t('apps.pick')}</b>
-            <p className="mt-1.5 text-[13px] text-muted">{t('apps.pickSub')}</p>
+          <section className="flex min-h-[200px] flex-col items-center justify-center rounded-card border-ui border-dashed border-soft p-5 text-center">
+            <b className="font-head text-[15px] font-bold">{id && !isPending ? t('apps.gone') : t('apps.pick')}</b>
+            <p className="mt-1 text-[12.5px] text-muted">{t('apps.pickSub')}</p>
           </section>
         )}
       </div>

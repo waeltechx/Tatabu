@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, ArrowRight, Check, ChevronDown, LoaderCircle, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { clsx } from 'clsx'
+import { cn } from '@/lib/cn'
 import {
   EMPTY_JOB,
   FILE_TYPES,
@@ -63,31 +64,40 @@ function Stepper({ step }: { step: 1 | 2 }) {
   const { t } = useTranslation()
   const box = (n: 1 | 2): string =>
     clsx(
-      'flex size-8 items-center justify-center rounded-[6px] border-ui border-strong font-mono text-[12px]',
+      'flex size-6 shrink-0 items-center justify-center rounded-[5px] border-ui border-strong font-mono text-[11px]',
       step === n ? 'bg-yellow text-on-accent' : n < step ? 'bg-green text-paper-ink' : 'bg-surface'
     )
   return (
-    <div className="mb-6 flex h-[62px] items-center gap-4 rounded-card border-ui border-strong bg-surface px-4">
-      <span className={box(1)} dir="ltr">
-        {step > 1 ? <Check size={15} /> : '01'}
-      </span>
-      <b className="text-[14px] font-semibold">{t('add.step1')}</b>
-      <span className="mx-2 h-px w-28 bg-soft" />
-      <span className={box(2)} dir="ltr">
-        02
-      </span>
-      <span className={clsx('text-[14px]', step === 2 ? 'font-semibold' : 'text-muted')}>{t('add.step2')}</span>
-      <span className="label-mono ms-auto">{t('add.inControl')}</span>
-    </div>
+    <ol className="mb-3 flex h-9 items-center gap-2 rounded-card border-ui border-strong bg-surface px-2.5">
+      <li className="flex min-w-0 items-center gap-2" aria-current={step === 1 ? 'step' : undefined}>
+        <span className={box(1)} dir="ltr">
+          {step > 1 ? <Check size={13} /> : '01'}
+        </span>
+        <b className="truncate text-[12.5px] font-semibold">{t('add.step1')}</b>
+      </li>
+      <li aria-hidden className="mx-1 h-px w-10 shrink-0 bg-soft" />
+      <li className="flex min-w-0 items-center gap-2" aria-current={step === 2 ? 'step' : undefined}>
+        <span className={box(2)} dir="ltr">
+          02
+        </span>
+        <span className={clsx('truncate text-[12.5px]', step === 2 ? 'font-semibold' : 'text-muted')}>{t('add.step2')}</span>
+      </li>
+      <li className="label-mono ms-auto shrink-0">{t('add.inControl')}</li>
+    </ol>
   )
 }
 
 function Panel({ children, className }: { children: ReactNode; className?: string }) {
-  return <section className={clsx('rounded-card border-ui border-strong bg-surface px-6 py-6', className)}>{children}</section>
+  return (
+    <section className={cn('rounded-card border-ui border-strong bg-surface px-4 py-3.5', className)}>{children}</section>
+  )
 }
 
 const textareaClass =
-  'w-full resize-y rounded-card border-ui border-soft bg-field px-4 py-3 text-[13px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
+  'w-full resize-y rounded-card border-ui border-soft bg-field px-2.5 py-2 text-[12.5px] leading-relaxed text-ink outline-none placeholder:text-muted focus:border-strong'
+
+/** Field labels in the step 2 grid sit a little tighter than the default. */
+const fieldLabel = 'mt-2.5 mb-1'
 
 function SelectBox({
   value,
@@ -106,11 +116,11 @@ function SelectBox({
         value={value}
         aria-label={label}
         onChange={(e) => onChange(e.target.value)}
-        className={clsx(inputClass, 'cursor-pointer appearance-none pe-9')}
+        className={cn(inputClass, 'cursor-pointer appearance-none pe-8')}
       >
         {children}
       </select>
-      <ChevronDown size={16} className="pointer-events-none absolute end-[11px] top-1/2 -translate-y-1/2 text-muted" />
+      <ChevronDown size={14} className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-muted" />
     </div>
   )
 }
@@ -175,7 +185,9 @@ export function AddApplicationView() {
       const files = await invoke('files:pick')
       setAttachments((list) => [
         ...list,
-        ...files.filter((f) => !list.some((a) => a.filename === f.filename)).map((f) => ({ ...f, type: guessType(f.filename) }))
+        ...files
+          .filter((f) => !list.some((a) => a.filename === f.filename))
+          .map((f) => ({ ...f, type: guessType(f.filename) }))
       ])
     } catch (err) {
       onError(err)
@@ -190,97 +202,112 @@ export function AddApplicationView() {
 
   const languageOptions = useMemo(() => {
     const list = languages.map((l) => ({ id: l.id, name: l.name }))
-    if (fields.language && !list.some((l) => l.id === fields.language)) list.push({ id: fields.language, name: fields.language })
+    if (fields.language && !list.some((l) => l.id === fields.language))
+      list.push({ id: fields.language, name: fields.language })
     return list
   }, [languages, fields.language])
 
-  const Arrow = prefs.language === 'ar' ? ArrowLeft : ArrowRight
-  const Back = prefs.language === 'ar' ? ArrowRight : ArrowLeft
   const canSave = !!(fields.company.trim() || fields.jobTitle.trim()) && !save.isPending
 
   return (
     <>
-      <PageHeader
-        page={step === 1 ? 'addPaste' : 'addReview'}
-        back="/"
-        actions={
-          <span className="me-6 self-end pb-1 font-mono text-[14px] tracking-wide" dir="ltr">
-            {step === 1 ? '01' : '02'} &nbsp;/&nbsp; 02
-          </span>
-        }
-      />
+      {/* The stepper below is the one step indicator (no "01 / 02" counter in the header). */}
+      <PageHeader page={step === 1 ? 'addPaste' : 'addReview'} back="/" />
       <Stepper step={step} />
 
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,344px)] items-start gap-6">
-        {step === 1 ? (
-          <Panel>
-            <h2 className="font-head text-[24px] font-bold">{t('add.pasteTitle')}</h2>
-            <p className="mt-1 text-[14px] text-muted">{t('add.pasteSub')}</p>
+      {step === 1 ? (
+        <Panel>
+          <h2 className="font-head text-[15px] leading-snug font-bold">{t('add.pasteTitle')}</h2>
+          <p className="text-[12px] text-muted">{t('add.pasteSub')}</p>
 
-            <FieldLabel htmlFor="add-link" className="!mt-6">
-              {t('add.link')} · <span className="font-medium">{t('common.optional')}</span>
-            </FieldLabel>
-            <TextInput
-              id="add-link"
-              dir="ltr"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              placeholder="https://…"
-              className="text-[13px]"
-            />
+          <FieldLabel htmlFor="add-link">
+            {t('add.link')} · <span className="font-medium">{t('common.optional')}</span>
+          </FieldLabel>
+          <TextInput
+            id="add-link"
+            dir="ltr"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="https://…"
+          />
 
-            <div className="mt-6 mb-2 flex items-center justify-between">
-              <label htmlFor="add-text" className="text-[12px] font-semibold">
-                {t('add.pageText')}
-              </label>
-              <span className="flex items-center gap-3">
-                <span className="label-mono">{t('add.words', { count: countWords(text) })}</span>
-                <MicButton
-                  onText={(spoken) => setText((cur) => (cur.trim() ? `${cur.trimEnd()}\n${spoken}` : spoken))}
-                  className="h-9"
-                />
+          <div className="mt-3 mb-1.5 flex items-center justify-between">
+            <label htmlFor="add-text" className="text-[12px] font-semibold">
+              {t('add.pageText')}
+            </label>
+            <span className="flex items-center gap-2">
+              <span className="label-mono">{t('add.words', { count: countWords(text) })}</span>
+              <MicButton
+                onText={(spoken) => setText((cur) => (cur.trim() ? `${cur.trimEnd()}\n${spoken}` : spoken))}
+                className="h-7"
+              />
+            </span>
+          </div>
+          <textarea
+            id="add-text"
+            dir="auto"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={t('add.pagePlaceholder')}
+            rows={8}
+            className={cn(textareaClass, 'min-h-[180px]')}
+          />
+
+          {duplicate && <DuplicateBanner match={duplicate} onDismiss={() => setDismissed((d) => [...d, duplicate.id])} />}
+
+          {/* Actions sit right under the paste box. */}
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            <Button onClick={() => navigate(-1)}>{t('common.cancel')}</Button>
+            <Button variant="ghost" onClick={fillByHand}>
+              {t('add.byHand')}
+            </Button>
+            <Button
+              variant="primary"
+              className="ms-auto"
+              disabled={!text.trim() || extract.isPending}
+              onClick={() => extract.mutate(undefined)}
+            >
+              {extract.isPending && <LoaderCircle className="animate-spin" />}
+              {extract.isPending ? t('add.extracting') : duplicate ? t('add.extractAnyway') : t('add.extract')}
+              {!extract.isPending && <ArrowRight className="rtl:rotate-180" />}
+            </Button>
+          </div>
+          <p className="mt-2 text-[11.5px] text-muted">{t('add.onlyText')}</p>
+
+          {/* The old 422px "How it works" card, folded into a disclosure. */}
+          <details className="group mt-2 border-t border-soft pt-2 text-[12px]">
+            <summary className="flex w-fit cursor-pointer list-none items-center gap-1 rounded-card py-0.5 font-semibold text-muted hover:text-ink [&::-webkit-details-marker]:hidden">
+              <ChevronDown size={14} className="transition-transform group-open:rotate-180" aria-hidden />
+              {t('add.sideKicker')}
+            </summary>
+            <ol className="mt-1.5 flex flex-col gap-1">
+              {[1, 2, 3].map((n) => (
+                <li key={n} className="flex gap-2">
+                  <span className="font-mono text-[11px] text-muted" dir="ltr">
+                    0{n}
+                  </span>
+                  <span>
+                    <b className="font-semibold">{t(`add.side${n}`)}</b>
+                    <span className="text-muted"> · {t(`add.side${n}Desc`)}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </details>
+        </Panel>
+      ) : (
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(240px,300px)] items-start gap-3">
+          <Panel className="pb-0">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+              <h2 className="font-head text-[15px] leading-snug font-bold">{t('add.reviewTitle')}</h2>
+              <span className="label-mono">
+                {meta ? t('add.extractedWith', { provider: meta.provider, seconds: meta.seconds }) : t('add.byHandNote')}
               </span>
             </div>
-            <textarea
-              id="add-text"
-              dir="auto"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder={t('add.pagePlaceholder')}
-              rows={11}
-              className={clsx(textareaClass, 'min-h-[240px]')}
-            />
 
             {duplicate && <DuplicateBanner match={duplicate} onDismiss={() => setDismissed((d) => [...d, duplicate.id])} />}
 
-            <p className="mt-4 text-[12px] text-muted">{t('add.onlyText')}</p>
-            <div className="mt-4 flex items-center gap-3">
-              <Button onClick={() => navigate(-1)}>{t('common.cancel')}</Button>
-              <Button variant="ghost" onClick={fillByHand}>
-                {t('add.byHand')}
-              </Button>
-              <Button
-                variant="primary"
-                className="ms-auto"
-                disabled={!text.trim() || extract.isPending}
-                onClick={() => extract.mutate(undefined)}
-              >
-                {extract.isPending && <LoaderCircle className="animate-spin" />}
-                {extract.isPending ? t('add.extracting') : duplicate ? t('add.extractAnyway') : t('add.extract')}
-                {!extract.isPending && <Arrow />}
-              </Button>
-            </div>
-          </Panel>
-        ) : (
-          <Panel>
-            <h2 className="font-head text-[24px] font-bold">{t('add.reviewTitle')}</h2>
-            <div className="label-mono mt-1.5">
-              {meta ? t('add.extractedWith', { provider: meta.provider, seconds: meta.seconds }) : t('add.byHandNote')}
-            </div>
-
-            {duplicate && <DuplicateBanner match={duplicate} onDismiss={() => setDismissed((d) => [...d, duplicate.id])} />}
-
-            <div className="mt-2 grid grid-cols-2 gap-x-6">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-x-3">
               {(
                 [
                   ['company', 'apps.company'],
@@ -288,13 +315,15 @@ export function AddApplicationView() {
                   ['location', 'apps.location']
                 ] as const
               ).map(([key, label]) => (
-                <div key={key}>
-                  <FieldLabel htmlFor={`f-${key}`}>{t(label)}</FieldLabel>
+                <div key={key} className="min-w-0">
+                  <FieldLabel htmlFor={`f-${key}`} className={fieldLabel}>
+                    {t(label)}
+                  </FieldLabel>
                   <TextInput id={`f-${key}`} dir="auto" value={fields[key]} onChange={(e) => set(key, e.target.value)} />
                 </div>
               ))}
-              <div>
-                <FieldLabel>{t('apps.workMode')}</FieldLabel>
+              <div className="min-w-0">
+                <FieldLabel className={fieldLabel}>{t('apps.workMode')}</FieldLabel>
                 <SelectBox
                   label={t('apps.workMode')}
                   value={fields.workMode}
@@ -307,8 +336,10 @@ export function AddApplicationView() {
                   ))}
                 </SelectBox>
               </div>
-              <div>
-                <FieldLabel htmlFor="f-deadline">{t('apps.deadline')}</FieldLabel>
+              <div className="min-w-0">
+                <FieldLabel htmlFor="f-deadline" className={fieldLabel}>
+                  {t('apps.deadline')}
+                </FieldLabel>
                 <TextInput
                   id="f-deadline"
                   type="date"
@@ -323,13 +354,15 @@ export function AddApplicationView() {
                   ['companyAddress', 'apps.address']
                 ] as const
               ).map(([key, label]) => (
-                <div key={key}>
-                  <FieldLabel htmlFor={`f-${key}`}>{t(label)}</FieldLabel>
+                <div key={key} className="min-w-0">
+                  <FieldLabel htmlFor={`f-${key}`} className={fieldLabel}>
+                    {t(label)}
+                  </FieldLabel>
                   <TextInput id={`f-${key}`} dir="auto" value={fields[key]} onChange={(e) => set(key, e.target.value)} />
                 </div>
               ))}
-              <div>
-                <FieldLabel>{t('apps.language')}</FieldLabel>
+              <div className="min-w-0">
+                <FieldLabel className={fieldLabel}>{t('apps.language')}</FieldLabel>
                 <SelectBox label={t('apps.language')} value={fields.language} onChange={(v) => set('language', v)}>
                   {languageOptions.map((l) => (
                     <option key={l.id} value={l.id}>
@@ -338,8 +371,8 @@ export function AddApplicationView() {
                   ))}
                 </SelectBox>
               </div>
-              <div>
-                <FieldLabel>{t('apps.status')}</FieldLabel>
+              <div className="min-w-0">
+                <FieldLabel className={fieldLabel}>{t('apps.status')}</FieldLabel>
                 <SelectBox label={t('apps.status')} value={status} onChange={(v) => setStatus(v as Status)}>
                   {STATUSES.map((s) => (
                     <option key={s} value={s}>
@@ -350,88 +383,70 @@ export function AddApplicationView() {
               </div>
             </div>
 
-            <FieldLabel className="!mt-6">{t('apps.requirements')}</FieldLabel>
+            <FieldLabel className="mt-3.5">{t('apps.requirements')}</FieldLabel>
             <RequirementsEditor value={fields.requirements} onChange={(v) => set('requirements', v)} />
 
-            <FieldLabel htmlFor="f-desc" className="!mt-6">
+            <FieldLabel htmlFor="f-desc" className="mt-3.5 mb-1">
               {t('apps.description')}
             </FieldLabel>
             <textarea
               id="f-desc"
               dir="auto"
-              rows={6}
+              rows={5}
               value={fields.jobDescription}
               onChange={(e) => set('jobDescription', e.target.value)}
               className={textareaClass}
             />
 
-            <div className="mt-6 flex items-center gap-3">
+            {/* Sticky action bar: Save stays in view while the form scrolls. */}
+            <div className="sticky bottom-0 z-10 -mx-4 mt-3 flex items-center gap-2 rounded-b-card border-t border-soft bg-surface px-4 py-2.5">
               <Button onClick={() => setStep(1)}>
-                <Back />
+                <ArrowLeft className="rtl:rotate-180" />
                 {t('common.back')}
               </Button>
-              <Button variant="primary" className="ms-auto" disabled={!canSave} onClick={() => save.mutate()}>
+              {!canSave && !save.isPending && (
+                <span className="ms-auto min-w-0 truncate text-[11.5px] text-muted">{t('add.needName')}</span>
+              )}
+              <Button
+                variant="primary"
+                className={cn('shrink-0', (canSave || save.isPending) && 'ms-auto')}
+                disabled={!canSave}
+                onClick={() => save.mutate()}
+              >
                 {save.isPending && <LoaderCircle className="animate-spin" />}
                 {attachments.length ? t('add.saveWithFiles', { count: attachments.length }) : t('add.save')}
-                {!save.isPending && <Arrow />}
+                {!save.isPending && <ArrowRight className="rtl:rotate-180" />}
               </Button>
             </div>
-            {!canSave && !save.isPending && <p className="mt-2 text-end text-[11.5px] text-muted">{t('add.needName')}</p>}
           </Panel>
-        )}
 
-        <div className="flex flex-col gap-6">
-          {step === 1 ? (
-            <>
-              <section className="rounded-card border-ui border-strong bg-purple px-6 py-6 text-paper-ink">
-                <div className="label-mono !text-[#4a4560]">{t('add.sideKicker')}</div>
-                <h3 className="mt-4 font-head text-[27px] leading-[1.2] font-bold whitespace-pre-line">{t('add.sideTitle')}</h3>
-                <ol className="mt-7 flex flex-col gap-6">
-                  {[1, 2, 3].map((n) => (
-                    <li key={n} className="flex gap-4">
-                      <span className="font-mono text-[12px]" dir="ltr">
-                        0{n}
-                      </span>
-                      <div>
-                        <b className="block text-[14px] font-semibold">{t(`add.side${n}`)}</b>
-                        <span className="text-[12px] text-[#4a4560]">{t(`add.side${n}Desc`)}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-              <section className="rounded-card border-ui border-soft bg-surface px-5 py-5">
-                <b className="block font-head text-[16px] font-bold">{t('add.localTitle')}</b>
-                <p className="mt-2 text-[13px] leading-snug text-muted">{t('add.localDesc')}</p>
-              </section>
-            </>
-          ) : (
-            <>
-              <section className="rounded-card border-ui border-strong bg-surface px-5 py-6">
-                <h3 className="font-head text-[20px] font-bold">{t('add.docsTitle')}</h3>
-                <p className="mt-1 text-[12.5px] text-muted">{t('add.docsSub')}</p>
-                <button
-                  type="button"
-                  onClick={() => void pickFiles()}
-                  className="mt-5 flex w-full cursor-pointer flex-col items-center gap-2 rounded-card border-ui border-soft bg-field px-4 py-5 hover:border-strong"
-                >
-                  <b className="flex items-center gap-2 text-[14px] font-semibold">
-                    <Upload size={15} />
-                    {t('add.attach')}
-                  </b>
-                  <span className="text-[11.5px] text-muted">{t('add.attachTypes')}</span>
-                </button>
-                <div className="mt-4 flex flex-col gap-3">
+          <div className="flex min-w-0 flex-col gap-3">
+            <section className="rounded-card border-ui border-strong bg-surface px-3.5 py-3">
+              <h3 className="font-head text-[15px] leading-snug font-bold">{t('add.docsTitle')}</h3>
+              <p className="text-[12px] text-muted">{t('add.docsSub')}</p>
+              <button
+                type="button"
+                onClick={() => void pickFiles()}
+                className="mt-2.5 flex w-full cursor-pointer flex-col items-center gap-0.5 rounded-card border-ui border-dashed border-soft bg-field px-3 py-2.5 hover:border-strong"
+              >
+                <b className="flex items-center gap-1.5 text-[12.5px] font-semibold">
+                  <Upload size={14} />
+                  {t('add.attach')}
+                </b>
+                <span className="text-[11px] text-muted">{t('add.attachTypes')}</span>
+              </button>
+              {attachments.length > 0 && (
+                <div className="mt-2 flex flex-col gap-1.5">
                   {attachments.map((a) => (
                     <div
                       key={a.token}
-                      className="flex items-center gap-2 rounded-card border-ui border-soft bg-surface px-3 py-2.5"
+                      className="flex items-center gap-2 rounded-card border-ui border-soft bg-surface py-1 ps-2.5 pe-1"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-[12.5px] font-medium" dir="auto" title={a.filename}>
                           {a.filename}
                         </div>
-                        <div className="mt-1 flex items-center gap-2 text-[11px] text-muted">
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted">
                           <span className="relative">
                             <select
                               value={a.type}
@@ -458,22 +473,22 @@ export function AddApplicationView() {
                         type="button"
                         onClick={() => setAttachments((list) => list.filter((x) => x.token !== a.token))}
                         aria-label={t('add.removeFile', { name: a.filename })}
-                        className="flex size-7 cursor-pointer items-center justify-center rounded hover:bg-field"
+                        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded hover:bg-field"
                       >
-                        <X size={16} />
+                        <X size={15} />
                       </button>
                     </div>
                   ))}
                 </div>
-              </section>
-              <section className="rounded-card border-ui border-strong bg-green px-5 py-5 text-paper-ink">
-                <b className="block font-head text-[16px] font-bold">{t('add.tipTitle')}</b>
-                <p className="mt-2 text-[13px] leading-snug">{t('add.tipDesc')}</p>
-              </section>
-            </>
-          )}
+              )}
+            </section>
+            <section className="rounded-card border-ui border-strong bg-green px-3.5 py-2.5 text-paper-ink">
+              <b className="block text-[13px] font-semibold">{t('add.tipTitle')}</b>
+              <p className="mt-0.5 text-[12px] leading-snug">{t('add.tipDesc')}</p>
+            </section>
+          </div>
         </div>
-      </div>
+      )}
     </>
   )
 }
