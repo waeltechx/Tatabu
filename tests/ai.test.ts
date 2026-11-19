@@ -9,8 +9,8 @@ import { chatJson, chatText, extractJson, jsonSchemaFor, resetQuirks, type ChatT
 import { isChatModel, parseModelList, pickDefaultModel, visionCandidates } from '../src/main/ai/providers'
 import { testProvider } from '../src/main/ai/check'
 import { audioType, MAX_AUDIO_BYTES, transcribe } from '../src/main/ai/voice'
-import { otherTextProvider, textProvider } from '@shared/ai'
-import type { KeyStatus, SecretName } from '@shared/settings'
+import { otherTextProvider, providerName, textProvider } from '@shared/ai'
+import { DEFAULT_AI_SETTINGS, normalizeBaseUrl, SECRET_NAMES, type KeyStatus, type SecretName } from '@shared/settings'
 
 // --- a scripted fetch ---------------------------------------------------------
 
@@ -483,14 +483,14 @@ describe('transcribe', () => {
 describe('text provider choice', () => {
   const keys = (set: SecretName[]): Record<SecretName, KeyStatus> =>
     Object.fromEntries(
-      (['groq', 'gemini', 'openai', 'openrouter'] as const).map((n) => [n, { set: set.includes(n), masked: '' }])
+      SECRET_NAMES.map((n) => [n, { set: set.includes(n), masked: '' }])
     ) as Record<SecretName, KeyStatus>
 
   it('uses Groq unless the alternative is switched on', () => {
     const ai = {
+      ...DEFAULT_AI_SETTINGS,
       useAltText: false,
-      altProvider: 'gemini' as const,
-      altModel: ''
+      altProvider: 'gemini' as const
     }
     expect(textProvider({ ai, keys: keys(['groq', 'gemini']) })).toBe('groq')
     expect(otherTextProvider({ ai, keys: keys(['groq', 'gemini']) })).toBe('gemini')
@@ -499,11 +499,79 @@ describe('text provider choice', () => {
 
   it('never falls back to Groq on its own when the alternative has no key', () => {
     const ai = {
+      ...DEFAULT_AI_SETTINGS,
       useAltText: true,
-      altProvider: 'openai' as const,
-      altModel: ''
+      altProvider: 'openai' as const
     }
     expect(textProvider({ ai, keys: keys(['groq']) })).toBe('openai')
     expect(otherTextProvider({ ai, keys: keys(['groq']) })).toBe('groq')
+  })
+
+  it('treats the custom provider as ready once it has a base URL, key or not', () => {
+    const ai = { ...DEFAULT_AI_SETTINGS, altProvider: 'custom' as const }
+    expect(otherTextProvider({ ai, keys: keys(['groq']) })).toBeNull()
+    const withUrl = { ...ai, customBaseUrl: 'http://localhost:11434/v1' }
+    expect(otherTextProvider({ ai: withUrl, keys: keys(['groq']) })).toBe('custom')
+  })
+
+  it('shows the name the user gave the custom provider', () => {
+    expect(providerName('custom', { customName: ' My Claude ' })).toBe('My Claude')
+    expect(providerName('custom', { customName: '' })).toBe('Custom')
+    expect(providerName('xai')).toBe('Grok')
+  })
+})
+
+// --- Grok and the custom provider -------------------------------------------------------------
+
+describe('custom and Grok providers', () => {
+  it('normalizes base URLs and rejects anything but http(s)', () => {
+    expect(normalizeBaseUrl(' https://api.example.com/v1/ ')).toBe('https://api.example.com/v1')
+    expect(normalizeBaseUrl('http://localhost:11434/v1')).toBe('http://localhost:11434/v1')
+    expect(normalizeBaseUrl('ftp://x.com')).toBe('')
+    expect(normalizeBaseUrl('not a url')).toBe('')
+    expect(normalizeBaseUrl('')).toBe('')
+  })
+
+  it('calls the custom base URL, without an Authorization header when there is no key', async () => {
+    const calls: { url: string; headers: Record<string, string> }[] = []
+    const fetch = (async (url: string, init: RequestInit) => {
+      calls.push({ url, headers: init.headers as Record<string, string> })
+      return new Response(JSON.stringify({ choices: [{ message: { content: 'hello' } }] }), { status: 200 })
+    }) as unknown as typeof globalThis.fetch
+    const out = await chatText(
+      fetch,
+      { provider: 'custom', key: '', model: 'llama3', baseUrl: 'http://localhost:11434/v1' },
+      'sys',
+      'hi'
+    )
+    expect(out).toBe('hello')
+    expect(calls[0]?.url).toBe('http://localhost:11434/v1/chat/completions')
+    expect(calls[0]?.headers['Authorization']).toBeUndefined()
+  })
+
+  it('tests a custom endpoint that has no /models list using the model the user named', async () => {
+    const fetch = (async (url: string) => {
+      if (url.endsWith('/models')) return new Response('not found', { status: 404 })
+      return new Response(JSON.stringify({ choices: [{ message: { content: 'OK' } }] }), { status: 200 })
+    }) as unknown as typeof globalThis.fetch
+    const outcome = await testProvider(fetch, 'custom', 'k', () => 'my-model', 'https://proxy.example.com/v1')
+    expect(outcome.model).toBe('my-model')
+    expect(outcome.models).toEqual([])
+  })
+
+  it('asks for a model when a custom endpoint lists none and none was named', async () => {
+    const fetch = (async () => new Response('not found', { status: 404 })) as unknown as typeof globalThis.fetch
+    await expect(
+      testProvider(fetch, 'custom', 'k', (models) => pickDefaultModel('custom', models), 'https://x.example.com/v1')
+    ).rejects.toMatchObject({ code: 'AI_MODEL_MISSING' })
+  })
+
+  it('prefers a fast Grok model and skips image generators', () => {
+    const list = parseModelList('xai', {
+      data: [{ id: 'grok-4' }, { id: 'grok-4-fast-non-reasoning' }, { id: 'grok-2-image-1212' }, { id: 'grok-imagine-v1' }]
+    })
+    expect(list.map((m) => m.id)).toEqual(['grok-4', 'grok-4-fast-non-reasoning'])
+    expect(pickDefaultModel('xai', list)).toBe('grok-4-fast-non-reasoning')
+    expect(list.find((m) => m.id === 'grok-4')?.vision).toBe(true)
   })
 })

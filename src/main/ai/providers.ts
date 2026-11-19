@@ -34,6 +34,18 @@ export const PROVIDERS: Record<ProviderId, ProviderSpec> = {
       'HTTP-Referer': 'https://github.com/waeltechx/Tatabu',
       'X-Title': 'Tatabu'
     }
+  },
+  xai: {
+    baseUrl: 'https://api.x.ai/v1',
+    defaultModel: 'grok-4-fast-non-reasoning',
+    // Fast non-reasoning models write quickly and cheaply; reasoning ones next, then the full model.
+    preferred: [/^grok-[\d-]+-fast-non-reasoning$/, /^grok-[\d-]+-fast(-reasoning)?$/, /^grok-\d+(-\d+)?$/]
+  },
+  // The user's own OpenAI-compatible endpoint. Its base URL and model live in the AI settings.
+  custom: {
+    baseUrl: '',
+    defaultModel: '',
+    preferred: []
   }
 }
 
@@ -42,7 +54,7 @@ export const VOICE_MODEL = 'whisper-large-v3-turbo'
 
 // Models that can't chat: speech, images, embeddings, safety filters…
 const NOT_CHAT =
-  /whisper|tts|transcribe|audio|realtime|embed|moderation|guard|dall-e|imagen|image-generation|gpt-image|veo|lyria|aqa|davinci|babbage|search-preview|computer-use|-live|orpheus|prompt-guard|safeguard/i
+  /whisper|tts|transcribe|audio|realtime|embed|moderation|guard|dall-e|imagen|image-generation|gpt-image|veo|lyria|aqa|davinci|babbage|search-preview|computer-use|-live|orpheus|prompt-guard|safeguard|imagine|-image\b/i
 
 export function isChatModel(id: string): boolean {
   return !NOT_CHAT.test(id)
@@ -51,6 +63,7 @@ export function isChatModel(id: string): boolean {
 /** Name-based guess for providers whose model list doesn't say what a model reads. */
 export function looksLikeVision(provider: ProviderId, id: string): boolean | null {
   if (provider === 'gemini') return /^gemini/i.test(id) ? true : null
+  if (provider === 'xai') return /grok-code|grok-3-mini/i.test(id) ? false : /^grok-[4-9]|vision/i.test(id) ? true : null
   if (/vision|-vl\b|vl-|llama-4|scout|maverick|pixtral|gpt-4o|gpt-4\.1|gpt-5|gemma-3|qwen.*vl|omni/i.test(id)) return true
   if (/gpt-oss|gpt-3\.5|deepseek-r1|kimi|compound|allam|qwen3-32b/i.test(id)) return false
   return null
@@ -87,6 +100,7 @@ export function pickDefaultModel(provider: ProviderId, models: ModelInfo[]): str
     const matches = models.filter((m) => pattern.test(m.id)).map((m) => m.id)
     if (matches.length) return matches.sort(byVersionDesc)[0] as string
   }
+  if (provider === 'custom') return models[0]?.id ?? '' // nothing to prefer: the first listed model, or none
   return models.some((m) => m.id === spec.defaultModel) || models.length === 0 ? spec.defaultModel : (models[0] as ModelInfo).id
 }
 

@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell, systemPreferences } from 'electron'
 import { basename } from 'node:path'
 import type { IpcArgs, IpcChannel, IpcResult, UiPrefs } from '@shared/ipc'
-import { ALT_PROVIDERS, type AiSettings } from '@shared/settings'
+import { ALT_PROVIDERS, normalizeBaseUrl, type AiSettings } from '@shared/settings'
 import { readPrefs, writePrefs } from './prefs'
 import { dataFolder, getDb, getSecrets, setDataFolder, settingsView } from './services'
 import { setSetting, updateAiSettings } from './repo/settings'
@@ -81,6 +81,13 @@ function sanitizeAiPatch(patch: Partial<AiSettings>): Partial<AiSettings> {
   if (typeof patch.useAltText === 'boolean') out.useAltText = patch.useAltText
   if (ALT_PROVIDERS.includes(patch.altProvider as never)) out.altProvider = patch.altProvider
   if (typeof patch.altModel === 'string') out.altModel = patch.altModel.trim().slice(0, 200)
+  if (typeof patch.customName === 'string') out.customName = patch.customName.trim().slice(0, 40)
+  if (typeof patch.customModel === 'string') out.customModel = patch.customModel.trim().slice(0, 200)
+  if (typeof patch.customBaseUrl === 'string') {
+    const url = normalizeBaseUrl(patch.customBaseUrl.slice(0, 500))
+    if (patch.customBaseUrl.trim() && !url) throw new Error('AI_NO_ENDPOINT')
+    out.customBaseUrl = url
+  }
   return out
 }
 
@@ -112,6 +119,10 @@ export function registerIpc(): void {
     // A different model may answer differently: the old test result no longer applies.
     if (before.altProvider === after.altProvider && before.altModel !== after.altModel) {
       forgetProvider(after.altProvider)
+    }
+    // A different endpoint or model is a different provider as far as the last test goes.
+    if (before.customBaseUrl !== after.customBaseUrl || before.customModel !== after.customModel) {
+      forgetProvider('custom')
     }
     return settingsView()
   })

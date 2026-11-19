@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -6,11 +6,15 @@ import { Check, FileUp, LoaderCircle, RotateCcw, Trash2, TriangleAlert, Wand2 } 
 import { toast } from 'sonner'
 import { clsx } from 'clsx'
 import type { ProviderId } from '@shared/ai'
+import { looseText } from '@shared/clone/bind'
+import { cloneBlocks } from '@shared/clone/build'
+import { cloneHtml } from '@shared/clone/render'
 import { cleanCv, type MasterCv } from '@shared/cv'
 import { DESIGN_IMAGE_WIDTH, designDoc, MAX_DESIGN_ROUNDS, type DesignDraft, type DesignSource, type DesignState } from '@shared/design'
 import { cvLabels } from '@shared/tailor'
 import { invoke, errorCode, useAiErrorToast, useErrorToast, useSettings } from '@/lib/api'
 import { docKeys, useProfile } from '@/lib/docs'
+import { extractPdfLayout } from '@/lib/pdfLayout'
 import { cropImage, renderPdfPages } from '@/lib/pdfPages'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui'
@@ -45,9 +49,14 @@ function sampleCv(name: string): MasterCv {
   })
 }
 
-function Steps({ step, round }: { step: 1 | 2 | 3 | 4; round: number }) {
+function Steps({ step, round, exact }: { step: 1 | 2 | 3 | 4; round: number; exact: boolean }) {
   const { t } = useTranslation()
-  const items = [t('teach.st1'), t('teach.st2'), t('teach.st3', { round, max: MAX_DESIGN_ROUNDS }), t('teach.st4')]
+  const items = [
+    t('teach.st1'),
+    t('teach.st2'),
+    exact ? t('teach.st3Exact') : t('teach.st3', { round, max: MAX_DESIGN_ROUNDS }),
+    t('teach.st4')
+  ]
   return (
     <ol className="mb-6 flex flex-wrap gap-2.5">
       {items.map((label, i) => {
@@ -90,10 +99,14 @@ export function TeachDesignView() {
   const [phase, setPhase] = useState<Phase>('')
   const [feedback, setFeedback] = useState('')
   const [noVision, setNoVision] = useState(false)
+  /** The file of this visit, kept so "let the AI redraw it" needs no second upload. */
+  const lastSource = useRef<DesignSource | null>(null)
 
   const master = masterState?.cv ?? null
   const draft = state?.draft ?? null
   const saved = state?.saved ?? null
+  /** Measured from the PDF itself: an exact copy, no AI and no rounds. */
+  const exact = !!draft?.layout
   const set = (s: DesignState): void => {
     client.setQueryData(designKey, s)
   }
@@ -101,6 +114,8 @@ export function TeachDesignView() {
   const cv = useMemo(() => master ?? sampleCv(profile?.fullName ?? ''), [master, profile?.fullName])
   const doc = useMemo(() => {
     if (!draft) return null
+    // The copy is shown with the PDF's own words, so the two pages can be compared line by line.
+    if (draft.layout) return cloneHtml(draft.layout, { title: draft.sourceName, lang: 'en', dir: 'ltr' })
     const code = cv.language || 'en'
     return designDoc({
       template: draft,
@@ -113,33 +128,44 @@ export function TeachDesignView() {
     })
   }, [draft, cv, settings?.paper])
 
-  async function start(source: DesignSource | null, provider?: ProviderId): Promise<void> {
+  const facts = useMemo(() => {
+    const layout = draft?.layout
+    if (!layout) return null
+    return {
+      pages: layout.pages,
+      fonts: layout.fonts.slice(0, 2).join(', '),
+      photo: layout.graphics.some((g) => g.img),
+      lines: cloneBlocks(layout).filter((b) => b.kind === 'row').length,
+      // Long passages of the file that the master CV does not contain: they can't be tailored.
+      loose: master ? looseText(layout, master).length : 0
+    }
+  }, [draft?.layout, master])
+
+  async function start(source: DesignSource | null, opts: { provider?: ProviderId; ai?: boolean } = {}): Promise<void> {
     if (!source) return
+    lastSource.current = source
     setNoVision(false)
     try {
       setPhase('drawing')
       const pages = await renderPdfPages(source.data, 2, DESIGN_IMAGE_WIDTH)
+      const layout = opts.ai ? null : await extractPdfLayout(source.data).catch(() => null)
       setPhase('reading')
-      await readPages(source.filename, pages, provider)
+      let next = await invoke('design:read', { filename: source.filename, pages, layout, ai: opts.ai }, opts.provider)
+      const box = next.draft?.layout ? null : next.draft?.photoBox
+      if (box && pages[0]) {
+        const photo = await cropImage(pages[0], box).catch(() => '')
+        if (photo) next = await invoke('design:photo', photo)
+      }
+      set(next)
+      setFeedback('')
+      setPhase('')
     } catch (err) {
       setPhase('')
       if (errorCode(err) === 'AI_NO_VISION') setNoVision(true)
       else if (errorCode(err)?.startsWith('AI_'))
-        onAiError(err, { retry: () => void start(source), tryWith: (p) => void start(source, p) })
+        onAiError(err, { retry: () => void start(source, { ai: opts.ai }), tryWith: (p) => void start(source, { ai: opts.ai, provider: p }) })
       else onError(err && errorCode(err) ? err : new Error('PDF_FAILED'))
     }
-  }
-
-  async function readPages(filename: string, pages: string[], provider?: ProviderId): Promise<void> {
-    let next = await invoke('design:read', { filename, pages }, provider)
-    const box = next.draft?.photoBox
-    if (box && pages[0]) {
-      const photo = await cropImage(pages[0], box).catch(() => '')
-      if (photo) next = await invoke('design:photo', photo)
-    }
-    set(next)
-    setFeedback('')
-    setPhase('')
   }
 
   async function fix(provider?: ProviderId): Promise<void> {
@@ -198,7 +224,7 @@ export function TeachDesignView() {
   return (
     <>
       <PageHeader page="teach" back="/cv" />
-      <Steps step={step} round={draft?.round ?? 1} />
+      <Steps step={step} round={draft?.round ?? 1} exact={exact || !draft} />
       {visionCard}
 
       {!draft || phase === 'drawing' || phase === 'reading' ? (
@@ -225,7 +251,6 @@ export function TeachDesignView() {
                 )}
               </div>
             )}
-            {!master && <p className="mt-5 text-[12px] text-muted">{t('teach.sampleNote')}</p>}
           </section>
 
           {saved ? (
@@ -262,9 +287,9 @@ export function TeachDesignView() {
           </div>
           <div className="min-w-0">
             <div className="mb-2.5 flex items-baseline justify-between gap-2">
-              <b className="text-[14px]">{t('teach.recreation')}</b>
+              <b className="text-[14px]">{exact ? t('teach.copy') : t('teach.recreation')}</b>
               <span className="rounded-full border-ui border-paper-ink bg-yellow px-2 text-[10.5px] font-semibold text-paper-ink">
-                {t('teach.yourText')}
+                {exact ? t('teach.exactBadge') : t('teach.yourText')}
               </span>
             </div>
             <div className="max-h-[76vh] overflow-auto border-ui border-strong bg-white">
@@ -276,7 +301,7 @@ export function TeachDesignView() {
                   {d}
                 </span>
               ))}
-              {draft.photo && (
+              {(draft.photo || facts?.photo) && (
                 <span className="rounded-full border-ui border-paper-ink bg-blue px-2.5 py-1 text-[11px] font-medium text-paper-ink">
                   {t('teach.photoKept')}
                 </span>
@@ -284,47 +309,87 @@ export function TeachDesignView() {
             </div>
           </div>
           <div className="flex flex-col gap-4">
-            <section className="rounded-card border-ui border-strong bg-surface px-4 py-4">
-              <div className="label-mono">{t('teach.diffKicker')}</div>
-              <p className="mt-2 text-[12px] text-muted">{t('teach.diffSub')}</p>
-              <textarea
-                dir="auto"
-                rows={4}
-                value={feedback}
-                disabled={roundsLeft <= 0}
-                placeholder={t('teach.diffPlaceholder')}
-                onChange={(e) => setFeedback(e.target.value)}
-                className="mt-3 w-full resize-y rounded-card border-ui border-soft bg-field px-3 py-2 text-[12.5px] text-ink outline-none placeholder:text-muted focus:border-strong disabled:opacity-60"
-              />
-              <div className="mt-2.5 flex items-center justify-between gap-2">
-                <span className="text-[11.5px] text-muted">
-                  {roundsLeft > 0 ? t('teach.roundsLeft', { count: roundsLeft }) : t('teach.noRounds')}
-                </span>
-                <div className="flex gap-2">
-                  <MicButton
-                    className="h-9"
+            {exact && facts ? (
+              <>
+                <section className="rounded-card border-ui border-paper-ink bg-green px-4 py-4 text-paper-ink">
+                  <div className="label-mono !text-[#3c5a3a]">{t('teach.exactKicker')}</div>
+                  <p className="mt-2 text-[12.5px]">{t('teach.exactSub')}</p>
+                  <ul className="mt-3 flex flex-col gap-1.5 text-[12.5px]">
+                    {[
+                      t('teach.exactPages', { count: facts.pages }),
+                      facts.fonts && t('teach.exactFonts', { fonts: facts.fonts }),
+                      t('teach.exactLines', { count: facts.lines }),
+                      facts.photo && t('teach.exactPhoto')
+                    ]
+                      .filter((x): x is string => !!x)
+                      .map((line) => (
+                        <li key={line} className="flex items-start gap-2">
+                          <Check size={14} strokeWidth={3} className="mt-0.5 shrink-0" />
+                          <span dir="auto">{line}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </section>
+                {facts.loose > 0 && (
+                  <section className="rounded-card border-ui border-paper-ink bg-yellow px-4 py-4 text-paper-ink">
+                    <div className="flex items-center gap-2 text-[13px] font-semibold">
+                      <TriangleAlert size={16} className="shrink-0" />
+                      {t('teach.looseTitle')}
+                    </div>
+                    <p className="mt-1.5 text-[12px]">{t('teach.looseSub')}</p>
+                    <Link to="/cv/master" className="mt-2 inline-block text-[12.5px] font-semibold text-paper-ink underline">
+                      {t('teach.looseAction')}
+                    </Link>
+                  </section>
+                )}
+                {!master && <p className="text-[12px] text-muted">{t('teach.exactNoMaster')}</p>}
+              </>
+            ) : (
+              <>
+                <section className="rounded-card border-ui border-strong bg-surface px-4 py-4">
+                  <div className="label-mono">{t('teach.diffKicker')}</div>
+                  <p className="mt-2 text-[12px] text-muted">{t('teach.diffSub')}</p>
+                  <textarea
+                    dir="auto"
+                    rows={4}
+                    value={feedback}
                     disabled={roundsLeft <= 0}
-                    onText={(spoken) => setFeedback((f) => (f.trim() ? `${f.trimEnd()} ${spoken}` : spoken))}
+                    placeholder={t('teach.diffPlaceholder')}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    className="mt-3 w-full resize-y rounded-card border-ui border-soft bg-field px-3 py-2 text-[12.5px] text-ink outline-none placeholder:text-muted focus:border-strong disabled:opacity-60"
                   />
-                  <Button disabled={busy || roundsLeft <= 0 || !feedback.trim()} onClick={() => void fix()}>
-                    {phase === 'fixing' ? <LoaderCircle className="animate-spin" /> : <Wand2 />}
-                    {t('teach.fix')}
-                  </Button>
-                </div>
-              </div>
-            </section>
-            {draft.found.length > 0 && (
-              <section className="rounded-card border-ui border-paper-ink bg-green px-4 py-4 text-paper-ink">
-                <div className="label-mono !text-[#3c5a3a]">{t('teach.found')}</div>
-                <ul className="mt-2.5 flex flex-col gap-1.5 text-[12.5px]">
-                  {draft.found.map((f) => (
-                    <li key={f} className="flex items-start gap-2" dir="auto">
-                      <Check size={14} strokeWidth={3} className="mt-0.5 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </section>
+                  <div className="mt-2.5 flex items-center justify-between gap-2">
+                    <span className="text-[11.5px] text-muted">
+                      {roundsLeft > 0 ? t('teach.roundsLeft', { count: roundsLeft }) : t('teach.noRounds')}
+                    </span>
+                    <div className="flex gap-2">
+                      <MicButton
+                        className="h-9"
+                        disabled={roundsLeft <= 0}
+                        onText={(spoken) => setFeedback((f) => (f.trim() ? `${f.trimEnd()} ${spoken}` : spoken))}
+                      />
+                      <Button disabled={busy || roundsLeft <= 0 || !feedback.trim()} onClick={() => void fix()}>
+                        {phase === 'fixing' ? <LoaderCircle className="animate-spin" /> : <Wand2 />}
+                        {t('teach.fix')}
+                      </Button>
+                    </div>
+                  </div>
+                </section>
+                {draft.found.length > 0 && (
+                  <section className="rounded-card border-ui border-paper-ink bg-green px-4 py-4 text-paper-ink">
+                    <div className="label-mono !text-[#3c5a3a]">{t('teach.found')}</div>
+                    <ul className="mt-2.5 flex flex-col gap-1.5 text-[12.5px]">
+                      {draft.found.map((f) => (
+                        <li key={f} className="flex items-start gap-2" dir="auto">
+                          <Check size={14} strokeWidth={3} className="mt-0.5 shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+                {!master && <p className="text-[12px] text-muted">{t('teach.sampleNote')}</p>}
+              </>
             )}
             <Button
               variant="primary"
@@ -359,6 +424,16 @@ export function TeachDesignView() {
             >
               {saved ? t('teach.keepOld') : t('teach.useAts')}
             </Button>
+            {exact && lastSource.current && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void start(lastSource.current, { ai: true })}
+                className="cursor-pointer text-start text-[11.5px] text-muted underline hover:text-ink disabled:opacity-60"
+              >
+                {t('teach.aiInstead')}
+              </button>
+            )}
             <p className="label-mono leading-relaxed">{t('teach.note')}</p>
           </div>
         </div>

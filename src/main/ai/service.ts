@@ -9,7 +9,7 @@ import { getAiSettings, getChecks, setCheck } from '../repo/settings'
 import { getDb, getSecrets, settingsView } from '../services'
 import { AiError, type FetchFn } from './http'
 import { chatJson, chatText, type ChatTarget } from './chat'
-import { findVisionModel, listModels, testProvider } from './check'
+import { findVisionModel, listModelsLenient, testProvider } from './check'
 import { PROVIDERS, pickDefaultModel } from './providers'
 import { transcribe } from './voice'
 
@@ -22,22 +22,39 @@ export function setFetch(fn: FetchFn): void {
 
 function keyFor(provider: ProviderId): string {
   const key = getSecrets().get(provider)
+  // The custom endpoint may be a local server that takes no key; its URL is what it can't do without.
+  if (provider === 'custom') {
+    if (!getAiSettings(getDb()).customBaseUrl) throw new AiError('AI_NO_ENDPOINT', provider)
+    return key ?? ''
+  }
   if (!key) throw new AiError('AI_NO_KEY', provider)
   return key
 }
 
+/** The base URL to call instead of the built-in one (only the custom provider has one). */
+function baseUrlFor(provider: ProviderId): string | undefined {
+  return provider === 'custom' ? getAiSettings(getDb()).customBaseUrl : undefined
+}
+
+/** The model the user picked for a provider, or '' to let the test / default decide. */
+function userModelFor(provider: ProviderId): string {
+  const ai = getAiSettings(getDb())
+  if (provider === 'custom') return ai.customModel
+  return provider !== 'groq' && ai.altProvider === provider ? ai.altModel : ''
+}
+
 /** The text model for a provider: the user's pick, else the one the last test chose, else the default. */
 export function modelFor(provider: ProviderId): string {
-  const db = getDb()
-  const ai = getAiSettings(db)
-  if (provider !== 'groq' && ai.altProvider === provider && ai.altModel) return ai.altModel
-  return getChecks(db)[provider]?.model ?? PROVIDERS[provider].defaultModel
+  return userModelFor(provider) || getChecks(getDb())[provider]?.model || PROVIDERS[provider].defaultModel
 }
 
 /** Where a text task goes. `override` is the explicit "Try with <other provider>". */
 export function textTarget(override?: ProviderId): ChatTarget {
   const provider = override ?? textProvider(settingsView())
-  return { provider, key: keyFor(provider), model: modelFor(provider) }
+  const key = keyFor(provider)
+  const model = modelFor(provider)
+  if (!model) throw new AiError('AI_MODEL_MISSING', 'no model chosen')
+  return { provider, key, model, baseUrl: baseUrlFor(provider) }
 }
 
 /** A model of the active text provider that reads images (found once, then remembered). */
@@ -45,8 +62,8 @@ export async function visionTarget(override?: ProviderId): Promise<ChatTarget> {
   const text = textTarget(override)
   const known = getChecks(getDb())[text.provider]
   if (known?.visionModel) return { ...text, model: known.visionModel }
-  const models = await listModels(fetchFn, text.provider, text.key)
-  const visionModel = await findVisionModel(fetchFn, text.provider, text.key, text.model, models)
+  const models = await listModelsLenient(fetchFn, text.provider, text.key, text.baseUrl)
+  const visionModel = await findVisionModel(fetchFn, text.provider, text.key, text.model, models, text.baseUrl)
   if (!visionModel) throw new AiError('AI_NO_VISION', text.provider)
   setCheck(getDb(), text.provider, {
     model: text.model,
@@ -62,7 +79,7 @@ const MODEL_CACHE_MS = 10 * 60_000
 export async function modelsFor(provider: ProviderId): Promise<ModelInfo[]> {
   const cached = modelCache.get(provider)
   if (cached && Date.now() - cached.at < MODEL_CACHE_MS) return cached.models
-  const models = await listModels(fetchFn, provider, keyFor(provider))
+  const models = await listModelsLenient(fetchFn, provider, keyFor(provider), baseUrlFor(provider))
   modelCache.set(provider, { at: Date.now(), models })
   return models
 }
@@ -75,13 +92,13 @@ export function forgetProvider(provider: ProviderId): void {
 
 /** The Settings "Test" button. Remembers the result so the chips survive a restart. */
 export async function testAndRemember(provider: ProviderId): Promise<void> {
-  const ai = getAiSettings(getDb())
-  const userModel = provider !== 'groq' && ai.altProvider === provider ? ai.altModel : ''
+  const userModel = userModelFor(provider)
   const outcome = await testProvider(
     fetchFn,
     provider,
     keyFor(provider),
-    (models) => userModel || pickDefaultModel(provider, models)
+    (models) => userModel || pickDefaultModel(provider, models),
+    baseUrlFor(provider)
   )
   modelCache.set(provider, { at: Date.now(), models: outcome.models })
   setCheck(getDb(), provider, {

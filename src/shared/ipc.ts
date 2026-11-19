@@ -9,6 +9,7 @@ import type { FixRequest, MasterCv, MasterState } from './cv'
 import type { EnclosureOption, LetterState } from './letter'
 import type { CvTailorState } from './tailor'
 import type { DesignSource, DesignState } from './design'
+import type { RawPage } from './pdf/extract'
 import type { EmailAnalysis } from './email'
 import type { UpdateState } from './updates'
 import type { AiSettings, DocLanguage, ImportedFile, Referee, RefereeInput, SecretName, SettingsView } from './settings'
@@ -165,7 +166,10 @@ export interface IpcContract {
   /** The PDF the master CV was read from, if it was a PDF. */
   'design:masterPdf': { args: []; result: DesignSource | null }
   /** Round 1: page images → template. */
-  'design:read': { args: [input: { filename: string; pages: string[] }, provider?: ProviderId]; result: DesignState }
+  'design:read': {
+    args: [input: { filename: string; pages: string[]; layout?: RawPage[] | null; ai?: boolean }, provider?: ProviderId]
+    result: DesignState
+  }
   'design:photo': { args: [dataUrl: string]; result: DesignState }
   'design:fix': { args: [feedback: string, provider?: ProviderId]; result: DesignState }
   'design:save': { args: []; result: DesignState }

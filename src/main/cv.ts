@@ -6,6 +6,7 @@ import { getDb, dataFolder } from './services'
 import { runJson } from './ai/service'
 import { CV_SYSTEM, CvExtraction, cvUserPrompt, FIX_SYSTEM, FixResult, fixUserPrompt } from './ai/tasks/cv'
 import { addLibraryFile, getLibraryRow, latestCvSource } from './repo/library'
+import { fillProfileFromCv } from './repo/profile'
 import { copyIntoLibrary, resolveInside } from './storage/dataFolder'
 import { fileText } from './pdf/read'
 import { basename } from 'node:path'
@@ -96,6 +97,7 @@ export async function readCv(override?: ProviderId): Promise<MasterState> {
   )
   const cv = cleanCv(result.data)
   store({ cv, sourceText: text, warnings: checkAgainstFile(cv, text) }, latest.id)
+  fillProfileFromCv(getDb(), cv)
   return masterState()
 }
 
@@ -117,6 +119,12 @@ export function dismissCvWarning(id: string): MasterState {
   const { data, sourceFileId } = load()
   store({ ...data, warnings: (data.warnings ?? []).filter((w) => w.id !== id) }, sourceFileId)
   return masterState()
+}
+
+/** A profile left empty although a master CV exists (CVs read before the profile was filled from them). */
+export function fillProfileFromMaster(): void {
+  const cv = getMasterCv()
+  if (cv) fillProfileFromCv(getDb(), cv)
 }
 
 /** The CV file's text, for "Fix it" on the master CV. */

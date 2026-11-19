@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog, nativeTheme, session, shell } from 'electro
 import { join } from 'node:path'
 import { registerIpc } from './ipc'
 import { closeServices, initServices } from './services'
+import { fillProfileFromMaster } from './cv'
 import { mainText } from './i18n'
 import { startUpdateChecks } from './updates'
 
@@ -79,6 +80,11 @@ if (!app.requestSingleInstanceLock()) {
       )
       app.quit()
       return
+    }
+    try {
+      fillProfileFromMaster()
+    } catch {
+      /* the profile simply stays as it is */
     }
     allowMicrophoneOnly()
     registerIpc()

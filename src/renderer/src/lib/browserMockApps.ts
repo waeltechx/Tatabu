@@ -235,7 +235,10 @@ function demoApps(): Application[] {
     ['شركة المدار', 'مطوّر واجهات', 'دبي', 'onsite', 'applied', soon(20), 3],
     ['Atlas Data', 'Data Analyst', 'Hamburg', 'remote', 'applied', '', 9],
     ['Brightline', 'QA Engineer', 'Cologne', 'hybrid', 'saved', '', 3],
-    ['Halde Studio', 'Design Engineer', 'Leipzig', 'hybrid', 'applied', '', 12]
+    ['Halde Studio', 'Design Engineer', 'Leipzig', 'hybrid', 'applied', '', 12],
+    ['Fjord Systems', 'Web Developer', 'Oslo', 'remote', 'rejected', '', 23],
+    ['Pinecrest', 'Frontend Engineer', 'Vienna', 'hybrid', 'withdrawn', '', 41],
+    ['Mosaik AG', 'Software Developer', 'Zurich', 'onsite', 'rejected', '', 96]
   ]
   return rows.map(([company, jobTitle, loc, workMode, status, deadline, ago], i) => ({
     ...EMPTY_JOB,

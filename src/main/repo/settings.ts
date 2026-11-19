@@ -1,5 +1,12 @@
 import type { Db } from '../db/open'
-import { ALT_PROVIDERS, DEFAULT_AI_SETTINGS, SECRET_NAMES, type AiSettings, type SecretName } from '@shared/settings'
+import {
+  ALT_PROVIDERS,
+  DEFAULT_AI_SETTINGS,
+  SECRET_NAMES,
+  normalizeBaseUrl,
+  type AiSettings,
+  type SecretName
+} from '@shared/settings'
 import type { ProviderCheck } from '@shared/ai'
 
 /** Key/value settings stored as JSON in the `settings` table. */
@@ -25,7 +32,10 @@ export function getAiSettings(db: Db): AiSettings {
   return {
     useAltText: raw.useAltText === true,
     altProvider: ALT_PROVIDERS.includes(raw.altProvider as never) ? raw.altProvider! : DEFAULT_AI_SETTINGS.altProvider,
-    altModel: typeof raw.altModel === 'string' ? raw.altModel : ''
+    altModel: typeof raw.altModel === 'string' ? raw.altModel : '',
+    customName: typeof raw.customName === 'string' ? raw.customName : '',
+    customBaseUrl: typeof raw.customBaseUrl === 'string' ? normalizeBaseUrl(raw.customBaseUrl) : '',
+    customModel: typeof raw.customModel === 'string' ? raw.customModel : ''
   }
 }
 

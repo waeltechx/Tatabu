@@ -10,8 +10,10 @@ const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms)
 type Handlers = { [C in IpcChannel]?: (...args: IpcArgs<C>) => IpcResult<C> | Promise<IpcResult<C>> }
 
 export function createDocMocks(ctx: { referees: () => Referee[]; apps: Handlers }): Handlers {
-  const demo = new URLSearchParams(location.search).has('demo')
-  let profile: Profile = demo
+  const params = new URLSearchParams(location.search)
+  const demo = params.has('demo')
+  // `?demo&blankProfile` shows the screens as a new user sees them: applications, but no name or address yet.
+  let profile: Profile = demo && !params.has('blankProfile')
     ? {
         ...EMPTY_PROFILE,
         fullName: 'Omar Haddad',

@@ -1,6 +1,7 @@
 import type { Db } from '../db/open'
 import { safeImage } from '@shared/docs/common'
 import { EMPTY_PROFILE, type Profile } from '@shared/profile'
+import type { MasterCv } from '@shared/cv'
 
 interface Row {
   full_name: string
@@ -59,4 +60,21 @@ export function saveProfile(db: Db, input: Partial<Profile>): Profile {
     `UPDATE profile SET full_name = ?, headline = ?, phone = ?, email = ?, address = ?, links = ?, signature = ? WHERE id = 1`
   ).run(next.fullName, next.headline, next.phone, next.email, next.address, JSON.stringify(next.links), next.signature)
   return next
+}
+
+/**
+ * Fills the empty fields of the profile from the CV that was just read, so letters and
+ * reference pages carry a name and contact details without typing them again.
+ * Never overwrites what is already there.
+ */
+export function fillProfileFromCv(db: Db, cv: MasterCv): Profile {
+  const cur = getProfile(db)
+  const patch: Partial<Profile> = {}
+  if (!cur.fullName && cv.name) patch.fullName = cv.name
+  if (!cur.headline && cv.headline) patch.headline = cv.headline
+  if (!cur.email && cv.contact.email) patch.email = cv.contact.email
+  if (!cur.phone && cv.contact.phone) patch.phone = cv.contact.phone
+  if (!cur.address && cv.contact.location) patch.address = cv.contact.location
+  if (!cur.links.length && cv.contact.links.length) patch.links = cv.contact.links
+  return Object.keys(patch).length ? saveProfile(db, patch) : cur
 }

@@ -12,6 +12,7 @@ import '@fontsource/ibm-plex-sans-arabic/500.css'
 import '@fontsource/ibm-plex-sans-arabic/600.css'
 import '@fontsource/ibm-plex-sans-arabic/700.css'
 import '@fontsource/noto-sans-arabic/700.css'
+import './docFonts'
 
 interface PrintDoc {
   title: string
@@ -31,6 +32,8 @@ async function render(doc: PrintDoc): Promise<boolean> {
   style.textContent = doc.css
   document.head.appendChild(style)
   document.body.innerHTML = doc.body
+  // Lay the page out first, so the fonts it really uses start loading before we wait for them.
+  void document.body.offsetHeight
   await document.fonts.ready
   await Promise.all([...document.images].map((img) => (img.complete ? Promise.resolve() : img.decode().catch(() => undefined))))
   return true

@@ -14,6 +14,8 @@ export interface ChatTarget {
   provider: ProviderId
   key: string
   model: string
+  /** Overrides the provider's base URL (the custom provider keeps its URL in settings). */
+  baseUrl?: string
 }
 
 type ContentPart = { type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }
@@ -40,7 +42,7 @@ interface Quirks {
   jsonMode?: JsonMode
 }
 const quirks = new Map<string, Quirks>()
-const quirkKey = (t: ChatTarget): string => `${t.provider}:${t.model}`
+const quirkKey = (t: ChatTarget): string => `${t.provider}:${t.baseUrl ?? ''}:${t.model}`
 
 /** For tests. */
 export function resetQuirks(): void {
@@ -106,7 +108,7 @@ async function complete(
     try {
       const reply = await aiRequest(
         fetchFn,
-        { baseUrl: spec.baseUrl, key: target.key, headers: spec.headers },
+        { baseUrl: target.baseUrl || spec.baseUrl, key: target.key, headers: spec.headers },
         'chat/completions',
         { json: body, timeoutMs: opts.timeoutMs ?? DEFAULT_TIMEOUT_MS }
       )

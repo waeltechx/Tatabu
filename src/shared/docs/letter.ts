@@ -30,6 +30,9 @@ export function placeFrom(address: string): string {
     .replace(/\b[A-Z]{1,2}\d[\dA-Z]?\s*\d[A-Z]{2}\b/g, '') // UK postcodes
     .replace(/\b\d{4,6}(-\d{3,4})?\b/g, '') // postal codes
     .replace(/^[\s,·-]+|[\s,·-]+$/g, '')
+    // "Munich, Germany" or "Austin, TX": the town comes first.
+    .split(/\s*[,،]\s*/)[0]!
+    .trim()
   return town.length <= 40 ? town : ''
 }
 
@@ -83,7 +86,8 @@ export function letterDoc(input: LetterDocInput): DocHtml {
         : ''
   const subject = subjectText ? `<div class="subject">${subjectLabel}${esc(subjectText)}</div>` : ''
 
-  const sender = `<b class="sender-name">${esc(p.fullName)}</b>${addressLines.length ? '<br>' + addressLines.join('<br>') : ''}${contact.length ? '<br>' + contact.join(' · ') : ''}`
+  // Name, address, e-mail and phone, each on its own line (as on a German Anschreiben).
+  const sender = [`<b class="sender-name">${esc(p.fullName)}</b>`, ...addressLines, ...contact].join('<br>')
   const recipientBlock = recipient.length
     ? `<b>${recipient[0]}</b>${recipient.length > 1 ? '<br>' + recipient.slice(1).join('<br>') : ''}`
     : ''
@@ -120,10 +124,10 @@ export function letterDoc(input: LetterDocInput): DocHtml {
   }
 
   const modern = input.layout === 'modern' || input.layout === 'ar-modern'
-  const css = `${pageCss(input.paper, modern ? '0 0 18mm 0' : '20mm 20mm 18mm 22mm')}
+  const css = `${pageCss(input.paper, modern ? '0 0 20mm 0' : '25mm 20mm 25mm 25mm')}
   body { font-size: 10.5pt; line-height: 1.55; }
   .letter { ${modern ? 'padding: 0;' : ''} }
-  .inner { ${modern ? 'padding: 0 20mm 0 22mm;' : ''} }
+  .inner { ${modern ? 'padding: 0 20mm 0 25mm;' : ''} }
   .blk { margin-bottom: 14pt; font-size: 9.5pt; line-height: 1.45; }
   .start { text-align: start; } .end { text-align: end; }
   .sender-name { font-size: 11pt; }
@@ -131,13 +135,13 @@ export function letterDoc(input: LetterDocInput): DocHtml {
   .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16pt; }
   .date-inline { white-space: nowrap; font-size: 9.5pt; }
   .subject { font-weight: 700; font-size: 11pt; margin: 16pt 0 12pt; }
-  .body p { margin: 0 0 9pt; }
+  .body p { margin: 0 0 9pt; text-align: justify; }
   .signoff { margin-top: 2pt; }
   .sig { display: block; max-height: 16mm; max-width: 55mm; margin: 2pt 0 2pt; }
   .encl { margin-top: 16pt; font-size: 9pt; color: #4b5263; }
   .din-window { min-height: 40mm; margin: 6mm 0 8mm; font-size: 9.5pt; line-height: 1.45; }
   .return { font-size: 7pt; text-decoration: underline; color: #4b5263; margin-bottom: 4pt; }
-  .band { background: #202329; color: #fff; padding: 14mm 20mm 7mm 22mm; margin-bottom: 12mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .band { background: #202329; color: #fff; padding: 14mm 20mm 7mm 25mm; margin-bottom: 12mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .band-name { font-family: ${DOC_FONT_HEAD}; font-size: 22pt; font-weight: 700; }
   .band-meta { font-size: 8.5pt; opacity: 0.85; margin-top: 4pt; }
   [dir='rtl'] .band-name { font-family: 'Noto Sans Arabic', 'IBM Plex Sans Arabic', sans-serif; }

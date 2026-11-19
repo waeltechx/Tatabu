@@ -5,10 +5,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Download, ExternalLink, FolderOpen, LoaderCircle, Plus, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { clsx } from 'clsx'
-import { PROVIDER_NAMES, textProvider, type ProviderId } from '@shared/ai'
+import { providerName, textProvider, type ProviderId } from '@shared/ai'
 import { languageCode } from '@shared/docs/common'
 import { atsCvDoc } from '@shared/docs/cv'
-import { designDoc } from '@shared/design'
+import { myDesignDoc } from '@shared/design'
 import type { MasterCv } from '@shared/cv'
 import {
   allItems,
@@ -275,13 +275,13 @@ export function CvStudioView() {
     const mine = draft?.look === 'mine' && design
     if (!shown || !draft) {
       if (mine) {
-        const code = meta.code
-        return designDoc({
-          template: design,
-          cv: { ...master },
-          labels: cvLabels(code),
-          photo: design.photo,
-          lang: code,
+        return myDesignDoc({
+          design,
+          master,
+          tailored: null,
+          resolved: { ...master },
+          labels: cvLabels(meta.code),
+          lang: meta.code,
           dir: meta.dir,
           paper: settings?.paper
         })
@@ -297,15 +297,7 @@ export function CvStudioView() {
     }
     const { cv, keys } = resolveCv(master, shown, labels, meta.code)
     if (mine)
-      return designDoc({
-        template: design,
-        cv,
-        labels,
-        photo: design.photo,
-        lang: meta.code,
-        dir: meta.dir,
-        paper: settings?.paper
-      })
+      return myDesignDoc({ design, master, tailored: shown, resolved: cv, labels, lang: meta.code, dir: meta.dir, paper: settings?.paper })
     // Highlight lines whose change is on: rewritten and reworded text.
     const marks = new Set<string>()
     for (const c of draft.changes) {
@@ -319,6 +311,9 @@ export function CvStudioView() {
     }
     return atsCvDoc({ cv, profile, labels, lang: meta.code, dir: meta.dir, paper: settings?.paper, marks })
   }, [master, shown, draft, labels, meta.code, meta.dir, profile, settings?.paper, design])
+
+  /** Tailored lines the saved design has no place for. */
+  const unplaced = (doc as { unplaced?: string[] } | null)?.unplaced ?? []
 
   if (!isPending && apps.length === 0) {
     return (
@@ -532,7 +527,7 @@ export function CvStudioView() {
             />
             <p className="mt-1.5 text-[11px] opacity-75">{t('cvStudio.focusHint')}</p>
             <div className="mt-3 text-[11.5px] opacity-80">
-              {t('letter.model')}: {PROVIDER_NAMES[provider]}
+              {t('letter.model')}: {providerName(provider, settings?.ai)}
               {model ? ` · ${model}` : ''}
             </div>
             <Button
@@ -597,6 +592,11 @@ export function CvStudioView() {
             ) : tab === 'preview' ? (
               <>
                 {!shown && <p className="mb-3 text-[12.5px] text-muted">{t('cvStudio.previewHint')}</p>}
+                {unplaced.length > 0 && (
+                  <p className="mb-3 rounded-card border-ui border-paper-ink bg-yellow px-3 py-2 text-[12px] text-paper-ink">
+                    {t('cvStudio.unplaced', { count: unplaced.length })}
+                  </p>
+                )}
                 <div className="max-h-[74vh] overflow-auto border-ui border-strong bg-white">
                   {doc && <DocPreview doc={doc} paper={settings?.paper} highlight={highlight} />}
                 </div>

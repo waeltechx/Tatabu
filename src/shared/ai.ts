@@ -8,7 +8,21 @@ export const PROVIDER_NAMES: Record<ProviderId, string> = {
   groq: 'Groq',
   gemini: 'Gemini',
   openai: 'OpenAI',
-  openrouter: 'OpenRouter'
+  openrouter: 'OpenRouter',
+  xai: 'Grok',
+  custom: 'Custom'
+}
+
+/** A provider's display name; the custom one shows the name the user gave it. */
+export function providerName(provider: ProviderId, ai?: Pick<AiSettings, 'customName'>): string {
+  if (provider === 'custom' && ai?.customName.trim()) return ai.customName.trim()
+  return PROVIDER_NAMES[provider]
+}
+
+/** Whether a provider is ready to take text work: a saved key, or for the custom one a base URL (keys are optional there). */
+export function providerReady(view: KeyView, provider: ProviderId): boolean {
+  if (provider === 'custom') return Boolean(view.ai.customBaseUrl)
+  return view.keys[provider].set
 }
 
 export interface ModelInfo {
@@ -40,5 +54,5 @@ export function textProvider(view: KeyView): ProviderId {
 /** The provider offered as "Try with …" after a failure, if it has a key. */
 export function otherTextProvider(view: KeyView): ProviderId | null {
   const other: ProviderId = view.ai.useAltText ? 'groq' : view.ai.altProvider
-  return view.keys[other].set ? other : null
+  return providerReady(view, other) ? other : null
 }

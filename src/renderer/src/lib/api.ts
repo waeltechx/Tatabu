@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import type { IpcArgs, IpcChannel, IpcResult } from '@shared/ipc'
 import { ERROR_CODES, type ErrorCode } from '@shared/settings'
-import { otherTextProvider, PROVIDER_NAMES, type ProviderId } from '@shared/ai'
+import { otherTextProvider, providerName, type ProviderId } from '@shared/ai'
 
 export function invoke<C extends IpcChannel>(channel: C, ...args: IpcArgs<C>): Promise<IpcResult<C>> {
   return window.tatabu.invoke(channel, ...args)
@@ -53,7 +53,7 @@ export function useAiErrorToast(): (err: unknown, actions: { retry?: () => void;
       cancel:
         other && tryWith
           ? {
-              label: t('ai.tryWith', { name: PROVIDER_NAMES[other] }),
+              label: t('ai.tryWith', { name: providerName(other, settings?.ai) }),
               onClick: () => tryWith(other)
             }
           : undefined

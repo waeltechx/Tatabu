@@ -77,8 +77,9 @@ export async function aiRequest(
     timeoutMs: number
   }
 ): Promise<unknown> {
+  // Local servers (Ollama, LM Studio…) behind a custom endpoint may need no key at all.
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${endpoint.key}`,
+    ...(endpoint.key ? { Authorization: `Bearer ${endpoint.key}` } : {}),
     ...endpoint.headers
   }
   let body: string | FormData | undefined

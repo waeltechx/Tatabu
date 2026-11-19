@@ -16,11 +16,11 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { clsx } from 'clsx'
-import { PROVIDER_NAMES, textProvider, type ProviderId } from '@shared/ai'
+import { providerName, textProvider, type ProviderId } from '@shared/ai'
 import { languageCode } from '@shared/docs/common'
 import { letterDoc } from '@shared/docs/letter'
 import { LTR_LAYOUTS, RTL_LAYOUTS, wordCount, type LetterLayout, type LetterState } from '@shared/letter'
-import { EMPTY_PROFILE } from '@shared/profile'
+import { EMPTY_PROFILE, type Profile } from '@shared/profile'
 import type { DocLanguage } from '@shared/settings'
 import { invoke, useAiErrorToast, useErrorToast, useLanguages, useSettings } from '@/lib/api'
 import { appKeys } from '@/lib/apps'
@@ -41,6 +41,79 @@ function Panel({ kicker, children, className }: { kicker?: string; children: Rea
       {kicker && <div className="label-mono">{kicker}</div>}
       {children}
     </section>
+  )
+}
+
+/** A street address has a number in it or more than one line; "Munich, Germany" does not. */
+const hasStreet = (address: string): boolean => /\d/.test(address) || address.trim().includes('\n')
+
+/**
+ * The sender block of the letter: name and postal address. They live in the profile,
+ * but a letter without them is the first thing people notice, so they can be typed here.
+ */
+function SenderFields({ profile }: { profile: Profile }) {
+  const { t } = useTranslation()
+  const client = useQueryClient()
+  const onError = useErrorToast()
+  const missing = !profile.fullName.trim() || !hasStreet(profile.address)
+  // Stays open once typed in, so the fields don't vanish while the address is being written.
+  const [touched, setTouched] = useState(false)
+  const [name, setName] = useState(profile.fullName)
+  const [address, setAddress] = useState(profile.address)
+  useEffect(() => {
+    setName(profile.fullName)
+    setAddress(profile.address)
+  }, [profile.fullName, profile.address])
+  const save = (patch: Partial<Profile>): void => {
+    invoke('profile:save', patch)
+      .then((p) => client.setQueryData(docKeys.profile, p))
+      .catch(onError)
+  }
+  if (!missing && !touched) return null
+  return (
+    <div className={clsx('mt-4 rounded-card border-ui px-4 py-3.5', missing ? 'border-paper-ink bg-yellow text-paper-ink' : 'border-soft bg-field')}>
+      <div className="flex items-center gap-2 text-[12.5px] font-semibold">
+        {missing ? <TriangleAlert size={15} className="shrink-0" /> : <Check size={15} className="shrink-0" />}
+        {missing ? t('letter.senderMissing') : t('letter.senderDone')}
+      </div>
+      <p className="mt-1 text-[12px]">{t('letter.senderSub')}</p>
+      <div className="mt-3 grid grid-cols-2 gap-x-4">
+        <div>
+          <label htmlFor="l-name" className="mb-1.5 block text-[12px] font-semibold">
+            {t('profile.fullName')}
+          </label>
+          <TextInput
+            id="l-name"
+            dir="auto"
+            value={name}
+            onChange={(e) => {
+              setTouched(true)
+              setName(e.target.value)
+            }}
+            onBlur={() => name.trim() !== profile.fullName && save({ fullName: name })}
+            className="!bg-[#fffdf9] !text-paper-ink"
+          />
+        </div>
+        <div>
+          <label htmlFor="l-address" className="mb-1.5 block text-[12px] font-semibold">
+            {t('letter.senderAddress')}
+          </label>
+          <textarea
+            id="l-address"
+            dir="auto"
+            rows={2}
+            value={address}
+            placeholder={t('letter.senderAddressPlaceholder')}
+            onChange={(e) => {
+              setTouched(true)
+              setAddress(e.target.value)
+            }}
+            onBlur={() => address.trim() !== profile.address && save({ address })}
+            className={clsx(areaClass, '!bg-[#fffdf9] !text-paper-ink')}
+          />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -479,7 +552,7 @@ export function CoverLetterView() {
           <section className="rounded-card border-ui border-strong bg-purple px-5 py-5 text-paper-ink">
             <div className="text-[12px] font-semibold">{t('letter.model')}</div>
             <div className="mt-2 rounded-card border-ui border-paper-ink bg-[#fffdf9] px-3 py-2.5 text-[12.5px]">
-              {PROVIDER_NAMES[provider]}
+              {providerName(provider, settings?.ai)}
               {model ? ` · ${model}` : ''}
             </div>
             <Button
@@ -544,6 +617,8 @@ export function CoverLetterView() {
             <>
               <FieldLabel>{t('letter.layout')}</FieldLabel>
               <LayoutPicker state={draft} language={language} onPick={(layout) => editActive({ layout })} />
+
+              <SenderFields profile={profile} />
 
               <div className="grid grid-cols-2 gap-x-5">
                 <div>
@@ -707,14 +782,6 @@ export function CoverLetterView() {
                   </Button>
                 </div>
               </div>
-              {!profile.fullName && (
-                <p className="mt-3 text-[12px] text-muted">
-                  {t('docs.noProfile')}{' '}
-                  <Link to="/profile" className="font-semibold text-ink underline">
-                    {t('nav.profile')}
-                  </Link>
-                </p>
-              )}
             </>
           )}
         </section>

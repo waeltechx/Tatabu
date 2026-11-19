@@ -7,6 +7,7 @@
 import type { IpcArgs, IpcChannel, IpcResult, TatabuApi, UiPrefs } from '@shared/ipc'
 import {
   DEFAULT_AI_SETTINGS,
+  normalizeBaseUrl,
   SECRET_NAMES,
   type AiSettings,
   type DocLanguage,
@@ -18,6 +19,7 @@ import {
 import type { ModelInfo, ProviderCheck, ProviderId } from '@shared/ai'
 import { createAppMocks } from './browserMockApps'
 import { createDocMocks } from './browserMockDocs'
+import { createDesignMocks } from './browserMockDesign'
 
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
@@ -40,13 +42,24 @@ const MOCK_MODELS: Record<ProviderId, ModelInfo[]> = {
     { id: 'deepseek/deepseek-r1', vision: false },
     { id: 'google/gemini-2.5-flash', vision: true },
     { id: 'openai/gpt-oss-120b', vision: false }
+  ],
+  xai: [
+    { id: 'grok-4', vision: true },
+    { id: 'grok-4-fast-non-reasoning', vision: true },
+    { id: 'grok-code-fast-1', vision: false }
+  ],
+  custom: [
+    { id: 'claude-sonnet-4-5', vision: null },
+    { id: 'claude-haiku-4-5', vision: null }
   ]
 }
 const MOCK_DEFAULT: Record<ProviderId, string> = {
   groq: 'openai/gpt-oss-120b',
   gemini: 'gemini-3-flash',
   openai: 'gpt-5-mini',
-  openrouter: 'openai/gpt-oss-120b'
+  openrouter: 'openai/gpt-oss-120b',
+  xai: 'grok-4-fast-non-reasoning',
+  custom: 'claude-sonnet-4-5'
 }
 
 export function installBrowserMock(): void {
@@ -95,6 +108,17 @@ export function installBrowserMock(): void {
     'settings:setAi': (patch) => {
       if (patch.altProvider && patch.altProvider !== ai.altProvider) ai = { ...ai, altModel: '' }
       if (patch.altModel !== undefined && patch.altModel !== ai.altModel) delete checks[ai.altProvider]
+      if (patch.customBaseUrl !== undefined) {
+        const url = normalizeBaseUrl(patch.customBaseUrl)
+        if (patch.customBaseUrl.trim() && !url) throw new Error('AI_NO_ENDPOINT')
+        patch = { ...patch, customBaseUrl: url }
+      }
+      if (
+        (patch.customBaseUrl !== undefined && patch.customBaseUrl !== ai.customBaseUrl) ||
+        (patch.customModel !== undefined && patch.customModel !== ai.customModel)
+      ) {
+        delete checks.custom
+      }
       ai = { ...ai, ...patch }
       return view()
     },
@@ -135,6 +159,7 @@ export function installBrowserMock(): void {
     },
     'settings:setPaper': (p) => ((paper = p), view()),
     ...docMocks,
+    ...createDesignMocks(),
     'storage:open': () => undefined,
     'storage:change': () => ((dataFolder = 'D:\\Jobs\\Tatabu'), view()),
     'library:importCv': () => (cv = { id: 'lib_demo', filename: 'My CV.pdf' }),
@@ -143,9 +168,11 @@ export function installBrowserMock(): void {
     'ai:test': async (provider) => {
       await wait(900)
       const key = secrets.get(provider)
-      if (!key) throw new Error('AI_NO_KEY')
-      if (key.startsWith('bad')) throw new Error('AI_AUTH: Invalid API Key')
-      const model = (provider !== 'groq' && ai.altModel) || MOCK_DEFAULT[provider]
+      if (provider === 'custom' && !ai.customBaseUrl) throw new Error('AI_NO_ENDPOINT')
+      if (!key && provider !== 'custom') throw new Error('AI_NO_KEY')
+      if (key?.startsWith('bad')) throw new Error('AI_AUTH: Invalid API Key')
+      const model =
+        provider === 'custom' ? ai.customModel || MOCK_DEFAULT.custom : (provider !== 'groq' && ai.altModel) || MOCK_DEFAULT[provider]
       const visionModel = MOCK_MODELS[provider].find((m) => m.vision)?.id ?? null
       checks[provider] = {
         model,
@@ -156,6 +183,7 @@ export function installBrowserMock(): void {
     },
     'ai:models': async (provider) => {
       await wait(400)
+      if (provider === 'custom') return ai.customBaseUrl ? MOCK_MODELS.custom : []
       if (!secrets.has(provider)) throw new Error('AI_NO_KEY')
       return MOCK_MODELS[provider]
     },

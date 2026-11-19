@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowRight, Check, LoaderCircle, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { clsx } from 'clsx'
-import { PROVIDER_NAMES, textProvider, type ProviderId } from '@shared/ai'
+import { providerName, textProvider, type ProviderId } from '@shared/ai'
 import { STATUSES, type Status } from '@shared/applications'
 import { confidenceLevel, type EmailAnalysis } from '@shared/email'
 import { invoke, useAiErrorToast, useErrorToast, useSettings } from '@/lib/api'
@@ -129,7 +129,7 @@ export function EmailView() {
             {busy ? t('email.analyzing') : t('email.analyze')}
             {!busy && <ArrowRight className="rtl:rotate-180" />}
           </Button>
-          <div className="mt-2 text-[11.5px] text-muted">{t('email.modelLine', { provider: PROVIDER_NAMES[provider] })}</div>
+          <div className="mt-2 text-[11.5px] text-muted">{t('email.modelLine', { provider: providerName(provider, settings?.ai) })}</div>
         </Panel>
 
         <Panel kicker={t('email.kicker2')}>

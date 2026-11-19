@@ -1,6 +1,6 @@
 /** "Test" in Settings: list models, make a tiny call, and find a model that reads images. */
 import type { ModelInfo, ProviderId } from '@shared/ai'
-import { aiRequest, isAiError, type FetchFn } from './http'
+import { AiError, aiRequest, isAiError, type FetchFn } from './http'
 import { chatText, type ChatTarget } from './chat'
 import { PROVIDERS, parseModelList, visionCandidates } from './providers'
 
@@ -10,12 +10,31 @@ export const PROBE_IMAGE =
 
 const MAX_VISION_PROBES = 3
 
-export async function listModels(fetchFn: FetchFn, provider: ProviderId, key: string): Promise<ModelInfo[]> {
+export async function listModels(
+  fetchFn: FetchFn,
+  provider: ProviderId,
+  key: string,
+  baseUrl?: string
+): Promise<ModelInfo[]> {
   const spec = PROVIDERS[provider]
-  const body = await aiRequest(fetchFn, { baseUrl: spec.baseUrl, key, headers: spec.headers }, 'models', {
+  const body = await aiRequest(fetchFn, { baseUrl: baseUrl || spec.baseUrl, key, headers: spec.headers }, 'models', {
     timeoutMs: 20_000
   })
   return parseModelList(provider, body)
+}
+
+/**
+ * Model list for the custom provider, which may not offer `/models` at all:
+ * a missing or odd endpoint gives an empty list instead of an error. A refused
+ * key, a dead server or a timeout still throw, since chat would fail too.
+ */
+export async function listModelsLenient(fetchFn: FetchFn, provider: ProviderId, key: string, baseUrl?: string) {
+  try {
+    return await listModels(fetchFn, provider, key, baseUrl)
+  } catch (err) {
+    if (provider === 'custom' && (isAiError(err, 'AI_MODEL_MISSING') || isAiError(err, 'AI_BAD_REQUEST'))) return []
+    throw err
+  }
 }
 
 /** True if the model accepted the probe image. Other failures (auth, rate limit…) are thrown. */
@@ -42,10 +61,11 @@ export async function findVisionModel(
   provider: ProviderId,
   key: string,
   textModel: string,
-  models: ModelInfo[]
+  models: ModelInfo[],
+  baseUrl?: string
 ): Promise<string | null> {
   for (const model of visionCandidates(provider, models, textModel).slice(0, MAX_VISION_PROBES)) {
-    if (await readsImages(fetchFn, { provider, key, model })) return model
+    if (await readsImages(fetchFn, { provider, key, model, baseUrl })) return model
   }
   return null
 }
@@ -65,12 +85,15 @@ export async function testProvider(
   fetchFn: FetchFn,
   provider: ProviderId,
   key: string,
-  chooseModel: (models: ModelInfo[]) => string
+  chooseModel: (models: ModelInfo[]) => string,
+  baseUrl?: string
 ): Promise<TestOutcome> {
-  const models = await listModels(fetchFn, provider, key)
+  const models = await listModelsLenient(fetchFn, provider, key, baseUrl)
   const model = chooseModel(models)
+  // A custom endpoint that lists no models needs the user to name one.
+  if (!model) throw new AiError('AI_MODEL_MISSING', 'no model chosen')
   try {
-    await chatText(fetchFn, { provider, key, model }, 'You are a connection test.', 'Reply with the single word OK.', {
+    await chatText(fetchFn, { provider, key, model, baseUrl }, 'You are a connection test.', 'Reply with the single word OK.', {
       maxTokens: 300,
       timeoutMs: 30_000
     })
@@ -78,6 +101,6 @@ export async function testProvider(
     // The model answered, just with nothing visible: the connection works.
     if (!isAiError(err, 'AI_INVALID_OUTPUT')) throw err
   }
-  const visionModel = await findVisionModel(fetchFn, provider, key, model, models)
+  const visionModel = await findVisionModel(fetchFn, provider, key, model, models, baseUrl)
   return { model, visionModel, models }
 }

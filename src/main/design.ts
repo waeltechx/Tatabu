@@ -4,6 +4,8 @@ import { basename } from 'node:path'
 import type { ProviderId } from '@shared/ai'
 import { designUnits, MAX_DESIGN_ROUNDS, sanitizeTemplate, type DesignDraft, type DesignSource, type DesignState } from '@shared/design'
 import { safeImage } from '@shared/docs/common'
+import { buildClone, type CloneDoc } from '@shared/clone/build'
+import { cleanRawPages } from '@shared/pdf/clean'
 import { getDb, dataFolder } from './services'
 import { nowIso } from './db/open'
 import { readPrefs } from './prefs'
@@ -28,9 +30,11 @@ function readRow(id: 'draft' | 'mine'): DesignDraft | null {
   } catch {
     meta = {}
   }
+  const layout = meta.layout as CloneDoc | null | undefined
   return {
     html: r.html,
     css: r.css,
+    layout: layout && layout.v === 1 && Array.isArray(layout.sections) && Array.isArray(layout.styles) ? layout : null,
     sourceName: r.name,
     pages: Array.isArray(meta.pages) ? meta.pages.filter((p) => typeof p === 'string') : [],
     photo: safeImage(String(meta.photo ?? '')),
@@ -46,6 +50,7 @@ function readRow(id: 'draft' | 'mine'): DesignDraft | null {
 function writeRow(id: 'draft' | 'mine', d: DesignDraft): void {
   const { html, css } = sanitizeTemplate(d)
   const meta = JSON.stringify({
+    layout: d.layout ?? null,
     pages: d.pages,
     photo: d.photo,
     photoBox: d.photoBox,
@@ -103,10 +108,35 @@ const notes = (list: string[]): string[] =>
     .filter(Boolean)
     .slice(0, 5)
 
-/** Round 1: the model looks at the pages and writes the template. */
-export async function readDesign(input: { filename: string; pages: string[] }, override?: ProviderId): Promise<DesignState> {
+/**
+ * Reads the design. A PDF with real text is measured and copied exactly, with no AI at all.
+ * A scan (or `ai: true`) goes to the vision model, which looks at the pages and writes a template.
+ */
+export async function readDesign(
+  input: { filename: string; pages: string[]; layout?: unknown; ai?: boolean },
+  override?: ProviderId
+): Promise<DesignState> {
   const pages = (Array.isArray(input?.pages) ? input.pages : []).filter(isPage).slice(0, MAX_PAGES)
   if (!pages.length) throw new Error('PDF_FAILED')
+  const raw = input?.ai === true ? null : cleanRawPages(input?.layout)
+  const measured = raw ? buildClone(raw) : null
+  if (measured) {
+    writeRow('draft', {
+      html: '',
+      css: '',
+      layout: measured.doc,
+      sourceName: String(input.filename ?? '').slice(0, 200),
+      pages,
+      photo: '',
+      photoBox: null,
+      found: [],
+      differences: [],
+      round: 1,
+      feedback: [],
+      updatedAt: nowIso()
+    })
+    return designState()
+  }
   const result = await runVisionJson(
     {
       system: designSystem(uiLanguage()),
@@ -123,6 +153,7 @@ export async function readDesign(input: { filename: string; pages: string[] }, o
   const out = result.data
   writeRow('draft', {
     ...sanitizeTemplate(designUnits(out)),
+    layout: null,
     sourceName: String(input.filename ?? '').slice(0, 200),
     pages,
     photo: '',
@@ -148,7 +179,7 @@ export function setDesignPhoto(dataUrl: string): DesignState {
 /** Another round: the user says what is still different. */
 export async function fixDesign(feedback: string, override?: ProviderId): Promise<DesignState> {
   const draft = readRow('draft')
-  if (!draft) throw new Error('NOT_FOUND')
+  if (!draft || draft.layout) throw new Error('NOT_FOUND')
   if (draft.round >= MAX_DESIGN_ROUNDS) throw new Error('DESIGN_ROUNDS')
   const said = String(feedback ?? '').slice(0, 2000)
   if (!said.trim()) throw new Error('TEXT_EMPTY')

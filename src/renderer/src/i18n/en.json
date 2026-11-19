@@ -135,7 +135,23 @@
       "tryVoice": "Try dictation",
       "tryVoiceHint": "Press the mic, say a sentence in any language, press again.",
       "heard": "Heard",
-      "nothingHeard": "Nothing was heard. Try again a little closer to the mic."
+      "nothingHeard": "Nothing was heard. Try again a little closer to the mic.",
+      "grokHint": "Grok by xAI.",
+      "customTitle": "Your own provider",
+      "customDesc": "Any service that speaks the OpenAI chat API: a Claude proxy, DeepSeek, Mistral, Together, or a local Ollama / LM Studio server.",
+      "customName": "Name",
+      "customNamePlaceholder": "e.g. Claude",
+      "customUrl": "Base URL",
+      "customUrlPlaceholder": "https://api.example.com/v1",
+      "customUrlHint": "The address that ends just before /chat/completions. Ollama: http://localhost:11434/v1",
+      "customModel": "Model id",
+      "customModelPlaceholder": "e.g. claude-sonnet-4-5",
+      "customModelHint": "Pick from the list or type the exact id your provider uses.",
+      "customKey": "API key (optional for local servers)",
+      "customSaved": "Provider saved.",
+      "customNeedsUrl": "Save a base URL first, then test the connection.",
+      "customLocalHttp": "This address isn't encrypted (http). Fine for a server on this computer; use https for anything on the internet.",
+      "customShort": "Custom"
     },
     "refs": {
       "label": "Default references",
@@ -232,6 +248,7 @@
     "REFEREE_NAME_EMPTY": "A referee needs a name.",
     "NOT_FOUND": "That item no longer exists.",
     "AI_NO_KEY": "Add an API key for this provider in Settings first.",
+    "AI_NO_ENDPOINT": "Add a valid base URL (starting with https:// or http://) for your own provider in Settings.",
     "AI_AUTH": "The provider rejected this key. Check it in Settings.",
     "AI_RATE_LIMIT": "The provider's usage limit was reached. Wait a minute and try again.",
     "AI_MODEL_MISSING": "The provider doesn't offer this model. Pick another one in Settings.",
@@ -398,7 +415,6 @@
   "dash": {
     "byStatus": "By status",
     "total": "total",
-    "lastTwoWeeks": "Last 14 days",
     "added": "Added: {{count}}",
     "today": "Today",
     "applications": "Applications",
@@ -419,7 +435,21 @@
     "emptyKicker": "Start here",
     "emptyTitle": "Your first application\nis one paste away.",
     "emptySub": "Paste a job posting and Tatabu pulls out the company, role, deadline and requirements, then keeps its files together.",
-    "emptyCta": "Add your first application"
+    "emptyCta": "Add your first application",
+    "activity": "Applications added",
+    "span": "Time span",
+    "spans": {
+      "2w": "2 weeks",
+      "1m": "Month",
+      "3m": "3 months",
+      "1y": "Year"
+    },
+    "earlier": "Earlier",
+    "later": "Later",
+    "backToToday": "Back to today",
+    "hoverHint": "Point at a bar to read it.",
+    "noEarlier": "No earlier applications",
+    "addedCount": "Applications added: {{count}}"
   },
   "setup": {
     "title": "Get set up",
@@ -641,7 +671,12 @@
       "ar-formal": "رسمي عربي",
       "ar-classic": "Classic mirrored",
       "ar-modern": "Modern header"
-    }
+    },
+    "senderMissing": "Your name and address are missing from the letter",
+    "senderDone": "Your name and address",
+    "senderSub": "They are printed at the top of every letter and saved in your profile.",
+    "senderAddress": "Postal address",
+    "senderAddressPlaceholder": "Street and number\nPostcode and town"
   },
   "cvStudio": {
     "kicker1": "01 / Pick the job",
@@ -745,28 +780,29 @@
         "section": "Section left out"
       }
     },
-    "mineSub": "Recreated from your PDF.",
+    "mineSub": "Your own layout, copied from your PDF.",
     "recheck": "Re-check my design",
-    "teach": "Teach it your design"
+    "teach": "Teach it your design",
+    "unplaced": "Lines left out because your design has no place for them: {{count}}. They were added to your master CV after the design was read, so read the design again."
   },
   "teach": {
     "st1": "Upload PDF",
-    "st2": "AI reads the layout",
+    "st2": "We read the design",
     "st3": "Compare · round {{round}} of {{max}}",
     "st4": "Save template",
     "kicker": "01 / Your designed CV",
     "uploadTitle": "Upload the PDF of your CV",
-    "uploadSub": "Use the CV whose look you like. We read its layout, colours and sections, then pour your text into it for every job. Your text always comes from your master CV.",
+    "uploadSub": "Use the CV whose look you like. Its fonts, sizes, colours, spacing and photo are measured from the PDF itself and copied exactly. For every job only the words change; they always come from your master CV.",
     "upload": "Upload PDF",
     "useMaster": "Use {{name}}",
     "noMasterPdf": "Your master CV wasn't uploaded as a PDF. Upload the PDF instead.",
     "sampleNote": "You have no master CV yet, so the recreation shows sample text.",
     "drawing": "Drawing your pages…",
-    "reading": "Reading the layout… this can take a minute.",
+    "reading": "Reading the design…",
     "fixing": "Fixing the template…",
     "howKicker": "How it works",
     "how1": "1. Upload your CV as a PDF.",
-    "how2": "2. Compare our recreation with your original and say what's different. Up to 3 rounds.",
+    "how2": "2. Compare the copy with your original, side by side.",
     "how3": "3. Save it. Only the text changes per job; the layout stays yours.",
     "original": "Your original",
     "recreation": "Our recreation",
@@ -793,7 +829,21 @@
     "mine": "My design",
     "recheck": "Re-check",
     "remove": "Remove",
-    "removeConfirm": "Remove your saved design? CVs will use the ATS template."
+    "removeConfirm": "Remove your saved design? CVs will use the ATS template.",
+    "st3Exact": "Compare",
+    "copy": "The copy",
+    "exactBadge": "Measured, not guessed",
+    "exactKicker": "Copied from your file",
+    "exactSub": "Every line sits where your PDF has it. For each job only the words change: the design, the photo and the spacing stay.",
+    "exactFonts": "Font: {{fonts}}",
+    "exactLines": "{{count}} lines of text placed",
+    "exactPhoto": "Photo in its own place and size",
+    "exactNoMaster": "You have no master CV yet. Add it so the words can be tailored per job.",
+    "looseTitle": "Your master CV misses part of this file",
+    "looseSub": "Some text in this PDF is not in your master CV, so it would stay as it is for every job. Read your CV again to pick it up.",
+    "looseAction": "Open the master CV",
+    "aiInstead": "Copy looks wrong? Let the AI redraw it instead.",
+    "exactPages": "Pages: {{count}}"
   },
   "email": {
     "kicker1": "01 / Paste the email",

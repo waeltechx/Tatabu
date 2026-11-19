@@ -194,5 +194,8 @@ describe('letter page', () => {
     expect(placeFrom('Weserstraße 21\n12047 Berlin')).toBe('Berlin')
     expect(placeFrom('1 High St\nLondon SW1A 1AA')).toBe('London')
     expect(placeFrom('')).toBe('')
+    // Only a town and a country (what a CV usually gives): the town.
+    expect(placeFrom('Munich, Germany')).toBe('Munich')
+    expect(placeFrom('500 Main St\nAustin, TX 78701')).toBe('Austin')
   })
 })

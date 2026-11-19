@@ -21,8 +21,9 @@ import {
   type PendingAttachment,
   type PickedFile
 } from '@shared/applications'
-import { PROVIDER_NAMES, type ProviderId } from '@shared/ai'
+import { providerName, type ProviderId } from '@shared/ai'
 import { dataFolder, getDb } from './services'
+import { getAiSettings } from './repo/settings'
 import {
   deleteApplication,
   deleteFileRow,
@@ -87,7 +88,7 @@ export async function extractJob(text: string, link: string, override?: Provider
   )
   return {
     fields: toJobFields(result.data),
-    provider: PROVIDER_NAMES[target.provider],
+    provider: providerName(target.provider, getAiSettings(getDb())),
     model: target.model,
     seconds: Math.round((Date.now() - started) / 100) / 10
   }

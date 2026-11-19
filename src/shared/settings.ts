@@ -1,8 +1,11 @@
 /** Types shared by the main process and the renderer for settings and storage. */
 import type { ProviderCheck } from './ai'
 
-/** Providers that can take over text work while Groq keeps voice. */
-export const ALT_PROVIDERS = ['gemini', 'openai', 'openrouter'] as const
+/**
+ * Providers that can take over text work while Groq keeps voice. `xai` is
+ * Grok; `custom` is any OpenAI-compatible endpoint the user adds themselves.
+ */
+export const ALT_PROVIDERS = ['gemini', 'openai', 'openrouter', 'xai', 'custom'] as const
 export type AltProvider = (typeof ALT_PROVIDERS)[number]
 
 /** Every API key the app can hold. Stored encrypted, never sent to the renderer in full unless revealed. */
@@ -15,12 +18,32 @@ export interface AiSettings {
   altProvider: AltProvider
   /** Chosen model id for the alternative provider. Empty = provider default (picked in Phase 2). */
   altModel: string
+  /** The user's own provider: a display name, an OpenAI-compatible base URL and a model id. */
+  customName: string
+  customBaseUrl: string
+  customModel: string
 }
 
 export const DEFAULT_AI_SETTINGS: AiSettings = {
   useAltText: false,
   altProvider: 'gemini',
-  altModel: ''
+  altModel: '',
+  customName: '',
+  customBaseUrl: '',
+  customModel: ''
+}
+
+/** A usable custom base URL: http(s) with a host. Returns the trimmed URL without a trailing slash, or ''. */
+export function normalizeBaseUrl(raw: string): string {
+  const value = raw.trim().replace(/\/+$/, '')
+  if (!value) return ''
+  try {
+    const url = new URL(value)
+    if ((url.protocol !== 'https:' && url.protocol !== 'http:') || !url.hostname) return ''
+    return value
+  } catch {
+    return ''
+  }
 }
 
 export interface KeyStatus {
@@ -92,6 +115,7 @@ export const ERROR_CODES = [
   'NOT_FOUND',
   // AI and voice
   'AI_NO_KEY',
+  'AI_NO_ENDPOINT',
   'AI_AUTH',
   'AI_RATE_LIMIT',
   'AI_MODEL_MISSING',

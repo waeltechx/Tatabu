@@ -7,7 +7,7 @@ type PdfJs = typeof import('pdfjs-dist')
 
 let lib: Promise<PdfJs> | null = null
 
-function pdfjs(): Promise<PdfJs> {
+export function pdfjs(): Promise<PdfJs> {
   lib ??= (async () => {
     // @ts-expect-error the worker module ships without type declarations
     const worker: unknown = await import('pdfjs-dist/build/pdf.worker.mjs')

@@ -1,7 +1,8 @@
 /** Email status: reads a pasted email and suggests an application and status. Nothing is saved here. */
-import { PROVIDER_NAMES, type ProviderId } from '@shared/ai'
+import { providerName, type ProviderId } from '@shared/ai'
 import type { EmailAnalysis } from '@shared/email'
 import { getDb } from './services'
+import { getAiSettings } from './repo/settings'
 import { listApplications } from './repo/applications'
 import { readPrefs } from './prefs'
 import { runJson, textTarget } from './ai/service'
@@ -25,7 +26,7 @@ export async function analyzeEmail(text: string, override?: ProviderId): Promise
   )
   return {
     ...cleanEmailResult(result.data, new Set(apps.map((a) => a.id))),
-    provider: PROVIDER_NAMES[target.provider],
+    provider: providerName(target.provider, getAiSettings(getDb())),
     model: target.model
   }
 }

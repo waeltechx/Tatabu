@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { Check, ChevronDown, Plus, Search } from 'lucide-react'
 import { clsx } from 'clsx'
 import { STATUSES, type Application, type Status } from '@shared/applications'
-import { daysUntil, formatDate, localDay, STATUS_TONE, useApps, useSetup, useUpdateApp } from '@/lib/apps'
+import { daysUntil, formatDate, STATUS_TONE, useApps, useSetup, useUpdateApp } from '@/lib/apps'
 import { usePrefs } from '@/lib/prefs'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button, inputClass } from '@/components/ui'
 import { StatusSelect } from '@/components/apps/StatusSelect'
+import { ActivityChart } from './ActivityChart'
 
 const STATUS_FILL: Record<Status, string> = {
   saved: 'var(--blue)',
@@ -97,59 +98,6 @@ function StatusDonut({ apps }: { apps: Application[] }) {
             </li>
           ))}
         </ul>
-      </div>
-    </section>
-  )
-}
-
-/** Applications added per day over the last 14 days; the busiest day is purple. */
-function LastTwoWeeks({ apps }: { apps: Application[] }) {
-  const { t } = useTranslation()
-  const { prefs } = usePrefs()
-  const days = useMemo(() => {
-    const list: { day: string; count: number }[] = []
-    const now = new Date()
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
-      list.push({ day: localDay(d), count: 0 })
-    }
-    for (const a of apps) {
-      const hit = list.find((x) => x.day === localDay(new Date(a.dateAdded)))
-      if (hit) hit.count++
-    }
-    return list
-  }, [apps])
-  const max = Math.max(1, ...days.map((d) => d.count))
-  const top = days.reduce<(typeof days)[number] | null>((best, d) => (!best || d.count > best.count ? d : best), null)
-  const sum = days.reduce((n, d) => n + d.count, 0)
-  return (
-    <section className="rounded-card border-ui border-strong bg-surface px-6 py-5">
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-head text-[18px] font-bold">{t('dash.lastTwoWeeks')}</h2>
-        <span className="label-mono">{t('dash.added', { count: sum })}</span>
-      </div>
-      <div className="mt-4 flex h-[130px] items-end gap-1.5" dir="ltr">
-        {days.map((d) => (
-          <div key={d.day} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
-            {d.count > 0 && (
-              <span className="font-mono text-[10px]" dir="ltr">
-                {d.count}
-              </span>
-            )}
-            <div
-              title={`${formatDate(d.day, prefs.language, false)} · ${d.count}`}
-              className={clsx(
-                'w-full rounded-t-[3px] border-ui border-strong',
-                d.count === 0 ? 'border-soft bg-field' : d === top ? 'bg-purple' : 'bg-yellow'
-              )}
-              style={{ height: d.count ? `${Math.max(8, (d.count / max) * 100)}px` : '4px' }}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="mt-2 flex justify-between font-mono text-[10px] text-muted" dir="ltr">
-        <span>{formatDate(days[0]?.day ?? '', prefs.language, false)}</span>
-        <span>{t('dash.today')}</span>
       </div>
     </section>
   )
@@ -392,7 +340,7 @@ export function DashboardView() {
           </div>
           <div className="grid grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-6">
             <StatusDonut apps={apps} />
-            <LastTwoWeeks apps={apps} />
+            <ActivityChart apps={apps} />
           </div>
           <ApplicationsTable apps={apps} />
         </div>

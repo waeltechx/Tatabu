@@ -4,7 +4,9 @@ import { getAiSettings, updateAiSettings, getSetting, setSetting } from '../src/
 import { createSecretStore, maskKey, type Cipher } from '../src/main/repo/secrets'
 import { addLanguage, guessDirection, listLanguages, removeLanguage } from '../src/main/repo/languages'
 import { listReferees, moveReferee, removeReferee, saveReferee } from '../src/main/repo/referees'
-import { EMPTY_REFEREE } from '@shared/settings'
+import { DEFAULT_AI_SETTINGS, EMPTY_REFEREE } from '@shared/settings'
+import { cleanCv } from '@shared/cv'
+import { fillProfileFromCv, getProfile, saveProfile } from '../src/main/repo/profile'
 
 /** Stand-in for safeStorage: reversible, but the stored bytes never contain the key. */
 function fakeCipher(available = true): Cipher {
@@ -26,15 +28,23 @@ describe('settings', () => {
 
   it('has safe AI defaults and merges updates', () => {
     const db = openDatabase(':memory:')
-    expect(getAiSettings(db)).toEqual({ useAltText: false, altProvider: 'gemini', altModel: '' })
+    expect(getAiSettings(db)).toEqual(DEFAULT_AI_SETTINGS)
     updateAiSettings(db, { useAltText: true, altModel: 'gemini-x' })
-    expect(getAiSettings(db)).toEqual({ useAltText: true, altProvider: 'gemini', altModel: 'gemini-x' })
+    expect(getAiSettings(db)).toEqual({ ...DEFAULT_AI_SETTINGS, useAltText: true, altModel: 'gemini-x' })
   })
 
   it('clears the model when the provider changes', () => {
     const db = openDatabase(':memory:')
     updateAiSettings(db, { altModel: 'gemini-x' })
     expect(updateAiSettings(db, { altProvider: 'openai' }).altModel).toBe('')
+  })
+
+  it('keeps the custom provider when switching away and back', () => {
+    const db = openDatabase(':memory:')
+    updateAiSettings(db, { altProvider: 'custom', customName: 'Mine', customBaseUrl: 'https://x.example.com/v1', customModel: 'm1' })
+    updateAiSettings(db, { altProvider: 'xai' })
+    const back = updateAiSettings(db, { altProvider: 'custom' })
+    expect(back).toMatchObject({ customName: 'Mine', customBaseUrl: 'https://x.example.com/v1', customModel: 'm1' })
   })
 
   it('ignores an unknown provider', () => {
@@ -71,7 +81,7 @@ describe('secrets', () => {
   it('reports every key', () => {
     const db = openDatabase(':memory:')
     const all = createSecretStore(db, fakeCipher()).allStatus()
-    expect(Object.keys(all).sort()).toEqual(['gemini', 'groq', 'openai', 'openrouter'])
+    expect(Object.keys(all).sort()).toEqual(['custom', 'gemini', 'groq', 'openai', 'openrouter', 'xai'])
   })
 
   it('masks short keys completely', () => {
@@ -130,5 +140,35 @@ describe('default referees', () => {
   it('requires a name', () => {
     const db = openDatabase(':memory:')
     expect(() => saveReferee(db, { ...EMPTY_REFEREE, name: '  ' })).toThrow('REFEREE_NAME_EMPTY')
+  })
+})
+
+describe('profile from the CV', () => {
+  const cv = cleanCv({
+    name: 'Lina Haddad',
+    headline: 'Frontend Engineer',
+    contact: { email: 'lina@example.com', phone: '+49 30 5550 0199', location: 'Berlin, Germany', links: ['github.com/lina'] }
+  })
+
+  it('fills an empty profile, so letters carry a name and contact details', () => {
+    const db = openDatabase(':memory:')
+    expect(fillProfileFromCv(db, cv)).toMatchObject({
+      fullName: 'Lina Haddad',
+      headline: 'Frontend Engineer',
+      email: 'lina@example.com',
+      phone: '+49 30 5550 0199',
+      address: 'Berlin, Germany',
+      links: ['github.com/lina']
+    })
+    expect(getProfile(db).fullName).toBe('Lina Haddad')
+  })
+
+  it('never overwrites what the person typed', () => {
+    const db = openDatabase(':memory:')
+    saveProfile(db, { fullName: 'L. Haddad', address: 'Weserstr. 21\n12047 Berlin' })
+    const p = fillProfileFromCv(db, cv)
+    expect(p.fullName).toBe('L. Haddad')
+    expect(p.address).toBe('Weserstr. 21\n12047 Berlin')
+    expect(p.email).toBe('lina@example.com')
   })
 })

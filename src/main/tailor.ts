@@ -3,7 +3,7 @@ import type { ProviderId } from '@shared/ai'
 import type { Application } from '@shared/applications'
 import { cvFacts, cvFactsPrompt, type MasterCv } from '@shared/cv'
 import { atsCvDoc } from '@shared/docs/cv'
-import { designDoc } from '@shared/design'
+import { myDesignDoc } from '@shared/design'
 import { docLabels, languageCode, type DocHtml } from '@shared/docs/common'
 import type { SavedPdf } from '@shared/documents'
 import type { Profile } from '@shared/profile'
@@ -231,15 +231,7 @@ export function buildCvDoc(state: CvTailorState, master: MasterCv, profile: Prof
   // "My design" when one is saved; the ATS template otherwise.
   const design = state.look === 'mine' ? savedDesign() : null
   if (design) {
-    return designDoc({
-      template: design,
-      cv: resolved,
-      labels,
-      photo: design.photo,
-      lang: lang.code,
-      dir: lang.dir,
-      paper: paperSize()
-    })
+    return myDesignDoc({ design, master, tailored: cv, resolved, labels, lang: lang.code, dir: lang.dir, paper: paperSize() })
   }
   return atsCvDoc({ cv: resolved, profile, labels, lang: lang.code, dir: lang.dir, paper: paperSize(), marks })
 }

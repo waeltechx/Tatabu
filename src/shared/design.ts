@@ -5,8 +5,10 @@
  * sanitised and every value is escaped before it reaches a page.
  */
 import type { MasterCv } from './cv'
+import { cloneCvDoc } from './clone/bind'
+import type { CloneDoc } from './clone/build'
 import { esc, safeImage, type DocHtml } from './docs/common'
-import type { CvLabels } from './tailor'
+import type { CvLabels, TailoredCv } from './tailor'
 
 export const MAX_DESIGN_ROUNDS = 3
 
@@ -43,6 +45,11 @@ export interface PhotoBox {
 }
 
 export interface DesignDraft extends DesignTemplate {
+  /**
+   * The design measured from the PDF itself (fonts, positions, colours, photo).
+   * When present it is used instead of the AI-written template: it is exact.
+   */
+  layout?: CloneDoc | null
   sourceName: string
   /** The original pages as JPEG data URLs, for the side-by-side compare. */
   pages: string[]
@@ -274,4 +281,40 @@ export function designDoc(input: DesignDocInput): DocHtml {
     dir: input.dir,
     lang: input.lang
   }
+}
+
+export interface MyDesignInput {
+  design: DesignDraft
+  master: MasterCv
+  /** The tailored CV after the choices and edits made on screen; null before tailoring. */
+  tailored: TailoredCv | null
+  /** The same CV flattened (see `resolveCv`), for designs written as a template. */
+  resolved: MasterCv
+  labels: CvLabels
+  lang: string
+  dir: 'ltr' | 'rtl'
+  paper?: 'A4' | 'Letter'
+}
+
+/** A CV in the person's own design: the measured copy when there is one, the AI template otherwise. */
+export function myDesignDoc(input: MyDesignInput): DocHtml & { unplaced?: string[] } {
+  if (input.design.layout) {
+    return cloneCvDoc({
+      layout: input.design.layout,
+      master: input.master,
+      tailored: input.tailored,
+      labels: input.labels,
+      lang: input.lang,
+      dir: input.dir
+    })
+  }
+  return designDoc({
+    template: input.design,
+    cv: input.resolved,
+    labels: input.labels,
+    photo: input.design.photo,
+    lang: input.lang,
+    dir: input.dir,
+    paper: input.paper
+  })
 }

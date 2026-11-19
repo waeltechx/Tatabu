@@ -1,0 +1,614 @@
+<title>Tatabu UI Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one reading column (≈ 980px) in RTL; the card preview breaks out to full width with a live density switch.
+   Tokens are Tatabu's own (styles.css) so the mock looks like the real app. */
+:root {
+  --bg: #f7f5ef;
+  --surface: #fffdf9;
+  --field: #f1eee6;
+  --ink: #202329;
+  --muted: #686b70;
+  --soft: #d9d7d0;
+  --strong: #202329;
+  --shadow: #202329;
+  --yellow: #ffe45b;
+  --green: #cde8c6;
+  --purple: #c9bbfa;
+  --blue: #bfdff0;
+  --pink: #f6c9c0;
+  --paper-ink: #202329;
+  --good: #2f7a3a;
+  --warn: #9a6a00;
+  --bad: #b23a2a;
+  --font-head: 'Noto Sans Arabic', 'Space Grotesk', sans-serif;
+  --font-body: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Sans Arabic', monospace;
+  --font-latin-head: 'Space Grotesk', 'Noto Sans Arabic', sans-serif;
+  --sx: -3px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15161a; --surface: #1e2026; --field: #191a1f; --ink: #f1eee6; --muted: #9a9ca4;
+    --soft: #363941; --strong: #d9d5ca; --shadow: #000000;
+    --good: #8fd39a; --warn: #f0c35a; --bad: #f2a194;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15161a; --surface: #1e2026; --field: #191a1f; --ink: #f1eee6; --muted: #9a9ca4;
+  --soft: #363941; --strong: #d9d5ca; --shadow: #000000;
+  --good: #8fd39a; --warn: #f0c35a; --bad: #f2a194;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { direction: rtl; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+}
+.wrap { max-width: 980px; margin: 0 auto; }
+.wide { max-width: 1240px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-head); text-wrap: balance; line-height: 1.3; margin: 0; }
+h1 { font-size: clamp(28px, 4vw, 40px); }
+h2 { font-size: 24px; margin-bottom: 6px; }
+h3 { font-size: 17px; }
+p { margin: 0; }
+.label {
+  font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 500;
+}
+.lead { color: var(--muted); font-size: 16px; max-width: 70ch; margin-top: 10px; }
+a { color: var(--ink); }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; direction: ltr; unicode-bidi: isolate; }
+code { background: var(--field); border: 1px solid var(--soft); border-radius: 4px; padding: 0 5px; }
+.sect { margin-top: 64px; }
+.sect > .label { display: block; margin-bottom: 8px; }
+.sect-head { margin-bottom: 20px; }
+.sect-head p { color: var(--muted); max-width: 70ch; }
+
+/* header */
+.top { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; justify-content: space-between; }
+.agents { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.agent {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px;
+  border: 1.5px solid var(--strong); border-radius: 7px; background: var(--surface); font-size: 13px;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
+
+/* shipped */
+.shipped { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.ship {
+  border: 1.5px solid var(--strong); border-radius: 7px; background: var(--surface); padding: 16px 18px;
+}
+.ship h3 { display: flex; align-items: center; gap: 8px; }
+.ship p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+.ship ul { margin: 10px 0 0; padding-inline-start: 18px; font-size: 14px; }
+.tag {
+  display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  border: 1px solid currentColor; border-radius: 5px; padding: 0 6px; line-height: 18px;
+}
+
+/* ===== preview ===== */
+.preview {
+  border: 1.5px solid var(--strong); border-radius: 10px; background: var(--surface);
+  box-shadow: var(--sx) 3px 0 0 var(--shadow); overflow: hidden;
+}
+.pv-bar {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1.5px solid var(--strong); background: var(--bg);
+}
+.seg { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.seg button {
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--ink);
+  height: 34px; padding: 0 14px; border-radius: 7px; border: 1.5px solid var(--soft); background: var(--surface);
+}
+.seg button[aria-pressed="true"] { background: var(--yellow); border-color: var(--strong); color: var(--paper-ink); }
+.seg button:focus-visible, .pv-bar select:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.pv-meter { font-size: 13px; color: var(--muted); }
+.pv-meter b { color: var(--ink); font-family: var(--font-mono); }
+
+.pv-stage { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); min-height: 560px; transition: none; }
+@media (max-width: 760px) { .pv-stage { grid-template-columns: minmax(0, 1fr); } .pv-side { display: none; } }
+
+/* density tokens — the whole proposal in one place */
+.pv-stage[data-d="now"] {
+  --side-w: 240px; --nav-h: 44px; --nav-gap: 12px; --page-pad: 32px;
+  --h1: 38px; --h1-mb: 28px; --sub: 15px;
+  --kpi-pad: 16px 20px; --kpi-num: 40px; --kpi-gap: 20px; --kpi-label-gap: 12px;
+  --card-pad: 20px 24px; --card-title: 18px; --row-py: 12px; --row-fs: 12.5px; --sect-gap: 24px;
+  --chip-h: 24px; --input-h: 38px; --radius: 7px;
+}
+.pv-stage[data-d="new"] {
+  --side-w: 220px; --nav-h: 34px; --nav-gap: 4px; --page-pad: 24px;
+  --h1: 24px; --h1-mb: 18px; --sub: 13px;
+  --kpi-pad: 12px 14px; --kpi-num: 26px; --kpi-gap: 12px; --kpi-label-gap: 6px;
+  --card-pad: 14px 16px; --card-title: 15px; --row-py: 8px; --row-fs: 13px; --sect-gap: 16px;
+  --chip-h: 22px; --input-h: 32px; --radius: 7px;
+}
+.pv-stage[data-d="compact"] {
+  --side-w: 200px; --nav-h: 30px; --nav-gap: 2px; --page-pad: 18px;
+  --h1: 20px; --h1-mb: 14px; --sub: 12.5px;
+  --kpi-pad: 10px 12px; --kpi-num: 22px; --kpi-gap: 10px; --kpi-label-gap: 4px;
+  --card-pad: 12px 14px; --card-title: 14px; --row-py: 6px; --row-fs: 12.5px; --sect-gap: 12px;
+  --chip-h: 20px; --input-h: 30px; --radius: 6px;
+}
+
+.pv-side {
+  border-inline-end: 1.5px solid var(--strong); background: var(--surface);
+  padding: 20px 14px; display: flex; flex-direction: column;
+}
+.pv-logo { font-family: 'Noto Sans Arabic', sans-serif; font-weight: 700; font-size: 22px; padding-inline-start: 6px; }
+.pv-nav { display: flex; flex-direction: column; gap: var(--nav-gap); margin-top: 22px; }
+.pv-nav span {
+  display: flex; align-items: center; gap: 10px; height: var(--nav-h); padding: 0 10px;
+  border-radius: var(--radius); font-size: 13.5px; border: 1.5px solid transparent;
+}
+.pv-nav span.on { background: var(--yellow); border-color: var(--strong); font-weight: 600; color: var(--paper-ink); }
+.pv-nav svg { width: 16px; height: 16px; flex: none; }
+
+.pv-main { padding: var(--page-pad); background: var(--bg); min-width: 0; }
+.pv-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: var(--h1-mb); }
+.pv-head h4 { font-family: var(--font-head); font-size: var(--h1); line-height: 1.2; margin: 4px 0 2px; }
+.pv-head p { font-size: var(--sub); color: var(--muted); }
+.pv-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: var(--input-h); padding: 0 12px; white-space: nowrap;
+  border: 1.5px solid var(--strong); border-radius: var(--radius); background: var(--yellow); color: var(--paper-ink);
+  font-weight: 600; font-size: 13px; box-shadow: var(--sx) 3px 0 0 var(--shadow);
+}
+
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--kpi-gap); }
+@media (max-width: 1000px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi {
+  border: 1.5px solid var(--strong); border-radius: var(--radius); padding: var(--kpi-pad); color: var(--paper-ink);
+  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "label label" "num delta"; align-items: end;
+}
+.kpi .k-label { grid-area: label; font-size: 12px; color: #4a4a4a; font-weight: 500; }
+.kpi .k-num {
+  grid-area: num; font-family: var(--font-latin-head); font-weight: 700; font-size: var(--kpi-num); line-height: 1;
+  margin-top: var(--kpi-label-gap); direction: ltr; text-align: start; font-variant-numeric: tabular-nums;
+}
+.kpi .k-delta { grid-area: delta; font-size: 12px; white-space: nowrap; }
+.pv-stage[data-d="now"] .kpi { grid-template-areas: "label label" "num num" "delta delta"; }
+.pv-stage[data-d="now"] .kpi .k-delta { margin-top: 8px; }
+
+.pv-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); gap: var(--sect-gap); margin-top: var(--sect-gap); }
+@media (max-width: 1000px) { .pv-grid { grid-template-columns: minmax(0, 1fr); } }
+.pv-card { border: 1.5px solid var(--strong); border-radius: var(--radius); background: var(--surface); min-width: 0; }
+.pv-card-head {
+  display: flex; align-items: center; gap: 10px; padding: var(--card-pad); border-bottom: 1px solid var(--soft);
+}
+.pv-card-head h5 { font-family: var(--font-head); font-size: var(--card-title); margin: 0; margin-inline-end: auto; }
+.pv-search {
+  height: var(--input-h); width: min(220px, 40%); border: 1.5px solid var(--soft); border-radius: var(--radius);
+  background: var(--field); font-size: 12.5px; color: var(--muted); display: flex; align-items: center; padding: 0 10px;
+}
+.tbl-wrap { overflow-x: auto; }
+table.pv-tbl { width: 100%; border-collapse: collapse; font-size: var(--row-fs); }
+.pv-tbl th { font-family: var(--font-mono); font-weight: 500; font-size: 11.5px; color: var(--muted); text-align: start; padding: var(--row-py) 12px; }
+.pv-tbl td { padding: var(--row-py) 12px; border-top: 1px solid var(--soft); vertical-align: middle; white-space: nowrap; }
+.pv-tbl td b { font-weight: 600; }
+.pv-tbl .co { color: var(--muted); }
+.pv-stage[data-d="now"] .pv-tbl td.role b { display: block; }
+.pv-stage:not([data-d="now"]) .pv-tbl td.role .co::before { content: " · "; }
+.chip {
+  display: inline-flex; align-items: center; height: var(--chip-h); padding: 0 8px; border-radius: 5px;
+  border: 1px solid var(--paper-ink); color: var(--paper-ink); font-size: 12px; font-weight: 500;
+}
+.c-yellow { background: var(--yellow); } .c-blue { background: var(--blue); } .c-purple { background: var(--purple); }
+.c-green { background: var(--green); } .c-pink { background: var(--pink); }
+.due-soon { color: var(--bad); font-weight: 600; }
+
+.next { padding: var(--card-pad); display: flex; flex-direction: column; gap: 8px; }
+.next-item {
+  display: flex; gap: 10px; align-items: center; border: 1.5px solid var(--soft); border-radius: var(--radius);
+  padding: var(--row-py) 10px; font-size: var(--row-fs);
+}
+.next-item .when { margin-inline-start: auto; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.pv-stage[data-d="now"] .next-item { padding: 12px 16px; }
+.pv-stage[data-d="now"] .next-item small { display: block; }
+.next-item small { color: var(--muted); font-size: 12px; }
+.pv-stage:not([data-d="now"]) .next-item small { display: none; }
+
+.pv-foot {
+  display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 12px 16px; border-top: 1.5px solid var(--strong);
+  font-size: 13px; color: var(--muted); background: var(--bg);
+}
+.pv-foot b { color: var(--ink); }
+
+/* size table */
+.tbl-scroll { overflow-x: auto; border: 1.5px solid var(--strong); border-radius: 7px; background: var(--surface); }
+table.data { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
+.data th, .data td { padding: 10px 14px; text-align: start; border-bottom: 1px solid var(--soft); vertical-align: top; }
+.data th { font-family: var(--font-mono); font-weight: 500; font-size: 12px; color: var(--muted); background: var(--bg); }
+.data tr:last-child td { border-bottom: 0; }
+.data td.num { font-family: var(--font-mono); direction: ltr; unicode-bidi: isolate; font-size: 13px; white-space: nowrap; }
+.data td.was { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--bad); }
+.data td.now { font-weight: 600; }
+
+/* findings */
+.findings { display: flex; flex-direction: column; gap: 10px; }
+.find {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px;
+  border: 1.5px solid var(--soft); border-radius: 7px; background: var(--surface); padding: 14px 16px;
+}
+.sev { grid-row: span 2; align-self: start; font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  border-radius: 5px; padding: 2px 7px; border: 1px solid currentColor; white-space: nowrap; }
+.sev.high { color: var(--bad); } .sev.med { color: var(--warn); } .sev.low { color: var(--muted); }
+.find h3 { font-size: 15px; font-family: var(--font-body); font-weight: 600; }
+.find p { font-size: 14px; color: var(--muted); }
+.find .where { font-family: var(--font-mono); font-size: 12px; direction: ltr; unicode-bidi: isolate; color: var(--muted); }
+
+/* patterns */
+.patterns { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.pat { border: 1.5px solid var(--strong); border-radius: 7px; background: var(--surface); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.pat .from { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+.pat p { font-size: 14px; color: var(--muted); }
+
+/* skills */
+.skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+.sk-col { border: 1.5px solid var(--strong); border-radius: 7px; background: var(--surface); padding: 16px; }
+.sk-col h3 { margin-bottom: 10px; display: flex; gap: 8px; align-items: center; }
+.sk-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.sk-col li { font-size: 14px; }
+.sk-col li .mono { font-weight: 500; color: var(--ink); }
+.sk-col li span.why { display: block; color: var(--muted); font-size: 13px; }
+.cmd { display: block; margin-top: 4px; font-family: var(--font-mono); font-size: 11.5px; direction: ltr; text-align: left;
+  background: var(--field); border: 1px solid var(--soft); border-radius: 5px; padding: 4px 8px; overflow-x: auto; white-space: nowrap; }
+.sw-use { background: var(--green); } .sw-add { background: var(--blue); } .sw-avoid { background: var(--pink); }
+.swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--paper-ink); flex: none; }
+
+/* roadmap */
+.road { counter-reset: step; display: flex; flex-direction: column; gap: 0; border-inline-start: 2px solid var(--strong); margin-inline-start: 10px; }
+.step { position: relative; padding: 0 0 20px; padding-inline-start: 26px; }
+.step::before {
+  counter-increment: step; content: counter(step); position: absolute; inset-inline-start: -13px; top: 0;
+  width: 24px; height: 24px; border-radius: 50%; background: var(--yellow); border: 1.5px solid var(--strong);
+  font-family: var(--font-mono); font-size: 12px; display: grid; place-items: center; color: var(--paper-ink);
+}
+.step h3 { font-size: 16px; }
+.step p { font-size: 14px; color: var(--muted); }
+.step .skill-pill { font-family: var(--font-mono); font-size: 11.5px; direction: ltr; unicode-bidi: isolate; border: 1px solid var(--soft); border-radius: 4px; padding: 0 5px; color: var(--ink); background: var(--surface); }
+
+.rtl-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px 24px; padding: 0; margin: 0; list-style: none; }
+.rtl-list li { font-size: 14px; padding-inline-start: 16px; position: relative; }
+.rtl-list li::before { content: ""; position: absolute; inset-inline-start: 0; top: 10px; width: 6px; height: 6px; background: var(--ink); border-radius: 1px; }
+.note { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.shots figure { margin: 0; border: 1.5px solid var(--strong); border-radius: 7px; overflow: hidden; background: var(--surface); }
+.shots img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-bottom: 1px solid var(--soft); }
+.shots figcaption { padding: 10px 12px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <span class="label">تقرير مراجعة الواجهة · ١٩ تشرين الثاني ٢٠٢٦</span>
+      <h1 style="margin-top:8px">كيف نخلّي «منصة تتبع» أخف وأوضح</h1>
+      <p class="lead">تلات وكلاء اشتغلوا بالتوازي: واحد فحص الواجهة شاشة شاشة وقاس البطاقات، واحد درس التطبيقات المشابهة، وواحد دوّر على السكيلز المناسبة. تحت: شو انضاف اليوم، معاينة حيّة لأحجام البطاقات المقترحة، أهم المشاكل، وخطة التنفيذ.</p>
+      <div class="agents">
+        <span class="agent"><span class="dot"></span>فحص الواجهة والقياسات</span>
+        <span class="agent"><span class="dot"></span>دراسة التطبيقات المشابهة</span>
+        <span class="agent"><span class="dot"></span>بحث السكيلز</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="sect">
+    <span class="label">انضاف اليوم</span>
+    <div class="sect-head"><h2>Grok ومزوّد خاص صاروا بالإعدادات</h2></div>
+    <div class="shipped">
+      <div class="ship">
+        <h3>Grok <span class="tag">xAI</span></h3>
+        <p>خيار جديد جنب Gemini وOpenAI وOpenRouter. بيختار تلقائياً نموذج سريع (‏<span class="mono">grok-4-fast</span>‏) وبيتجاهل نماذج توليد الصور، وبيعرف مين بيقرأ الصور لتصميم السيرة.</p>
+      </div>
+      <div class="ship">
+        <h3>مزوّدك الخاص <span class="tag">OpenAI-compatible</span></h3>
+        <p>أي خدمة بتحكي واجهة OpenAI: بروكسي لـ Claude، DeepSeek، Mistral، أو Ollama على جهازك.</p>
+        <ul>
+          <li>اسم + رابط أساسي + اسم نموذج (مع قائمة اقتراحات إذا الخدمة بتعرض نماذجها)</li>
+          <li>المفتاح اختياري، للسيرفرات المحلية</li>
+          <li>زر «اختبار» بيشتغل حتى لو الخدمة ما فيها قائمة نماذج</li>
+          <li>الاسم اللي بتختاره بيطلع بكل مكان («جرّب مع Claude»)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="sect wide" aria-labelledby="pv-title">
+  <div class="wrap">
+    <span class="label">معاينة · ما تغيّر شي بالتطبيق</span>
+    <div class="sect-head">
+      <h2 id="pv-title">البطاقات قبل وبعد</h2>
+      <p>نفس لوحة التحكم بنفس الهوية (الأصفر، الحدود السودا، الظل الصلب)، بس بأحجام مختلفة. بدّل بين الحالي والمقترح وشوف كم صف بيبيّن بنفس المساحة.</p>
+    </div>
+  </div>
+
+  <div class="preview">
+    <div class="pv-bar">
+      <div class="seg" role="group" aria-label="كثافة العرض">
+        <button type="button" data-set="now" aria-pressed="false">الحالي</button>
+        <button type="button" data-set="new" aria-pressed="true">المقترح (افتراضي)</button>
+        <button type="button" data-set="compact" aria-pressed="false">مضغوط</button>
+      </div>
+      <div class="pv-meter" id="pv-meter" aria-live="polite"></div>
+    </div>
+
+    <div class="pv-stage" id="pv-stage" data-d="new">
+      <aside class="pv-side" aria-hidden="true">
+        <div class="pv-logo">منصة تتبع</div>
+        <div class="pv-nav">
+          <span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>لوحة التحكم</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>استوديو السيرة</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>رسالة التقديم</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2"/><path d="M14 10h4M14 14h4"/></svg>المراجع</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>حالة الإيميل</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>الملف الشخصي</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>الإعدادات</span>
+        </div>
+      </aside>
+
+      <div class="pv-main">
+        <div class="pv-head">
+          <div>
+            <span class="label">بحثك عن شغل، بمكان واحد</span>
+            <h4>لوحة التحكم</h4>
+            <p>شوية ترتيب. وكتير راحة بال.</p>
+          </div>
+          <span class="pv-btn">+ أضف طلب</span>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi c-yellow"><span class="k-label">كل الطلبات</span><span class="k-num">24</span><span class="k-delta">+5 هالأسبوع</span></div>
+          <div class="kpi c-blue"><span class="k-label">نشطة</span><span class="k-num">9</span><span class="k-delta">مقدّمة أو مقابلة</span></div>
+          <div class="kpi c-purple"><span class="k-label">مقابلات</span><span class="k-num">3</span><span class="k-delta">2 هالأسبوع</span></div>
+          <div class="kpi c-green"><span class="k-label">عروض</span><span class="k-num">1</span><span class="k-delta">رد 38٪</span></div>
+        </div>
+
+        <div class="pv-grid">
+          <div class="pv-card">
+            <div class="pv-card-head">
+              <h5>الطلبات</h5>
+              <span class="pv-search">ابحث…</span>
+            </div>
+            <div class="tbl-wrap">
+              <table class="pv-tbl" id="pv-tbl">
+                <thead><tr><th>#</th><th>الوظيفة</th><th>المكان</th><th>الحالة</th><th>آخر موعد</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">24</td><td class="role"><b dir="auto">Data Analyst</b> <span class="co" dir="auto">Zalando</span></td><td class="co">برلين</td><td><span class="chip c-blue">مقدّم</span></td><td class="due-soon">بعد يومين</td></tr>
+                  <tr><td class="mono">23</td><td class="role"><b dir="auto">Junior BI Developer</b> <span class="co" dir="auto">SAP</span></td><td class="co">والدورف</td><td><span class="chip c-purple">مقابلة</span></td><td>٢٨ تشرين٢</td></tr>
+                  <tr><td class="mono">22</td><td class="role"><b dir="auto">Werkstudent Analytics</b> <span class="co" dir="auto">Siemens</span></td><td class="co">ميونخ</td><td><span class="chip c-yellow">محفوظ</span></td><td>٣ كانون١</td></tr>
+                  <tr><td class="mono">21</td><td class="role"><b dir="auto">Reporting Specialist</b> <span class="co" dir="auto">DHL Group</span></td><td class="co">بون</td><td><span class="chip c-blue">مقدّم</span></td><td>—</td></tr>
+                  <tr><td class="mono">20</td><td class="role"><b dir="auto">Product Analyst</b> <span class="co" dir="auto">Delivery Hero</span></td><td class="co">برلين</td><td><span class="chip c-green">عرض</span></td><td>—</td></tr>
+                  <tr><td class="mono">19</td><td class="role"><b dir="auto">Data Engineer (m/w/d)</b> <span class="co" dir="auto">Bosch</span></td><td class="co">شتوتغارت</td><td><span class="chip c-pink">مرفوض</span></td><td>—</td></tr>
+                  <tr><td class="mono">18</td><td class="role"><b dir="auto">Analytics Trainee</b> <span class="co" dir="auto">Allianz</span></td><td class="co">ميونخ</td><td><span class="chip c-blue">مقدّم</span></td><td>—</td></tr>
+                  <tr><td class="mono">17</td><td class="role"><b dir="auto">BI Analyst</b> <span class="co" dir="auto">Lidl Digital</span></td><td class="co">نيكارسولم</td><td><span class="chip c-yellow">محفوظ</span></td><td>١٠ كانون١</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="pv-card">
+            <div class="pv-card-head"><h5>الخطوة الجاية</h5></div>
+            <div class="next">
+              <div class="next-item"><span class="chip c-purple">مقابلة</span><div><b dir="auto">SAP</b><small>مقابلة تقنية، ساعة</small></div><span class="when">الخميس ١٠:٠٠</span></div>
+              <div class="next-item"><span class="chip c-blue">متابعة</span><div><b dir="auto">Zalando</b><small>ابعت إيميل متابعة</small></div><span class="when">اليوم</span></div>
+              <div class="next-item"><span class="chip c-yellow">موعد</span><div><b dir="auto">Siemens</b><small>آخر يوم للتقديم</small></div><span class="when">٣ كانون١</span></div>
+              <div class="next-item"><span class="chip c-blue">متابعة</span><div><b dir="auto">DHL Group</b><small>صار أسبوعين بلا رد</small></div><span class="when">بكرا</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pv-foot" id="pv-foot"></div>
+  </div>
+</section>
+
+<div class="wrap">
+  <section class="sect">
+    <span class="label">الواقع الحالي</span>
+    <div class="sect-head">
+      <h2>صور حقيقية من التطبيق</h2>
+      <p>لقطات أخدها وكيل الفحص من التطبيق نفسه (ببيانات تجريبية).</p>
+    </div>
+    <div class="shots">
+      <figure><img src="screens/02-dashboard-en-light-1280.jpg" alt="لوحة التحكم على 1280×800" loading="lazy"><figcaption>لوحة التحكم على 1280×800: بطاقات 127px ورسوم 309px، وجدول الطلبات بيبلش عند حد الشاشة.</figcaption></figure>
+      <figure><img src="screens/03-dashboard-scrolled-sidebar-nav-gone.jpg" alt="القائمة الجانبية اختفت بعد التمرير" loading="lazy"><figcaption>بعد التمرير: أزرار القائمة الجانبية راحت، والصفوف 63px.</figcaption></figure>
+      <figure><img src="screens/06-add-application-step1.jpg" alt="إضافة طلب الخطوة الأولى" loading="lazy"><figcaption>إضافة طلب: شرح بنفسجي 422px، وزر «استخرج» تحت حد الشاشة.</figcaption></figure>
+      <figure><img src="screens/14-settings-scrolled-empty-left-column.jpg" alt="الإعدادات مع عمود فاضي" loading="lazy"><figcaption>الإعدادات: عمود فاضي وشريط حفظ ثابت.</figcaption></figure>
+      <figure><img src="screens/18-reference-1180-fields-truncated.jpg" alt="المراجع على 1180 بكسل" loading="lazy"><figcaption>المراجع بأصغر نافذة: الحقول مقصوصة.</figcaption></figure>
+      <figure><img src="screens/19-dashboard-dark.jpg" alt="لوحة التحكم بالوضع الغامق" loading="lazy"><figcaption>الوضع الغامق: ألوان البطاقات قوية زيادة.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sect">
+    <span class="label">الأرقام</span>
+    <div class="sect-head">
+      <h2>شو بيتغيّر بالضبط</h2>
+      <p>القيم الحالية مأخوذة من الكود. المقترحة من أنظمة تصميم رسمية (Carbon، Fluent 2، Apple HIG) ومن تطبيقات متل Linear. القاعدة: أي صف أطول من 44px، أو حشوة بطاقة أكتر من 16px، أو رقم إحصائي أكبر من 28px، بيحسّ «كبير».</p>
+    </div>
+    <div class="tbl-scroll">
+      <table class="data">
+        <thead><tr><th>العنصر</th><th>الملف</th><th>الحالي</th><th>المقترح</th></tr></thead>
+        <tbody>
+          <tr><td>عنوان الصفحة</td><td class="num">PageHeader.tsx:38</td><td class="num was">38px · mb-7</td><td class="num now">24px · mb-4</td></tr>
+          <tr><td>بطاقة إحصائية: الرقم</td><td class="num">DashboardView.tsx:38</td><td class="num was">40px</td><td class="num now">26px tabular</td></tr>
+          <tr><td>بطاقة إحصائية: الحشوة / الارتفاع</td><td class="num">DashboardView.tsx:36</td><td class="num was">px-5 py-4 · 127px</td><td class="num now">px-3.5 py-3 · ≈76px</td></tr>
+          <tr><td>بطاقتي الرسم البياني</td><td class="num">DashboardView.tsx:55 · ActivityChart.tsx:126</td><td class="num was">309px</td><td class="num now">≈210px</td></tr>
+          <tr><td>عنصر قائمة الطلبات</td><td class="num">ApplicationsView.tsx:436</td><td class="num was">100px</td><td class="num now">56–60px</td></tr>
+          <tr><td>المسافة بين البطاقات</td><td class="num">DashboardView.tsx</td><td class="num was">gap-5 / gap-6</td><td class="num now">gap-3 / gap-4</td></tr>
+          <tr><td>صف الجدول</td><td class="num">DashboardView.tsx:188</td><td class="num was">py-3 · سطرين · 63px</td><td class="num now">py-2 · سطر واحد · 36–44px</td></tr>
+          <tr><td>بطاقة الإعدادات: الحشوة والعنوان</td><td class="num">ui/index.tsx:75,83</td><td class="num was">px-[19px] py-5 · 19px</td><td class="num now">px-4 py-3.5 · 15px</td></tr>
+          <tr><td>الحقول والأزرار</td><td class="num">ui/index.tsx:37</td><td class="num was">h-[42px]</td><td class="num now">32–36px</td></tr>
+          <tr><td>عناصر القائمة الجانبية</td><td class="num">Sidebar.tsx:31,36</td><td class="num was">w-60 · gap-3 · ≈44px</td><td class="num now">w-[220px] · gap-1 · 34px</td></tr>
+          <tr><td>بطاقة «ابدأ» الصفرا (فاضي)</td><td class="num">DashboardView.tsx:276-278</td><td class="num was">px-9 py-10 · 40px</td><td class="num now">px-5 py-5 · 22px</td></tr>
+          <tr><td>عنصر قائمة الإعداد</td><td class="num">DashboardView.tsx:247</td><td class="num was">px-4 py-3 · سطرين</td><td class="num now">px-3 py-2 · وصف بالتلميح</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">الأهم: كل هالقيم لازم تنحط كمتغيرات بمكان واحد (<code>styles.css</code>) بدل ما تكون مكتوبة بكل شاشة. هيك منقدر نضيف خيار «الكثافة» بالمظهر متل ما في بالمعاينة فوق.</p>
+  </section>
+
+  <section class="sect" id="audit">
+    <span class="label">فحص الواجهة</span>
+    <div class="sect-head">
+      <h2>شو مو مزبوط هلق</h2>
+      <p id="audit-intro">الوكيل شغّل التطبيق بـ 12 طلب تجريبي وقاس كل شي على 1280×800 و1024 وأصغر نافذة (1180×720)، بالعربي والإنكليزي، فاتح وغامق. المشكلة مش بشاشة وحدة: نفس الإعدادات المشتركة منفوخة بكل مكان، فالحل بكم ملف مشترك.</p>
+    </div>
+    <div class="findings" id="findings">
+      <div class="find"><span class="sev high">عالي</span><h3>القائمة الجانبية بتختفي لما تمرّر</h3><p>بأي صفحة طويلة (لوحة التحكم، الإعدادات، إضافة طلب) أزرار التنقل بتطلع لفوق وما بيضل غير بطاقة الخصوصية. الحل سطر واحد: sticky top-0 h-screen. <span class="where">Sidebar.tsx:31 · AppShell.tsx:33</span></p></div>
+      <div class="find"><span class="sev high">عالي</span><h3>الأزرار الأساسية تحت حد الشاشة</h3><p>على 1280×800: زر «استخرج» على ارتفاع 870px، «احفظ» على 1108px، «فصّل السيرة» على 1043px، «اكتب الرسالة» على 1013px. ولوحة التحكم ما بتبيّن ولا صف من جدول الطلبات بدون تمرير. <span class="where">AddApplicationView · CvStudioView · CoverLetterView</span></p></div>
+      <div class="find"><span class="sev high">عالي</span><h3>ما في أي تكيّف مع حجم النافذة</h3><p>صفر breakpoints وأعمدة جانبية بعرض ثابت (320 لـ 500px). بأصغر نافذة للتطبيق (1180px) حقول المراجع بتنقص: «Nordli…» و«Refer…». <span class="where">ReferenceView.tsx:208-244</span></p></div>
+      <div class="find"><span class="sev med">متوسط</span><h3>ترويسة الصفحة بتاكل 170px</h3><p>عنوان 38px + سطر فوقه + وصف + هوامش، قبل أي محتوى، بكل شاشة. تصغيرها لحالها بيرجّع حوالي 100px لكل صفحة. <span class="where">PageHeader.tsx:25-39 · AppShell.tsx:35</span></p></div>
+      <div class="find"><span class="sev med">متوسط</span><h3>ما في بطاقة موحّدة</h3><p>8 نسخ مختلفة من «Panel» بـ 5 حشوات و8 أحجام عناوين، و23 حجم خط بالتطبيق كله. لهيك ما فينا نصغّر من مكان واحد. <span class="where">components/ui/index.tsx + كل الشاشات</span></p></div>
+      <div class="find"><span class="sev med">متوسط</span><h3>تغيير الأحجام بينتجاهل بصمت</h3><p>مثلاً clsx(inputClass, 'h-[38px]') بيضل 42px لأنه المشروع ما فيه tailwind-merge. أي تصغير منعمله لازم يبلش من هون. <span class="where">DashboardView.tsx:150,158 · ApplicationsView.tsx:85</span></p></div>
+      <div class="find"><span class="sev med">متوسط</span><h3>الحقول والأزرار طويلة</h3><p>كل حقل 42px وكل صف بنموذج 84px. تطبيقات سطح المكتب بتستخدم 28 لـ 36px. <span class="where">ui/index.tsx:27,37,48</span></p></div>
+      <div class="find"><span class="sev med">متوسط</span><h3>رسائل الطمأنة مكررة 5 مرات</h3><p>«محلي افتراضياً»، «ملكك مو بالسحابة»، «محفوظ على الجهاز»… كل وحدة بحجم بطاقة. مرة وحدة بالإعدادات بتكفي. <span class="where">AddApplicationView · EmailView · ProfileView · Sidebar</span></p></div>
+      <div class="find"><span class="sev med">متوسط</span><h3>استوديو السيرة بيضل يلف للأبد إذا فشل التحميل</h3><p>ما في رسالة خطأ ولا زر «جرّب مرة تانية». ولوحة التحكم بتطلع فاضية وقت التحميل وبعدين كل شي بينط. <span class="where">CvStudioView.tsx:586 · DashboardView.tsx:316</span></p></div>
+      <div class="find"><span class="sev med">متوسط</span><h3>الإعدادات: عمود فاضي وشريط «انحفظ كل شي» دايماً ظاهر</h3><p>حوالي 700px فراغ بالعمود التاني، والشريط الأخضر شكله حالة بس هو ثابت. <span class="where">SettingsView.tsx:21-36</span></p></div>
+      <div class="find"><span class="sev low">منخفض</span><h3>«الطلبات» ما إلها زر بالقائمة</h3><p>بتوصلها بس من صفوف لوحة التحكم أو زر الرجوع، والقائمة بتضوّي «لوحة التحكم» بدالها. <span class="where">Sidebar.tsx:13-21</span></p></div>
+      <div class="find"><span class="sev low">منخفض</span><h3>الألوان الفاتحة قوية زيادة بالوضع الغامق</h3><p>الأصفر والبنفسجي بنفس قوتهن على خلفية #15161a، وفي 3 درجات أحمر مختلفة للخطر. <span class="where">styles.css:28-38</span></p></div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <span class="label">دراسة التطبيقات المشابهة</span>
+    <div class="sect-head">
+      <h2>شو منتعلّم من Huntr وTeal وSimplify</h2>
+      <p>ولا واحد منهم محلّي، ولا بيقبل مفتاحك الخاص، ولا بيدعم العربي. هاد تميّزك. بس بالواجهة كلهم أخف: بطاقة اللوح سطرين أو تلاتة، والتفاصيل بلوحة جانبية.</p>
+    </div>
+    <div class="patterns">
+      <div class="pat"><span class="from">Gmail · Carbon · macOS</span><h3>الكثافة إعداد واحد</h3><p>مضغوط / افتراضي / مريح بالمظهر، وكل البطاقات والصفوف بتقرأ من نفس المتغيرات.</p></div>
+      <div class="pat"><span class="from">Teal · Simplify</span><h3>الطلبات جدول أول</h3><p>جدول بصف 36px وتعديل الحالة من مكانها، واللوح (Kanban) زر تبديل.</p></div>
+      <div class="pat"><span class="from">Linear · Things</span><h3>التفاصيل بلوحة جانبية</h3><p>كبسة على الطلب بتفتح لوحة 440px جنب الجدول بدل صفحة جديدة. بيخفف مشاكل زر الرجوع.</p></div>
+      <div class="pat"><span class="from">Huntr</span><h3>لوحة تحكم «شو بعمل هلق»</h3><p>4 بطاقات صغيرة بتغيّر أسبوعي، وتحتها «متابعات مستحقة» و«مقابلات جاية».</p></div>
+      <div class="pat"><span class="from">Huntr</span><h3>اقتراحات السيرة: قبل / بعد / ليش</h3><p>كل تعديل بيقول أي متطلب بيغطّي، وبتقبله أو ترفضه لحاله، ونسبة التطابق قبل وبعد.</p></div>
+      <div class="pat"><span class="from">Teal · Notion</span><h3>الخطوة الجاية وتاريخ المتابعة</h3><p>حقلين جداد لكل طلب، والمتأخر بيطلع أحمر. هنن اللي بيعبّوا لوحة التحكم.</p></div>
+      <div class="pat"><span class="from">Simplify</span><h3>حالة الإيميل كاقتراح</h3><p>«لقينا 3 تحديثات» وكل واحد فيه موافقة أو تجاهل، بدل ما تتغيّر لحالها.</p></div>
+      <div class="pat"><span class="from">Things · Linear</span><h3>ألوان بمعنى بس</h3><p>الأصفر للإجراء الأساسي والمكان الحالي. البطاقات الملونة الكبيرة بتخلّي كل شي يصرخ بنفس الوقت.</p></div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <span class="label">العربي</span>
+    <div class="sect-head">
+      <h2>ليش البطاقات أكبر بالعربي</h2>
+      <p>الخط العربي بيحتاج ارتفاع سطر أكبر، فإذا الصفوف والأزرار ما إلها ارتفاع ثابت، كل شي بيتمطّ لحاله. هاد غالباً جزء من إحساسك إنها كبيرة.</p>
+    </div>
+    <ul class="rtl-list">
+      <li>ارتفاع ثابت للصفوف والأزرار والشرائح، وارتفاع السطر 1.6 بس للفقرات.</li>
+      <li>العربي بكبر بيكسل واحد عن اللاتيني، مش أكتر.</li>
+      <li>ما في <code>uppercase</code> ولا تباعد أحرف على العربي (مثلاً <code>label-mono</code>).</li>
+      <li>نقلب الأسهم والأسهم الصغيرة بس، مش الساعة ولا علامة الصح.</li>
+      <li><code>dir="auto"</code> على أسماء الشركات والوظائف الإنكليزية.</li>
+      <li>نوع أرقام واحد بكل التطبيق، وأرقام بعرض ثابت بالجداول.</li>
+    </ul>
+  </section>
+
+  <section class="sect">
+    <span class="label">السكيلز</span>
+    <div class="sect-head">
+      <h2>شو منستخدم، شو منضيف، شو منتجنّب</h2>
+      <p>كتير من سكيلز التصميم المنزّلة معمولة لصفحات الهبوط وبتطالب بمسافات أكبر، يعني عكس اللي بدنا ياه.</p>
+    </div>
+    <div class="skills">
+      <div class="sk-col">
+        <h3><span class="swatch sw-use"></span>منزّلة، منستخدمها</h3>
+        <ul>
+          <li><span class="mono">impeccable</span><span class="why">الأساس. وضع «product» بيسمح بالكثافة وبيمنع البطاقات الكبيرة والمتداخلة. critique · audit · layout · distill · polish.</span></li>
+          <li><span class="mono">ui-ux-pro-max</span><span class="why">بيولّد متغيرات كثافة للوحات التحكم. نسخة الإضافة الجديدة بس، مش التنتين.</span></li>
+          <li><span class="mono">design:design-critique</span><span class="why">مراجعة سريعة على الصور، شاشة شاشة.</span></li>
+          <li><span class="mono">design:accessibility-review</span><span class="why">التباين، التركيز، لوحة المفاتيح، بعد التنفيذ.</span></li>
+          <li><span class="mono">design:design-system</span><span class="why">لتوحيد الحشوات والزوايا بالمتغيرات.</span></li>
+          <li><span class="mono">dataviz</span><span class="why">للرسم البياني وبطاقات الأرقام بلوحة التحكم.</span></li>
+        </ul>
+      </div>
+      <div class="sk-col">
+        <h3><span class="swatch sw-add"></span>جديدة، بتستاهل نضيفها</h3>
+        <ul>
+          <li><span class="mono">interface-design</span><span class="why">معمولة للوحات التحكم والأدوات، شبكة 4/8px، وبتحفظ القرارات بملف لتضل ثابتة.</span><span class="cmd">npx skills add https://github.com/dammyjay93/interface-design --skill interface-design</span></li>
+          <li><span class="mono">web-design-guidelines</span><span class="why">من Vercel: فحص قواعد واضحة للتركيز والنماذج وأحجام الضغط.</span><span class="cmd">npx skills add vercel-labs/agent-skills --skill web-design-guidelines</span></li>
+          <li><span class="mono">jakubkrehel/skills</span><span class="why">better-layout وbetter-ui وinterface-review: القيم الدقيقة اللي بتخلّي الواجهة «مظبوطة».</span><span class="cmd">npx skills add jakubkrehel/skills</span></li>
+          <li><span class="mono">arabic-rtl</span><span class="why">الوحيدة اللي بتغطي RTL. مستودع صغير، لازم نقراه قبل ما ننزّله.</span><span class="cmd">npx skills add https://github.com/asasemahmed/masrkit --skill arabic-rtl</span></li>
+        </ul>
+      </div>
+      <div class="sk-col">
+        <h3><span class="swatch sw-avoid"></span>منتجنّبها لهالتطبيق</h3>
+        <ul>
+          <li><span class="mono">design-taste-frontend</span><span class="why">مكتوب فيها صراحة إنها مش للوحات التحكم.</span></li>
+          <li><span class="mono">gpt-taste · high-end-visual-design</span><span class="why">صفحات هبوط وأنيميشن، وبتمنع Inter وLucide اللي التطبيق مبني عليهن.</span></li>
+          <li><span class="mono">stitch-design-taste · image-to-code</span><span class="why">لأدوات تانية ولواجهات المواقع.</span></li>
+          <li><span class="mono">industrial-brutalist-ui</span><span class="why">تغيير هوية كامل، مش تحسين.</span></li>
+          <li><span class="mono">ui-ux-pro-max:ui-styling</span><span class="why">مبنية على shadcn، والتطبيق ما بيستخدمها.</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">ما انزّل شي. الأوامر للمراجعة، وكل سكيل لازم نقرا ملفه قبل ما ننزّله.</p>
+  </section>
+
+  <section class="sect">
+    <span class="label">الخطة</span>
+    <div class="sect-head"><h2>الترتيب المقترح للتنفيذ</h2></div>
+    <div class="road">
+      <div class="step"><h3>صور «قبل» لكل الشاشات</h3><p>عربي وإنكليزي، فاتح وغامق، لنقارن بالآخر.</p></div>
+      <div class="step"><h3>متغيرات الكثافة بمكان واحد</h3><p>حشوات، ارتفاعات، أحجام خطوط، بـ <code>styles.css</code> ومعها خيار الكثافة بالمظهر. <span class="skill-pill">interface-design</span> <span class="skill-pill">design:design-system</span></p></div>
+      <div class="step"><h3>تصغير البطاقات الأساسية</h3><p><code>Card</code> و<code>StatCard</code> وعنوان الصفحة والقائمة الجانبية. هاد لحاله بيغيّر الإحساس بكل التطبيق. <span class="skill-pill">impeccable layout</span> <span class="skill-pill">impeccable distill</span></p></div>
+      <div class="step"><h3>لوحة التحكم والطلبات</h3><p>صف واحد لكل طلب، بطاقات أرقام أصغر، و«الخطوة الجاية». <span class="skill-pill">dataviz</span></p></div>
+      <div class="step"><h3>مرور على العربي</h3><p>ارتفاعات ثابتة، أيقونات، أرقام. <span class="skill-pill">arabic-rtl</span></p></div>
+      <div class="step"><h3>إمكانية الوصول والتلميع</h3><p>التباين بعد التغييرات، التركيز، وصور «بعد». <span class="skill-pill">design:accessibility-review</span> <span class="skill-pill">impeccable polish</span></p></div>
+    </div>
+  </section>
+</div>
+
+<script>
+document.documentElement.dir = 'rtl';
+document.documentElement.lang = 'ar';
+(function () {
+  var stage = document.getElementById('pv-stage');
+  var meter = document.getElementById('pv-meter');
+  var foot = document.getElementById('pv-foot');
+  var buttons = document.querySelectorAll('.seg button[data-set]');
+  var notes = {
+    now: 'متل التطبيق هلق: عنوان 38px، رقم إحصائي 40px، صف الجدول سطرين.',
+    new: 'المقترح: نفس الهوية، عنوان 24px، رقم 26px، صف 36px بسطر واحد.',
+    compact: 'لمين عنده طلبات كتير: صف 30px وحشوات 12px.'
+  };
+  function measure() {
+    var row = document.querySelector('#pv-tbl tbody tr');
+    var kpi = document.querySelector('.kpi');
+    var main = document.querySelector('.pv-main');
+    var tbl = document.getElementById('pv-tbl');
+    if (!row || !kpi || !main || !tbl) return;
+    var rowH = Math.round(row.getBoundingClientRect().height);
+    var kpiH = Math.round(kpi.getBoundingClientRect().height);
+    var tblTop = tbl.getBoundingClientRect().top - main.getBoundingClientRect().top;
+    // How many rows would fit in a 768px-tall window (typical laptop) after the header and KPIs.
+    var fit = Math.max(0, Math.floor((768 - 40 - tblTop - 40) / rowH));
+    meter.innerHTML = 'صف الجدول <b>' + rowH + 'px</b> · بطاقة الرقم <b>' + kpiH + 'px</b>';
+    foot.innerHTML = '<span>' + notes[stage.dataset.d] + '</span><span>بشاشة لابتوب (768px) بيبيّن تقريباً <b>' + fit + '</b> طلبات بدون تمرير.</span>';
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      stage.dataset.d = b.dataset.set;
+      buttons.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      measure();
+    });
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+  window.addEventListener('resize', measure);
+  measure();
+})();
+</script>
