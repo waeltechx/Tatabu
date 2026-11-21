@@ -21,9 +21,12 @@ win:
     - target: nsis
       arch: [x64]
   icon: build/icon.ico
-  artifactName: Tatabu-Setup-${version}.${ext}
+  # Same name every version, so the README can link straight to the latest file.
+  artifactName: Tatabu-Windows.${ext}
 nsis:
   oneClick: false
+  # No .blockmap: updates download the whole installer, and the release page stays simple.
+  differentialPackage: false
   perMachine: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: always
@@ -41,11 +44,13 @@ mac:
   hardenedRuntime: false
   gatekeeperAssess: false
   notarize: false
-  artifactName: Tatabu-${version}-mac.${ext}
+  artifactName: Tatabu-Mac.${ext}
   # pdfjs-dist's optional @napi-rs/canvas ships one prebuilt binary per arch; let the universal
   # build keep it as is instead of failing on "same file in both x64 and arm64 builds".
   x64ArchFiles: '**/node_modules/@napi-rs/canvas-darwin-*/**'
   extendInfo:
     NSMicrophoneUsageDescription: Tatabu uses the microphone only when you press the mic button to dictate text.
 dmg:
+  # The Mac app finds updates through the GitHub API, so it needs no blockmap or latest-mac.yml.
+  writeUpdateInfo: false
   title: Tatabu ${version}

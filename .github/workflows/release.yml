@@ -36,3 +36,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      # Keep the release page to the two installers and latest.yml (Windows auto-update reads it).
+      - name: Remove files nobody needs to download
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for name in $(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'); do
+            case "$name" in
+              *.blockmap|latest-mac.yml) gh release delete-asset "$GITHUB_REF_NAME" "$name" --yes ;;
+            esac
+          done

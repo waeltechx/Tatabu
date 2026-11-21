@@ -13,7 +13,9 @@
 ![Windows and macOS](https://img.shields.io/badge/Windows%20%C2%B7%20macOS-bfdff0?style=flat-square&labelColor=202329&label=platform)
 [![License: MIT](https://img.shields.io/badge/MIT-cde8c6?style=flat-square&labelColor=202329&label=license)](LICENSE)
 
-### [⬇ Download for Windows & macOS](https://github.com/waeltechx/Tatabu/releases/latest)
+<a href="https://github.com/waeltechx/Tatabu/releases/latest/download/Tatabu-Windows.exe"><img src="docs/images/download/win.png" alt="Download for Windows · نزّل لويندوز" width="340"></a>&nbsp;&nbsp;<a href="https://github.com/waeltechx/Tatabu/releases/latest/download/Tatabu-Mac.dmg"><img src="docs/images/download/mac.png" alt="Download for macOS · نزّل لماك" width="340"></a>
+
+<sub>Free · What's new and older versions on the <a href="https://github.com/waeltechx/Tatabu/releases">Releases page</a></sub>
 
 [English](#english) · [العربية](#العربية)
 
@@ -39,6 +41,17 @@
 Upload your CV once. For each job, Tatabu reorders your skills, rewrites your headline and summary, and picks the experience that matters, using only facts from your CV. You see every change and can switch any of them off.
 
 <img src="docs/images/promo/tailor.png" alt="One master CV turned into three tailored CVs: a frontend role, a product role and an Arabic version" width="100%">
+
+## Your CV, in your own design
+
+Upload your CV's PDF once and Tatabu learns its layout: fonts, colours, columns and spacing. From then on every tailored CV comes out **in your original design**. Only the words change to fit the job; the design stays exactly as you made it.
+
+To read the design, Tatabu has to *see* the pages of your PDF, so it needs an AI model with **vision** (image reading). The easiest setup:
+
+- **Reading your design:** a free [Gemini](https://aistudio.google.com/apikey) key, chosen under **Settings → Model for reading images**.
+- **Writing (CVs, letters, job posts):** keep **Groq**. It's faster and its free tier allows more requests.
+
+You only need the vision model when you teach Tatabu your design (or change it). Everyday writing stays on Groq.
 
 ## A tour of the app
 
@@ -67,12 +80,14 @@ Upload your CV once. For each job, Tatabu reorders your skills, rewrites your he
 
 ## Download
 
-Get the latest version from the [Releases page](https://github.com/waeltechx/Tatabu/releases/latest):
+<a href="https://github.com/waeltechx/Tatabu/releases/latest/download/Tatabu-Windows.exe"><img src="docs/images/download/win.png" alt="Download for Windows" width="300"></a>&nbsp;&nbsp;<a href="https://github.com/waeltechx/Tatabu/releases/latest/download/Tatabu-Mac.dmg"><img src="docs/images/download/mac.png" alt="Download for macOS" width="300"></a>
 
 | System | File |
 | --- | --- |
-| Windows 10 or 11 (64-bit) | `Tatabu-Setup-x.y.z.exe` |
-| macOS 12 Monterey or later (Apple Silicon and Intel) | `Tatabu-x.y.z-mac.dmg` |
+| Windows 10 or 11 (64-bit) | `Tatabu-Windows.exe` |
+| macOS 12 Monterey or later (Apple Silicon and Intel) | `Tatabu-Mac.dmg` |
+
+The [Releases page](https://github.com/waeltechx/Tatabu/releases/latest) also lists `latest.yml` (the Windows app reads it to find updates) and **Source code** (GitHub adds it to every release). You don't need either: just download the file for your system.
 
 <details>
 <summary><b>First install</b> (Windows and macOS ask you to confirm the first time)</summary>
@@ -81,13 +96,13 @@ Tatabu is free and isn't signed with a paid certificate, so Windows and macOS as
 
 **Windows**
 
-1. Run `Tatabu-Setup-x.y.z.exe`.
+1. Run `Tatabu-Windows.exe`.
 2. If you see **"Windows protected your PC"**, click **More info**, then **Run anyway**.
 3. Follow the installer. Tatabu adds a desktop shortcut and a Start menu entry.
 
 **macOS**
 
-1. Open `Tatabu-x.y.z-mac.dmg` and drag **Tatabu** into **Applications**.
+1. Open `Tatabu-Mac.dmg` and drag **Tatabu** into **Applications**.
 2. Open Tatabu from Applications. macOS says it can't check the app. Click **Done** (or **OK**).
 3. Open **System Settings → Privacy & Security**, scroll down to the message about Tatabu and click **Open Anyway**. Confirm with your password.
 4. From then on Tatabu opens normally. The first time you press a microphone button, macOS asks for microphone access.
@@ -115,6 +130,16 @@ You can also check by hand in **Settings → Version and updates**.
 4. In Tatabu, open **Settings → Connect your AI**, paste the key and click **Save**. Tatabu tests it and shows which features it can use.
 
 Groq's free tier has rate limits. If you hit one, wait a minute and try again, or add a second provider in Settings and use **Try with …** on the error message.
+
+</details>
+
+<details>
+<summary><b>Getting a free Gemini key</b> (for reading your CV's design)</summary>
+
+1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey) and sign in with your Google account.
+2. Click **Create API key** and copy it.
+3. In Tatabu, open **Settings → Connect your AI → Model for reading images** and choose **Gemini**.
+4. Paste the key in the field that appears and click **Test**. Writing stays on Groq.
 
 </details>
 
@@ -187,6 +212,17 @@ Pushing a tag like `v1.0.0` builds the Windows and macOS installers on GitHub Ac
 
 بترفع سيرتك مرة وحدة. ولكل وظيفة، البرنامج بيرتّب مهاراتك، بيعيد كتابة العنوان والنبذة، وبيختار الخبرات اللي بتهمّ هالوظيفة، وكل هذا من معلومات سيرتك بس. وبتشوف كل تغيير وفيك تطفيه.
 
+### سيرتك بتصميمك أنت
+
+بترفع ملف PDF لسيرتك مرة وحدة، والبرنامج بيتعلّم تصميمها: الخطوط والألوان والأعمدة والمسافات. ومن بعدها كل سيرة مفصّلة بتطلع **بتصميمك الأصلي**. بس الكلام بيتغيّر ليناسب الوظيفة، والتصميم بيضل متل ما عملته بالضبط.
+
+لحتى يقرأ التصميم، البرنامج لازم *يشوف* صفحات الـ PDF، فبيحتاج نموذج ذكاء اصطناعي فيه **رؤية (Vision)**، يعني بيقرأ الصور. أسهل إعداد:
+
+- **لقراءة التصميم:** مفتاح [Gemini](https://aistudio.google.com/apikey) مجاني، بتختاره من **الإعدادات ← نموذج قراءة الصور**.
+- **للكتابة (السير والرسائل وإعلانات الوظائف):** خلّيها على **Groq**، لأنه أسرع وحدود الاستخدام المجانية تبعه أكتر.
+
+نموذج الرؤية بتحتاجه بس لما تعلّم البرنامج تصميمك (أو تغيّره). والكتابة اليومية بتضل على Groq.
+
 ### جولة بالبرنامج
 
 <table>
@@ -210,12 +246,14 @@ Pushing a tag like `v1.0.0` builds the Windows and macOS installers on GitHub Ac
 
 ### التنزيل
 
-نزّل آخر نسخة من [صفحة الإصدارات](https://github.com/waeltechx/Tatabu/releases/latest):
+<a href="https://github.com/waeltechx/Tatabu/releases/latest/download/Tatabu-Windows.exe"><img src="docs/images/download/win.png" alt="نزّل لويندوز" width="300"></a>&nbsp;&nbsp;<a href="https://github.com/waeltechx/Tatabu/releases/latest/download/Tatabu-Mac.dmg"><img src="docs/images/download/mac.png" alt="نزّل لماك" width="300"></a>
 
 | النظام | الملف |
 | --- | --- |
-| ويندوز 10 أو 11 (64-bit) | `Tatabu-Setup-x.y.z.exe` |
-| ماك 12 (Monterey) أو أحدث (Apple Silicon و Intel) | `Tatabu-x.y.z-mac.dmg` |
+| ويندوز 10 أو 11 (64-bit) | `Tatabu-Windows.exe` |
+| ماك 12 (Monterey) أو أحدث (Apple Silicon و Intel) | `Tatabu-Mac.dmg` |
+
+بـ[صفحة الإصدارات](https://github.com/waeltechx/Tatabu/releases/latest) رح تشوف كمان `latest.yml` (نسخة الويندوز بتقرأه لتعرف إذا في تحديث) و **Source code** (جيت هاب بيضيفه لكل إصدار من حاله). ما بتحتاج ولا واحد منهم: نزّل بس الملف تبع نظامك.
 
 <details>
 <summary><b>أول تثبيت</b> (ويندوز وماك بيطلبوا تأكيد بأول مرة)</summary>
@@ -224,13 +262,13 @@ Pushing a tag like `v1.0.0` builds the Windows and macOS installers on GitHub Ac
 
 **ويندوز**
 
-1. شغّل `Tatabu-Setup-x.y.z.exe`.
+1. شغّل `Tatabu-Windows.exe`.
 2. إذا طلعتلك رسالة **"Windows protected your PC"**، اضغط **More info** وبعدين **Run anyway**.
 3. كمّل التثبيت. البرنامج بيضيف اختصار على سطح المكتب وبقائمة ابدأ.
 
 **ماك**
 
-1. افتح `Tatabu-x.y.z-mac.dmg` واسحب **Tatabu** على **Applications**.
+1. افتح `Tatabu-Mac.dmg` واسحب **Tatabu** على **Applications**.
 2. افتح Tatabu من Applications. ماك رح يقول إنه ما قدر يتحقق من البرنامج. اضغط **Done** (أو **OK**).
 3. افتح **System Settings ← Privacy & Security**، انزل لتحت لعند الرسالة عن Tatabu واضغط **Open Anyway**، وأكّد بكلمة السر.
 4. بعدها البرنامج بيفتح عادي. أول ما تضغط زر المايك، ماك بيسألك عن إذن المايكروفون.
@@ -258,6 +296,16 @@ Pushing a tag like `v1.0.0` builds the Windows and macOS installers on GitHub Ac
 4. بالبرنامج افتح **الإعدادات ← وصّل الذكاء الاصطناعي**، الصق المفتاح واضغط **حفظ**. البرنامج بيجرّبه وبيوريك شو الميزات اللي بتشتغل فيه.
 
 الخطة المجانية لـ Groq إلها حدود استخدام. إذا وصلت للحد، استنى دقيقة وجرّب كمان مرة، أو ضيف مزوّد تاني من الإعدادات واستخدم زر **جرّب مع …** برسالة الخطأ.
+
+</details>
+
+<details>
+<summary><b>كيف تجيب مفتاح Gemini (مجاني، لقراءة تصميم سيرتك)</b></summary>
+
+1. روح على [aistudio.google.com/apikey](https://aistudio.google.com/apikey) وسجّل دخول بحساب Google.
+2. اضغط **Create API key** وانسخ المفتاح.
+3. بالبرنامج افتح **الإعدادات ← وصّل الذكاء الاصطناعي ← نموذج قراءة الصور** واختار **Gemini**.
+4. الصق المفتاح بالخانة اللي بتطلع واضغط **اختبار**. والكتابة بتضل على Groq.
 
 </details>
 
