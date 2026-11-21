@@ -9,6 +9,7 @@ import type { DesignDraft, DesignSource, DesignState } from '@shared/design'
 import { EMPTY_LETTER, layoutFor, type LetterState } from '@shared/letter'
 import { cleanRawPages } from '@shared/pdf/clean'
 import { EMPTY_TAILOR, type CvTailorState } from '@shared/tailor'
+import { DEMO_MASTER, demoLetter, demoTailor } from './browserMockShowcase'
 
 type Handlers = { [C in IpcChannel]?: (...args: IpcArgs<C>) => IpcResult<C> | Promise<IpcResult<C>> }
 
@@ -35,9 +36,14 @@ export function createDesignMocks(): Handlers {
   const state = (): DesignState => ({ draft, saved })
   const letters = new Map<string, LetterState>()
   const cvs = new Map<string, CvTailorState>()
+  // `?demo` fills the master CV, and a few applications come already tailored.
+  const demo = new URLSearchParams(location.search).has('demo')
 
   return {
-    'cv:get': () => ({ cv: null, source: null, unread: false, updatedAt: '', warnings: [] }),
+    'cv:get': () =>
+      demo
+        ? { cv: DEMO_MASTER, source: { id: 'lib_cv', filename: 'Omar_Haddad_CV.pdf' }, unread: false, updatedAt: new Date().toISOString(), warnings: [] }
+        : { cv: null, source: null, unread: false, updatedAt: '', warnings: [] },
     'design:get': state,
     'design:pick': pickPdf,
     'design:masterPdf': () => null,
@@ -81,7 +87,15 @@ export function createDesignMocks(): Handlers {
       return state()
     },
     // Tailoring needs the AI, so the browser only keeps the user's choices.
-    'cvs:get': (id, language) => cvs.get(`${id}:${language}`) ?? { ...EMPTY_TAILOR, language },
+    'cvs:get': (id, language) =>
+      cvs.get(`${id}:${language}`) ?? (demo ? demoTailor(id, language) : null) ?? { ...EMPTY_TAILOR, language },
+    'cvs:tailor': (id, s) => {
+      const made = demo ? demoTailor(id, s.language) : null
+      if (!made) throw new Error('AI_NO_KEY')
+      const next = { ...made, look: s.look, highlight: s.highlight }
+      cvs.set(`${id}:${s.language}`, next)
+      return next
+    },
     'cvs:save': (id, s) => {
       const next = { ...EMPTY_TAILOR, ...cvs.get(`${id}:${s.language}`), ...s } as CvTailorState
       cvs.set(`${id}:${next.language}`, next)
@@ -89,7 +103,8 @@ export function createDesignMocks(): Handlers {
     },
     'letter:options': () => [],
     'letter:get': (id, language) =>
-      letters.get(`${id}:${language}`) ?? {
+      letters.get(`${id}:${language}`) ??
+      (demo ? demoLetter(id, language) : null) ?? {
         ...EMPTY_LETTER,
         language,
         layout: layoutFor(language, language === 'ar' ? 'rtl' : 'ltr'),

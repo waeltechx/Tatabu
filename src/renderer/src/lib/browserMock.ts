@@ -17,6 +17,7 @@ import {
   type SecretName
 } from '@shared/settings'
 import type { ModelInfo, ProviderCheck, ProviderId } from '@shared/ai'
+import pkg from '../../../../package.json'
 import { createAppMocks } from './browserMockApps'
 import { createDocMocks } from './browserMockDocs'
 import { createDesignMocks } from './browserMockDesign'
@@ -57,7 +58,12 @@ const MOCK_DEFAULT: Record<ProviderId, string> = {
 }
 
 export function installBrowserMock(): void {
-  let prefs: UiPrefs = { language: 'en', theme: 'system' }
+  // `?lang=ar` and `?theme=dark` start in that language and theme (for screenshots).
+  const startParams = new URLSearchParams(location.search)
+  let prefs: UiPrefs = {
+    language: startParams.get('lang') === 'ar' ? 'ar' : 'en',
+    theme: (['light', 'dark'] as const).find((t) => t === startParams.get('theme')) ?? 'system'
+  }
   let ai: AiSettings = { ...DEFAULT_AI_SETTINGS }
   let onboarded = new URLSearchParams(location.search).has('onboarded')
   let dataFolder = 'C:\\Users\\you\\Documents\\Tatabu'
@@ -70,6 +76,34 @@ export function installBrowserMock(): void {
   let referees: Referee[] = []
   let paper: 'A4' | 'Letter' = 'A4'
   const checks: Partial<Record<SecretName, ProviderCheck>> = {}
+  // `?demo` starts with a tested Groq key and an imported CV, like a set-up app.
+  if (startParams.has('demo')) {
+    secrets.set('groq', 'gsk_demo00000000000000000000x7Qk')
+    checks.groq = { model: MOCK_DEFAULT.groq, testedAt: new Date().toISOString(), visionModel: MOCK_MODELS.groq[1]!.id }
+    cv = { id: 'lib_cv', filename: 'Omar_Haddad_CV.pdf' }
+    referees = [
+      {
+        id: 'ref_1',
+        name: 'Dr. Lina Saleh',
+        affiliation: 'Head of Engineering, Kiezware GmbH',
+        relationship: 'Former manager',
+        includeRelationship: false,
+        email: 'lina.saleh@example.com',
+        phone: '+49 30 5550 0199',
+        address: ''
+      },
+      {
+        id: 'ref_2',
+        name: 'Karim Mansour',
+        affiliation: 'CTO, Souq Digital',
+        relationship: 'Former team lead',
+        includeRelationship: false,
+        email: 'karim.mansour@example.com',
+        phone: '+962 6 555 0142',
+        address: ''
+      }
+    ]
+  }
   const appMocks = createAppMocks({
     hasGroq: () => secrets.has('groq'),
     cv: () => cv,
@@ -95,7 +129,7 @@ export function installBrowserMock(): void {
   const handlers: {
     [C in IpcChannel]?: (...args: IpcArgs<C>) => IpcResult<C> | Promise<IpcResult<C>>
   } = {
-    'app:info': () => ({ version: '0.0.0-browser', platform: 'browser' }),
+    'app:info': () => ({ version: startParams.has('demo') ? pkg.version : '0.0.0-browser', platform: 'browser' }),
     'prefs:get': () => prefs,
     'prefs:set': (patch) => (prefs = { ...prefs, ...patch }),
     'settings:get': view,
@@ -182,6 +216,26 @@ export function installBrowserMock(): void {
       return MOCK_MODELS[provider]
     },
     ...appMocks,
+    // Matches by company name in the pasted email; "interview" and "unfortunately" set the status.
+    'email:analyze': async (text) => {
+      await wait(900)
+      if (!text.trim()) throw new Error('TEXT_EMPTY')
+      const list = await appMocks['apps:list']()
+      const hit = list.find((a) => a.company && text.toLowerCase().includes(a.company.toLowerCase())) ?? null
+      const status = /unfortunately|leider|نعتذر|للأسف/i.test(text) ? 'rejected' : /interview|مقابلة/i.test(text) ? 'interview' : 'applied'
+      return {
+        applicationId: hit?.id ?? null,
+        status,
+        confidence: hit ? 0.92 : 0.3,
+        reasoning: hit
+          ? /[؀-ۿ]/.test(text)
+            ? `الإيميل من ${hit.company} ويدعوك لمقابلة لوظيفة ${hit.jobTitle}.`
+            : `The email is from ${hit.company} and invites you to an interview for the ${hit.jobTitle} role.`
+          : 'No application matches this email.',
+        provider: 'Groq',
+        model: 'openai/gpt-oss-120b'
+      }
+    },
     'voice:access': () => true,
     'voice:transcribe': async (audio) => {
       await wait(800)
